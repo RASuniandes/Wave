@@ -43,9 +43,6 @@ https://github.com/othneildrew/Best-README-Template
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This project was created as a pedagogical library to teach the undergraduate students in the Systems and Computer Engineer program at Universidad de los Andes and others in the faculty to use and understand data structures and its related algorithm. This includes Arrays, Lists, Maps, Ordered Maps, Binary Search Trees (BST), Red Black Trees (RBT) and Graphs.
-
-**IMPORTANT** This is a work in progress. The project is mainly focused as a teaching tool for undergraduate college students and is not intended to be used as a full-functional library.
 
 [Back to top](#Wave)
 
