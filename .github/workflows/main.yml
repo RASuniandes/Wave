@@ -20,4 +20,4 @@ jobs:
         with:
           project: Wave
           column: 🏗 In progress
-          repo-token: ${{ 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 }}
+          repo-token: ${{ secrets.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 }}
