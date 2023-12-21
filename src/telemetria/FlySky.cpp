@@ -27,19 +27,19 @@ bool FlySky::readSwitch(byte channelInput, bool defaultValue) {
 }
 
 int FlySky::getChannel1Value() {
-  return readChannel(ch1_pin, 0, 1000, 500);
+  return readChannel(ch1_pin, 0, 180, 90);
 }
 
 int FlySky::getChannel2Value() {
-  return readChannel(ch2_pin, 0, 1000, 500);
+  return readChannel(ch2_pin, 0, 100, 90);
 }
 
 int FlySky::getChannel3Value() {
-  return readChannel(ch3_pin, 0, 1000, 500);
+  return readChannel(ch3_pin, 0, 180, 90);
 }
 
 int FlySky::getChannel4Value() {
-  return readChannel(ch4_pin, 0, 1000, 500);
+  return readChannel(ch4_pin, 0, 180, 90);
 }
 
 bool FlySky::getAutomaticFly() {
