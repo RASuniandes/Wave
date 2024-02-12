@@ -53,10 +53,15 @@ float roll = 0.0;
 float dt = 0.0;
 long tiempo_prev = 0;
 
+float yaw_raw_mpu = 0.0;
+float pitch_raw_mpu = 0.0;
+float roll_raw_mpu = 0.0;
+
 
 float aX = 0.0;
 float aY = 0.0;
 float aZ = 0.0;
+
 float accelX = 0.0;
 float accelY = 0.0;
 float accelZ = 0.0;
@@ -192,17 +197,20 @@ void readMPU6050Data() {
 
   // Filtro de Kalman para Yaw (Z)
   float angleAccelZ = atan2(aY, aZ) * 180 / PI;
+  yaw_raw_mpu=angleAccelZ;
   KalmanFilter(angleAccelZ, gyroZ, &angle_y, &bias_y, P_y);
   yaw = angle_y;
 
   // Filtro de Kalman para Pitch (Y)
   float angleAccelY = atan2(-aX, sqrt(aY * aY + aZ * aZ)) * 180 / PI;
+  pitch_raw_mpu=angleAccelZ;
   KalmanFilter(angleAccelY, gyroY, &angle_x, &bias_x, P_x);
   pitch = -angle_x;
 
   // Filtro de Kalman para Roll (X)
   float angleAccelX = atan2(aY, aZ) * 180 / PI; // Calcular ángulo con acelerómetro
   float rate_roll = gyroX - bias_roll;
+  roll_raw_mpu=angleAccelZ;
     
   // Predicción para Roll
   angle_roll += dt * rate_roll;
@@ -299,11 +307,11 @@ void show_sensors(){
 }
 
 void show_sensors2(){
-  Serial.print(aX);
+  Serial.print(yaw_raw_mpu);
   Serial.print(", ");
-  Serial.print(aY);
+  Serial.print(pitch_raw_mpu);
   Serial.print(", ");
-  Serial.print(aZ);
+  Serial.print(roll_raw_mpu);
   Serial.print(", ");
   Serial.print(yaw);
   Serial.print(", ");
@@ -420,7 +428,7 @@ void saveToSD(float yaw, float pitch, float roll, float yawValue, float pitchVal
     file.println(rollValue);
     
     file.close(); // Cierra el archivo para guardar los cambios
-    Serial.println("Datos guardados.");
+    //Serial.println("Datos guardados.");
   } else {
     Serial.println("Error al abrir el archivo");
   }
