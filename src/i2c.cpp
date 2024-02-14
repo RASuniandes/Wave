@@ -1,11 +1,23 @@
+#include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MPU6050.h>
 #include "BNO055_support.h"
+#include <Adafruit_SSD1306.h>
+#include "FS.h"
+#include "SD.h"
+#include "SPI.h"
+
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
 Adafruit_BMP280 bmp;
 Adafruit_MPU6050 mpu;
+
 struct bno055_t myBNO;
 struct bno055_euler myEulerData;
 
@@ -13,6 +25,10 @@ boolean bmpInitialized = false;
 boolean mpuInitialized = false;
 
 
+unsigned long previousMillis = 0;
+unsigned long previousMillis2 = 0;
+const long interval1 = 10; // Intervalo de actualización de 10 ms
+const long interval2 = 0; // Intervalo de actualización de 10 ms
 // Parámetros del filtro de Kalman para Roll
 float angle_roll = 0.0; // Ángulo Roll calculado por el filtro de Kalman
 float bias_roll = 0.0;  // Sesgo del giroscopio para Roll calculado por el filtro de Kalman
@@ -24,28 +40,31 @@ float temperature = 0.0;
 float pressure = 0.0;
 float altitude = 0.0;
 
-float aX = 0.0;
-float aY = 0.0;
-float aZ = 0.0;
-float accelX = 0.0;
-float accelY = 0.0;
-float accelZ = 0.0;
+
 
 float gyroX = 0.0;
 float gyroY = 0.0;
 float gyroZ = 0.0;
 
+// MPU 6050 VALUES 
 float yaw = 0.0;
 float pitch = 0.0;
 float roll = 0.0;
 float dt = 0.0;
 long tiempo_prev = 0;
 
-unsigned char accelCalibStatus = 0;
-unsigned char magCalibStatus = 0;
-unsigned char gyroCalibStatus = 0;
-unsigned char sysCalibStatus = 0;
-unsigned long lastTime = 0;
+float yaw_raw_mpu = 0.0;
+float pitch_raw_mpu = 0.0;
+float roll_raw_mpu = 0.0;
+
+
+float aX = 0.0;
+float aY = 0.0;
+float aZ = 0.0;
+
+float accelX = 0.0;
+float accelY = 0.0;
+float accelZ = 0.0;
 
 // Parámetros del filtro de Kalman
 float Q_angle = 0.001;
@@ -60,33 +79,65 @@ float bias_x = 0.0;  // Sesgo del giroscopio X calculado por el filtro de Kalman
 float P_y[2][2] = {{0, 0}, {0, 0}};
 float P_x[2][2] = {{0, 0}, {0, 0}};
 
-#define BNO055_SAMPLERATE_DELAY_MS (1000)
+// BNO055 VALUES
+
+float yawValue = 0.0;
+float rollValue = 0.0;
+float pitchValue = 0.0;
+
+
+
+
+
+unsigned char accelCalibStatus = 0;
+unsigned char magCalibStatus = 0;
+unsigned char gyroCalibStatus = 0;
+unsigned char sysCalibStatus = 0;
+unsigned long lastTime = 0;
+
+
+
+#define BNO055_SAMPLERATE_DELAY_MS (100)
+
+//SD values
+const int chipSelect = 2; 
 
 void Bno() {
   if (millis() - lastTime >= BNO055_SAMPLERATE_DELAY_MS) {
     lastTime = millis();
+    
     bno055_read_euler_hrp(&myEulerData);
-    Serial.print(F("Orientation: "));
-    Serial.print(360 - (float(myEulerData.h) / 16.00));
-    Serial.print(F(", "));
-    Serial.print(360 - (float(myEulerData.p) / 16.00));
-    Serial.print(F(", "));
-    Serial.print(360 - (float(myEulerData.r) / 16.00));
-    Serial.println(F(""));
+    // Actualizar variables globales en lugar de imprimir
+    yawValue =  360-(float(myEulerData.h) / 16.00);
+    pitchValue =(float(myEulerData.r) / 16.00);
+    rollValue = -(float(myEulerData.p) / 16.00);
+
+    // Actualizar estados de calibración (sin imprimir)
     bno055_get_accelcalib_status(&accelCalibStatus);
     bno055_get_gyrocalib_status(&gyroCalibStatus);
     bno055_get_syscalib_status(&sysCalibStatus);
     bno055_get_magcalib_status(&magCalibStatus);
-    Serial.print(F("Calibration: "));
-    Serial.print(sysCalibStatus, DEC);
-    Serial.print(F(", "));
-    Serial.print(gyroCalibStatus, DEC);
-    Serial.print(F(", "));
-    Serial.print(accelCalibStatus, DEC);
-    Serial.print(F(", "));
-    Serial.print(magCalibStatus, DEC);
-    Serial.println(F(""));
   }
+}
+
+
+void printBNO055Values() {
+  Serial.print(F("Orientation (Yaw, Pitch, Roll): "));
+  Serial.print(yawValue);
+  Serial.print(F(", "));
+  Serial.print(pitchValue);
+  Serial.print(F(", "));
+  Serial.println(rollValue);
+
+  // Imprimir también los estados de calibración si lo necesitas
+  Serial.print(F("Calibration (Sys, Gyro, Accel, Mag): "));
+  Serial.print(sysCalibStatus, DEC);
+  Serial.print(F(", "));
+  Serial.print(gyroCalibStatus, DEC);
+  Serial.print(F(", "));
+  Serial.print(accelCalibStatus, DEC);
+  Serial.print(F(", "));
+  Serial.println(magCalibStatus, DEC);
 }
 
 void initSensors() {
@@ -97,7 +148,7 @@ void initSensors() {
 }
 
 void readBMP280Data() {
-  temperature = bmp.readTemperature();
+  //temperature = bmp.readTemperature();
   pressure = bmp.readPressure() / 100.0F;
   altitude = bmp.readAltitude(1013.25);
 }
@@ -130,6 +181,8 @@ void readMPU6050Data() {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
+  temperature=temp.temperature;
+
   aX = a.acceleration.x;
   aY = a.acceleration.y;
   aZ = a.acceleration.z;
@@ -144,17 +197,20 @@ void readMPU6050Data() {
 
   // Filtro de Kalman para Yaw (Z)
   float angleAccelZ = atan2(aY, aZ) * 180 / PI;
+  yaw_raw_mpu=angleAccelZ;
   KalmanFilter(angleAccelZ, gyroZ, &angle_y, &bias_y, P_y);
   yaw = angle_y;
 
   // Filtro de Kalman para Pitch (Y)
   float angleAccelY = atan2(-aX, sqrt(aY * aY + aZ * aZ)) * 180 / PI;
+  pitch_raw_mpu=angleAccelZ;
   KalmanFilter(angleAccelY, gyroY, &angle_x, &bias_x, P_x);
-  pitch = angle_x;
+  pitch = -angle_x;
 
   // Filtro de Kalman para Roll (X)
   float angleAccelX = atan2(aY, aZ) * 180 / PI; // Calcular ángulo con acelerómetro
   float rate_roll = gyroX - bias_roll;
+  roll_raw_mpu=angleAccelZ;
     
   // Predicción para Roll
   angle_roll += dt * rate_roll;
@@ -217,25 +273,15 @@ void scanI2C() {
   }
 }
 
-void setup() {
-  Serial.begin(115200);
-  Wire.begin();
-  scanI2C();
-  Serial.println("Setup completed.");
-  delay(1000);
-  initSensors();
-}
+void show_sensors(){
 
-void loop() {
-  readBMP280Data();
   Serial.print("Temperatura (C): ");
   Serial.println(temperature);
   Serial.print("Presión (hPa): ");
   Serial.println(pressure);
   Serial.print("Altitud (mSA) ");
   Serial.println(altitude);
-  
-  readMPU6050Data();
+
   Serial.print("Acelerómetro (X, Y, Z): ");
   Serial.print(aX);
   Serial.print(", ");
@@ -248,6 +294,205 @@ void loop() {
   Serial.print(pitch);
   Serial.print(", Roll: ");
   Serial.println(roll);
-  
-  delay(1000); // Pausa de 1 segundo entre lecturas
+
+  Serial.print(F("Orientation (Yaw, Pitch, Roll): "));
+  Serial.print(yawValue);
+  Serial.print(F(", "));
+  Serial.print(pitchValue);
+  Serial.print(F(", "));
+  Serial.println(rollValue);
+
+
+
 }
+
+void show_sensors2(){
+  Serial.print(yaw_raw_mpu);
+  Serial.print(", ");
+  Serial.print(pitch_raw_mpu);
+  Serial.print(", ");
+  Serial.print(roll_raw_mpu);
+  Serial.print(", ");
+  Serial.print(yaw);
+  Serial.print(", ");
+  Serial.print(pitch);
+  Serial.print(", ");
+  Serial.print(roll);
+  Serial.print(", ");
+  Serial.print(yawValue);
+  Serial.print(", ");
+  Serial.print(pitchValue);
+  Serial.print(", ");
+  Serial.println(rollValue);
+}
+void printValueWithFixedWidth(float value, int totalWidth) {
+  char sign = (value < 0) ? '-' : ' '; // Determina el signo
+  int intValue = (int)abs(value); // Parte entera del valor, siempre positiva
+  float decimalValue = abs(value) - intValue; // Parte decimal del valor
+  int intWidth = (intValue == 0) ? 1 : (int)log10(intValue) + 1; // Ancho de la parte entera
+  int padding = totalWidth - intWidth - 4; // Calcula el espaciado necesario, 4 es para el signo, punto y dos decimales
+
+  // Imprime el signo y los espacios de padding
+  display.print(sign);
+  for (int i = 0; i < padding; i++) {
+    display.print(' ');
+  }
+
+  // Imprime la parte entera
+  display.print(intValue);
+
+  // Imprime la parte decimal con dos dígitos
+  display.print('.');
+  int decimalPart = (int)(decimalValue * 100); // Multiplica por 100 para obtener dos dígitos decimales
+  if (decimalPart < 10) display.print('0'); // Añade un cero si es necesario
+  display.print(decimalPart);
+}
+
+
+void updateDisplay() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
+
+  // Imprime los títulos
+  display.println("Sens    MPU    BNO");
+
+  // Imprime Yaw
+  display.print("Yaw:  ");
+  printValueWithFixedWidth(yaw, 6);
+  display.print(" ");
+  printValueWithFixedWidth(yawValue, 6);
+  display.println();
+
+  // Imprime Pitch
+  display.print("Pitch:");
+  printValueWithFixedWidth(pitch, 6);
+  display.print(" ");
+  printValueWithFixedWidth(pitchValue, 6);
+  display.println();
+
+  // Imprime Roll
+  display.print("Roll: ");
+  printValueWithFixedWidth(roll, 6);
+  display.print(" ");
+  printValueWithFixedWidth(rollValue, 6);
+  display.println();
+
+  display.println("----------------");
+
+
+  display.print("Temp: "); display.print(temperature); display.println(" C");
+  display.print("Alt: "); display.print(altitude); display.println(" m");
+  display.display();
+}
+
+void chipSetup() {
+  if (!SD.begin(chipSelect)) {
+    Serial.println("La inicialización de la tarjeta SD falló!");
+    while (true); // Detiene el programa si falla
+  }
+  Serial.println("La tarjeta SD está inicializada.");
+
+  // Verifica si el archivo ya existe
+  String dataFileName = "/sensors_data.csv";
+  if (!SD.exists(dataFileName)) {
+    // Crea un nuevo archivo y escribe la cabecera si el archivo no existe
+    File file = SD.open(dataFileName, FILE_WRITE);
+    if (file) {
+      file.println("Timestamp,Yaw,MPU_Yaw,Pitch,MPU_Pitch,Roll,MPU_Roll");
+      file.close();
+    } else {
+      Serial.println("Error al crear el archivo");
+    }
+  }
+}
+
+void saveToSD(float yaw, float pitch, float roll, float yawValue, float pitchValue, float rollValue) {
+  // Abre el archivo para agregar datos
+  File file = SD.open("/sensors_data.csv", FILE_APPEND);
+  if (file) {
+    // Escribe los datos actuales de los sensores en el archivo CSV
+    file.print(millis());
+    file.print(",");
+    file.print(yaw);
+    file.print(",");
+    file.print(yawValue);
+    file.print(",");
+    file.print(pitch);
+    file.print(",");
+    file.print(pitchValue);
+    file.print(",");
+    file.print(roll);
+    file.print(",");
+    file.println(rollValue);
+    
+    file.close(); // Cierra el archivo para guardar los cambios
+    //Serial.println("Datos guardados.");
+  } else {
+    Serial.println("Error al abrir el archivo");
+  }
+}
+
+
+
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+  scanI2C();
+  Serial.println("Setup completed.");
+  delay(1000);
+  initSensors();
+
+ 
+
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+  delay(1000);
+  display.clearDisplay();
+
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  // Display static text
+  display.println("UAV Variables");
+  display.display(); 
+  chipSetup();
+  delay(1000);
+
+
+
+}
+
+
+void loop() {
+  readBMP280Data();
+  readMPU6050Data();
+  Bno();
+  
+
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval1) {
+    previousMillis = currentMillis;
+    
+    // Actualizar los valores de los sensores
+    // Actualizar la pantalla
+    updateDisplay();
+  }
+
+  if (currentMillis - previousMillis2 >= interval2) {
+    previousMillis2 = currentMillis;
+    //show_sensors();
+    show_sensors2();
+    //printBNO055Values();
+    saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
+  }
+  //delay(1000); // Pausa de 1 segundo entre lecturas
+}
+
+
+
+
