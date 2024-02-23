@@ -9,7 +9,12 @@
 #include "SD.h"
 #include "SPI.h"
 
+#include <Adafruit_GPS.h>
+#include <SoftwareSerial.h>
 
+SoftwareSerial mySerial (3, 1); Adafruit_GPS GPS(&mySerial);
+
+char c;
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
@@ -407,6 +412,58 @@ void chipSetup() {
     }
   }
 }
+void clearGPS() {
+while (!GPS.newNMEAreceived()) {
+c = GPS.read();
+}
+GPS.parse(GPS.lastNMEA());
+while (!GPS.newNMEAreceived()) {
+c = GPS.read();
+}
+GPS.parse(GPS.lastNMEA());
+}
+void gps() {
+  
+  clearGPS();
+  while (!GPS.newNMEAreceived()) {
+  c = GPS.read();
+  }
+  GPS.parse(GPS.lastNMEA());
+  Serial.print("Time: ");
+
+  GPS.parse(GPS.lastNMEA());
+  Serial.print("Time: ");
+  Serial.print(GPS.hour, DEC);
+  Serial.print(':');
+  Serial.print(GPS.minute, DEC);
+  Serial.print(':');
+  Serial.print(GPS.seconds, DEC);
+  Serial.print('.');
+  Serial.println(GPS.milliseconds);
+
+  if (GPS.fix) {
+  Serial.print("Location: ");
+  Serial.print(GPS.latitude, 4);
+  Serial.print(GPS.lat);
+  Serial.print(", ");
+  Serial.print(GPS.longitude, 4);
+  Serial.println(GPS.lon);
+  Serial.print("Google Maps location: ");
+  Serial.print(GPS.latitudeDegrees, 4);
+
+  Serial.print(", ");
+  Serial.println(GPS.longitudeDegrees, 4);
+  Serial.print("Speed (knots): ");
+  Serial.println(GPS.speed);
+  Serial.print("Heading: ");
+  Serial.println(GPS.angle);
+  Serial.print("Altitude: ");
+  Serial.println(GPS.altitude);
+  }
+  Serial.println("------------------");
+
+}
+
 
 void saveToSD(float yaw, float pitch, float roll, float yawValue, float pitchValue, float rollValue) {
   // Abre el archivo para agregar datos
@@ -445,7 +502,9 @@ void setup() {
   delay(1000);
   initSensors();
 
- 
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); 
+  delay(1000);
 
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
@@ -472,7 +531,7 @@ void loop() {
   readBMP280Data();
   readMPU6050Data();
   Bno();
-  
+  gps();
 
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval1) {
