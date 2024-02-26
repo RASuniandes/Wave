@@ -1,0 +1,20 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>img/cubes (1).png</file>
+    <file>img/cubes.png</file>
+    <file>img/map-marker (1).png</file>
+    <file>img/map-marker.png</file>
+    <file>img/settings-sliders (1).png</file>
+    <file>img/settings-sliders.png</file>
+  </qresource>
+  <qresource prefix="newPrefix">
+    <file>apps.png</file>
+    <file>close (1).png</file>
+    <file>cubes (1).png</file>
+    <file>cubes.png</file>
+    <file>map-marker (1).png</file>
+    <file>map-marker.png</file>
+    <file>settings-sliders (1).png</file>
+    <file>settings-sliders.png</file>
+  </qresource>
+</RCC>
