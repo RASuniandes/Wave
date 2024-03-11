@@ -27,8 +27,8 @@ boolean mpuInitialized = false;
 
 unsigned long previousMillis = 0;
 unsigned long previousMillis2 = 0;
-const long interval1 = 0.1; // Intervalo de actualización de 10 ms
-const long interval2 = 0.1; // Intervalo de actualización de 10 ms
+const long interval1 = 10; // Intervalo de actualización de 10 ms
+const long interval2 = 0; // Intervalo de actualización de 10 ms
 // Parámetros del filtro de Kalman para Roll
 float angle_roll = 0.0; // Ángulo Roll calculado por el filtro de Kalman
 float bias_roll = 0.0;  // Sesgo del giroscopio para Roll calculado por el filtro de Kalman
