@@ -8,6 +8,27 @@
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
+#include <TinyGPSPlus.h>
+#include <Adafruit_PWMServoDriver.h>
+#include "telemetria/FlySky.h"
+
+
+// GPS declaracion
+TinyGPSPlus gps;
+
+const int sensorPin = 15;  // Pin digital del MPS20N0040D (D15)
+const float seaLevelPressure = 101.325;  // Presión atmosférica al nivel del mar en kPa
+
+
+// GPS values 
+ float Latitud=0;
+ float Longitud=0;
+
+// Pines pitot
+ const int DOUT_Pin = 15;   //sensor data pin
+const int SCK_Pin  = 34;   //sensor clock pin
+
+
 
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -28,7 +49,7 @@ boolean mpuInitialized = false;
 unsigned long previousMillis = 0;
 unsigned long previousMillis2 = 0;
 const long interval1 = 10; // Intervalo de actualización de 10 ms
-const long interval2 = 0; // Intervalo de actualización de 10 ms
+const long interval2 = 1000; // Intervalo de actualización de 10 ms
 // Parámetros del filtro de Kalman para Roll
 float angle_roll = 0.0; // Ángulo Roll calculado por el filtro de Kalman
 float bias_roll = 0.0;  // Sesgo del giroscopio para Roll calculado por el filtro de Kalman
@@ -85,7 +106,9 @@ float yawValue = 0.0;
 float rollValue = 0.0;
 float pitchValue = 0.0;
 
+// boleano 
 
+boolean conexion=true;
 
 
 
@@ -101,6 +124,110 @@ unsigned long lastTime = 0;
 
 //SD values
 const int chipSelect = 2; 
+
+// Canales radio control 
+#define CH1 25
+#define CH2 26
+#define CH3 27
+#define CH4 32
+#define CH5 33
+#define CH6 35
+
+// Configurar receptor
+FlySky flySky(CH1, CH2, CH3, CH4, CH6);
+
+Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
+
+#define SER0_ELEVADORES  2   //Servo Motor 0 on connector 0
+#define SER1_ALERONES  3  //Servo Motor 1 on connector 12
+
+#define SER2_MOTOR  1   //Servo Motor 0 on connector 0
+#define SER3_TIMON  0
+
+
+const int servoMin = 150;  // Valor mínimo del pulso PWM para el servo (ajusta según sea necesario)
+const int servoMax = 600;  // Valor máximo del pulso PWM para el servo (ajusta según sea necesario)
+
+
+unsigned int pos0=172; // ancho de pulso en cuentas para pocicion 0°
+unsigned int pos180=565; // ancho de pulso en cuentas para la pocicion 180°
+
+
+
+int ch1Value = 0;
+int ch2Value = 0;
+int ch3Value = 0;
+int ch4Value = 0;
+int ch5Value = 0;
+int ch6Value = 0;
+
+
+int servo0Value = 0;
+int servo1Value = 0;
+int servo2Value = 0;
+int servo3Value = 0;
+int servo4Value = 0;
+
+
+void print_channels(){
+
+
+  Serial.print("Ch1: ");
+  Serial.print(ch1Value);
+  Serial.print(" | Ch2: ");
+  Serial.print(ch2Value);
+  Serial.print(" | Ch3: ");
+  Serial.print(ch3Value);
+  Serial.print(" | Ch4: ");
+  Serial.print(ch4Value);
+  Serial.print(" | Ch5: ");
+  Serial.print(ch5Value);
+  Serial.print(" | Ch6: ");
+  Serial.println(ch6Value);
+
+
+  Serial.print("s1: ");
+  Serial.print(servo0Value);
+  Serial.print(" | s2: ");
+  Serial.print(servo1Value);
+  Serial.print(" | s3: ");
+  Serial.print(servo2Value);
+  Serial.print(" | s4: ");
+  Serial.print(servo3Value);
+  Serial.println(" | s5: ");
+
+
+}
+
+void updateChannels(){
+
+    // Obtiene los valores dos canais dentro da faixa de -100 a 100
+  ch1Value = flySky.getChannel1Value();
+  ch2Value = flySky.getChannel2Value();
+  ch3Value = flySky.getChannel3Value();
+  ch4Value = flySky.getChannel4Value();
+  ch5Value = flySky.readSwitch(33, false); // Canal 5 es el switch 5
+  ch6Value = flySky.readSwitch(35, false);
+
+
+
+  servo0Value = map(ch1Value,0,180,pos0, pos180);
+  servo1Value = map(ch2Value,0,180,pos0, pos180);
+  servo2Value = map(ch3Value,20,160,pos0, pos180);
+  servo3Value = map(ch4Value,0,180,pos0, pos180);
+
+}
+
+void setServos(){
+  pca9685.setPWM(SER0_ELEVADORES, 0, servo0Value);
+  pca9685.setPWM(SER1_ALERONES, 0, servo1Value);
+  pca9685.setPWM(SER2_MOTOR, 0, servo2Value);
+  pca9685.setPWM(SER3_TIMON, 0, servo3Value);
+
+  Serial.println("Servos");
+  delay(100);
+  
+}
 
 void Bno() {
   if (millis() - lastTime >= BNO055_SAMPLERATE_DELAY_MS) {
@@ -273,6 +400,35 @@ void scanI2C() {
   }
 }
 
+void displayInfo() {
+ 
+  // funcion del GPS
+  if (gps.location.isValid()) {
+    Latitud = gps.location.lat();
+    Serial.print(Latitud, 6);
+    Longitud =gps.location.lng();
+     Serial.print(Longitud, 6);
+    conexion=false;
+  }
+  if (conexion==true) {
+    Latitud = 0;
+     Serial.print(Latitud, 6);
+    Longitud =0;
+     Serial.print(Longitud, 6);
+  }
+}
+
+void updateSerial() {
+  // Actualiza el serial del GPS
+  delay(500);
+  while (Serial.available()) {
+    Serial2.write(Serial.read()); // Forward what Serial received to Software Serial Port
+  }
+  while (Serial2.available()) {
+    Serial.write(Serial2.read()); // Forward what Software Serial received to Serial Port
+  }
+}
+
 void show_sensors(){
 
   Serial.print("Temperatura (C): ");
@@ -301,10 +457,12 @@ void show_sensors(){
   Serial.print(pitchValue);
   Serial.print(F(", "));
   Serial.println(rollValue);
-
-
+ displayInfo();
 
 }
+   
+
+
 
 void show_sensors2(){
   Serial.print(yaw_raw_mpu);
@@ -323,7 +481,24 @@ void show_sensors2(){
   Serial.print(", ");
   Serial.print(pitchValue);
   Serial.print(", ");
-  Serial.println(rollValue);
+  Serial.print(rollValue ); 
+    if (gps.location.isValid()) {
+    Latitud = gps.location.lat();
+    Serial.print(", ");
+    Serial.print(Latitud, 6);
+    Longitud =gps.location.lng();
+     Serial.println(Longitud, 6);
+     Serial.print(", ");
+    conexion=false;
+  }
+  if (conexion==true) {
+    Latitud = 0;
+     Serial.print(", ");
+     Serial.print(Latitud, 6);
+     Serial.print(", ");
+    Longitud =0;
+     Serial.println(Longitud, 6);
+  }
 }
 void printValueWithFixedWidth(float value, int totalWidth) {
   char sign = (value < 0) ? '-' : ' '; // Determina el signo
@@ -435,22 +610,22 @@ void saveToSD(float yaw, float pitch, float roll, float yawValue, float pitchVal
 }
 
 
-
-
 void setup() {
   Serial.begin(115200);
   Wire.begin();
   scanI2C();
   Serial.println("Setup completed.");
-  delay(1000);
   initSensors();
-
+  Serial2.begin(9600); // RX2 (GPIO16) y TX2 (GPIO17) en ESP32 NO CAMBIAR EL BAUD RATE
+  Serial.println(F("Iniciando GPS..."));
  
-
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
     for(;;);
   }
+  
+  pca9685.begin();
+  pca9685.setPWMFreq(60); 
   delay(1000);
   display.clearDisplay();
 
@@ -460,7 +635,7 @@ void setup() {
   // Display static text
   display.println("UAV Variables");
   display.display(); 
-  chipSetup();
+  //chipSetup();
   delay(1000);
 
 
@@ -469,30 +644,48 @@ void setup() {
 
 
 void loop() {
+  updateChannels();
   readBMP280Data();
   readMPU6050Data();
   Bno();
+  //displayInfo();  
   
+    if (ch5Value == 1){
+    Serial.println("Automatico");
+  }
 
+  else{
+   // setServos();
+  }
+   
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval1) {
     previousMillis = currentMillis;
     
     // Actualizar los valores de los sensores
     // Actualizar la pantalla
-    updateDisplay();
+    // updateDisplay();
   }
 
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
     //show_sensors();
+    //print_channels();
     show_sensors2();
     //printBNO055Values();
-    saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
+    //saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
+    // Imprime el resultado en el monitor serial
+      
+
+  // Imprime el resultado en el monitor serial
+
+
+  delay(1000); // Espera un segundo entre las lecturas
+  }
+
+
   }
   //delay(1000); // Pausa de 1 segundo entre lecturas
-}
-
-
+   
 
 
