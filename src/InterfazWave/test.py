@@ -13,6 +13,7 @@ import numpy as np
 import serial_comm as my_serial
 import sys
 
+
 yaw, roll, pitch = 0, 0, 0
 
 def animate_mesh():
@@ -20,7 +21,6 @@ def animate_mesh():
     rotate_mesh(yaw, roll, pitch)
 
 def rotate_mesh(yaw_angle, roll_angle, pitch_angle):
-    global meshIem
     meshIem.resetTransform()  # Reset the transformation
     meshIem.rotate((yaw_angle), 0, 1, 0)  # Apply yaw rotation
     meshIem.rotate((pitch_angle), 1, 0, 0) 
@@ -66,11 +66,10 @@ class WorkerThread(QThread):
         #     print('Funciona')
 
 
-
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
 
-    #=============================================================
+        #=============================================================
         try:
             myjsonFile = open('currentData.json', 'r')
         except:
@@ -79,20 +78,20 @@ class Ui_MainWindow(object):
 
         df = myjsonFile.read()
         if(df != ''):
-            self.marker_coord = json.loads(df)
-        else:
-            self.marker_coord = []
+
+            # serial_connector = my_serial.SerialObj(115200)
+            # serialForConnect = sys.argv[1]
+            # serial_connector.connect(serialForConnect)
+            # data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
+
+            self.marker_coord = [[4.693620726932123, -74.13530166082558, 'Posicion En Tiempo Real'] ,*json.loads(df)]
+        # else:
+        #     self.marker_coord = [['Posicion En Tiempo Real',data_string[10], data_string[11]]]
 
         data = io.BytesIO()
-        g = geocoder.ip('me')
-        coordinates = g.latlng
+
         if len(self.marker_coord) > 0 :
             self.m = folium.Map(location=[self.marker_coord[0][0],self.marker_coord[0][1]], zoom_start=50)
-        elif coordinates is not None:
-            latitude, longitude = coordinates
-            self.m = folium.Map(location=[latitude, longitude], zoom_start=50)
-        else:
-            self.m = folium.Map(location=[4.7086033306706145, -74.06116161374081], zoom_start=50)
         marker_radius = 20
         for index, i in enumerate(self.marker_coord):
             if(index == 0):
@@ -155,7 +154,7 @@ class Ui_MainWindow(object):
         #=============================================================
 
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(758, 556)
+        MainWindow.resize(862, 556)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -207,15 +206,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addLayout(self.verticalLayout)
         spacerItem = QtWidgets.QSpacerItem(20, 331, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_3.addItem(spacerItem)
-        self.Cerrar1 = QtWidgets.QPushButton(self.iconOnly)
-        self.Cerrar1.setMinimumSize(QtCore.QSize(40, 40))
-        self.Cerrar1.setText("")
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(".\\../sideBar/img/close (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.Cerrar1.setIcon(icon3)
-        self.Cerrar1.setIconSize(QtCore.QSize(20, 20))
-        self.Cerrar1.setObjectName("Cerrar1")
-        self.verticalLayout_3.addWidget(self.Cerrar1)
         self.horizontalLayout_5.addWidget(self.iconOnly)
         self.fullMenu = QtWidgets.QWidget(self.centralwidget)
         self.fullMenu.setMinimumSize(QtCore.QSize(100, 0))
@@ -228,10 +218,10 @@ class Ui_MainWindow(object):
         self.Ruta2 = QtWidgets.QPushButton(self.fullMenu)
         self.Ruta2.setMinimumSize(QtCore.QSize(40, 40))
         self.Ruta2.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap(":/newPrefix/img/map-marker (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon4.addPixmap(QtGui.QPixmap(":/newPrefix/img/map-marker.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.Ruta2.setIcon(icon4)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/newPrefix/img/map-marker (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(":/newPrefix/img/map-marker.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        self.Ruta2.setIcon(icon3)
         self.Ruta2.setIconSize(QtCore.QSize(20, 20))
         self.Ruta2.setCheckable(True)
         self.Ruta2.setAutoExclusive(True)
@@ -239,10 +229,10 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.Ruta2)
         self.Modelo2 = QtWidgets.QPushButton(self.fullMenu)
         self.Modelo2.setMinimumSize(QtCore.QSize(40, 40))
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(":/newPrefix/img/cubes (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon5.addPixmap(QtGui.QPixmap(":/newPrefix/img/cubes.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.Modelo2.setIcon(icon5)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap(":/newPrefix/img/cubes (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon4.addPixmap(QtGui.QPixmap(":/newPrefix/img/cubes.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        self.Modelo2.setIcon(icon4)
         self.Modelo2.setIconSize(QtCore.QSize(20, 20))
         self.Modelo2.setCheckable(True)
         self.Modelo2.setAutoExclusive(True)
@@ -250,11 +240,11 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.Modelo2)
         self.Metricas2 = QtWidgets.QPushButton(self.fullMenu)
         self.Metricas2.setMinimumSize(QtCore.QSize(40, 40))
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon6.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        icon6.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders.png"), QtGui.QIcon.Selected, QtGui.QIcon.On)
-        self.Metricas2.setIcon(icon6)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon5.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon5.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders.png"), QtGui.QIcon.Selected, QtGui.QIcon.On)
+        self.Metricas2.setIcon(icon5)
         self.Metricas2.setIconSize(QtCore.QSize(20, 20))
         self.Metricas2.setCheckable(True)
         self.Metricas2.setAutoExclusive(True)
@@ -263,12 +253,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addLayout(self.verticalLayout_2)
         spacerItem1 = QtWidgets.QSpacerItem(20, 331, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem1)
-        self.Cerrar2 = QtWidgets.QPushButton(self.fullMenu)
-        self.Cerrar2.setMinimumSize(QtCore.QSize(40, 40))
-        self.Cerrar2.setIcon(icon3)
-        self.Cerrar2.setIconSize(QtCore.QSize(20, 20))
-        self.Cerrar2.setObjectName("Cerrar2")
-        self.verticalLayout_4.addWidget(self.Cerrar2)
         self.horizontalLayout_5.addWidget(self.fullMenu)
         self.verticalLayout_11 = QtWidgets.QVBoxLayout()
         self.verticalLayout_11.setObjectName("verticalLayout_11")
@@ -281,9 +265,9 @@ class Ui_MainWindow(object):
         self.Menu.setMinimumSize(QtCore.QSize(30, 30))
         self.Menu.setMaximumSize(QtCore.QSize(30, 30))
         self.Menu.setText("")
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap(".\\../sideBar/img/apps.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.Menu.setIcon(icon7)
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap(".\\../sideBar/img/apps.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.Menu.setIcon(icon6)
         self.Menu.setIconSize(QtCore.QSize(20, 20))
         self.Menu.setCheckable(True)
         self.Menu.setObjectName("Menu")
@@ -296,6 +280,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_9 = QtWidgets.QVBoxLayout(self.pageRuta)
         self.verticalLayout_9.setObjectName("verticalLayout_9")
         self.widget = self.webView
+        # self.widget = QtWidgets.QWidget(self.pageRuta)
         self.widget.setMinimumSize(QtCore.QSize(0, 250))
         self.widget.setObjectName("widget")
         self.verticalLayout_9.addWidget(self.widget)
@@ -316,6 +301,10 @@ class Ui_MainWindow(object):
         self.Bajar = QtWidgets.QPushButton(self.pageRuta)
         self.Bajar.setObjectName("Bajar")
         self.horizontalLayout.addWidget(self.Bajar)
+        self.ActualizarDatos = QtWidgets.QPushButton(self.pageRuta)
+        self.ActualizarDatos.setMinimumSize(QtCore.QSize(115, 0))
+        self.ActualizarDatos.setObjectName("ActualizarDatos")
+        self.horizontalLayout.addWidget(self.ActualizarDatos)
         self.GuardaDatos = QtWidgets.QPushButton(self.pageRuta)
         self.GuardaDatos.setMinimumSize(QtCore.QSize(100, 0))
         self.GuardaDatos.setObjectName("GuardaDatos")
@@ -367,7 +356,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         # self.openGLWidget = QtWidgets.QOpenGLWidget(self.pageModelo)
         # self.openGLWidget.setObjectName("openGLWidget")
-        # self.horizontalLayout_3.addWidget(self.openGLWidget)
+
         #===================================================================================
 
         view = GLViewWidget(rotationMethod='quaternion')
@@ -379,6 +368,7 @@ class Ui_MainWindow(object):
         points = stl_mesh.points.reshape(-1, 3)
         faces = np.arange(points.shape[0]).reshape(-1, 3)
         mesh_data = MeshData(vertexes=points, faces=faces)
+        global meshIem
         meshIem = GLMeshItem(meshdata=mesh_data, smooth=True, drawFaces=False, drawEdges=True, edgeColor=(1, 1, 0, 1))
         view.addItem(meshIem)
         # view.show()
@@ -387,6 +377,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addWidget(view)
 
         #===================================================================================
+
+
+        self.horizontalLayout_3.addWidget(view)
         self.stackedWidget.addWidget(self.pageModelo)
         self.verticalLayout_5.addWidget(self.stackedWidget)
         self.horizontalLayout_5.addWidget(self.Content)
@@ -399,7 +392,7 @@ class Ui_MainWindow(object):
 
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(0)
         self.LatitudList.setCurrentRow(-1)
         self.Metricas2.toggled['bool'].connect(self.Metricas1.setChecked) # type: ignore
         self.Modelo2.toggled['bool'].connect(self.Modelo1.setChecked) # type: ignore
@@ -415,17 +408,16 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.Ruta2.setText(_translate("MainWindow", " Ruta"))
-        self.Modelo2.setText(_translate("MainWindow", " Modelo"))
-        self.Metricas2.setText(_translate("MainWindow", " Metricas"))
-        self.Cerrar2.setText(_translate("MainWindow", " Cerrar"))
+        self.Modelo2.setText(_translate("MainWindow", "Metricas"))
+        self.Metricas2.setText(_translate("MainWindow", "Modelo"))
         self.AgregarParada.setText(_translate("MainWindow", "Agregar"))
         self.EditarParada.setText(_translate("MainWindow", "Editar"))
         self.EliminarParada.setText(_translate("MainWindow", "Eliminar"))
         self.Subir.setText(_translate("MainWindow", "Subir"))
         self.Bajar.setText(_translate("MainWindow", "Bajar"))
+        self.ActualizarDatos.setText(_translate("MainWindow", "Actualizar Pocision"))
         self.GuardaDatos.setText(_translate("MainWindow", "Guardar Datos"))
         self.label_3.setText(_translate("MainWindow", "Elemento:"))
         self.label.setText(_translate("MainWindow", "Latitud:"))
         self.label_2.setText(_translate("MainWindow", "Longitud:"))
         self.label_4.setText(_translate("MainWindow", "Metricas"))
-# import resurces_rc

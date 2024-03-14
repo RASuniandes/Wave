@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>758</width>
+    <width>862</width>
     <height>556</height>
    </rect>
   </property>
@@ -69,7 +69,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../sideBar/resurces.qrc">
+            <iconset>
              <normaloff>:/newPrefix/cubes (1).png</normaloff>:/newPrefix/cubes (1).png</iconset>
            </property>
            <property name="iconSize">
@@ -131,29 +131,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="Cerrar1">
-         <property name="minimumSize">
-          <size>
-           <width>40</width>
-           <height>40</height>
-          </size>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../sideBar/img/close (1).png</normaloff>../sideBar/img/close (1).png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -217,7 +194,7 @@
             </size>
            </property>
            <property name="text">
-            <string> Modelo</string>
+            <string>Metricas</string>
            </property>
            <property name="icon">
             <iconset>
@@ -247,7 +224,7 @@
             </size>
            </property>
            <property name="text">
-            <string> Metricas</string>
+            <string>Modelo</string>
            </property>
            <property name="icon">
             <iconset>
@@ -283,29 +260,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="Cerrar2">
-         <property name="minimumSize">
-          <size>
-           <width>40</width>
-           <height>40</height>
-          </size>
-         </property>
-         <property name="text">
-          <string> Cerrar</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../sideBar/img/close (1).png</normaloff>../sideBar/img/close (1).png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -351,7 +305,7 @@
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="pageRuta">
           <property name="mouseTracking">
@@ -402,6 +356,19 @@
               <widget class="QPushButton" name="Bajar">
                <property name="text">
                 <string>Bajar</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="ActualizarDatos">
+               <property name="minimumSize">
+                <size>
+                 <width>115</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Actualizar Pocision</string>
                </property>
               </widget>
              </item>
@@ -522,9 +489,7 @@
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="../sideBar/resurces.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>Metricas2</sender>

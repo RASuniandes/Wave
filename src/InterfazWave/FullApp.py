@@ -10,6 +10,9 @@ from AppFromPyQt import Ui_MainWindow
 from math import radians, cos, sin, asin, sqrt
 from folium import plugins
 import json
+
+import serial_comm as my_serial
+
 latVery = r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$'
 lonVery = r'^[-+]?((1[0-7]|[1-9])?\d(\.\d+)?|180(\.0+)?)$'
 
@@ -61,6 +64,7 @@ class MainWindow(QMainWindow):
         self.ui.Subir.clicked.connect(self.upThing)
         self.ui.Bajar.clicked.connect(self.downThing)
         self.ui.GuardaDatos.clicked.connect(self.SaveData)
+        self.ui.ActualizarDatos.clicked.connect(self.ActualizarPosicion)
 
         #Aqui se sincroniza la seleccion de las dos listas
         self.ui.LatitudList.currentRowChanged.connect(self.sync_lists1)
@@ -244,47 +248,49 @@ class MainWindow(QMainWindow):
         item1 = self.ui.LatitudList.item(currentIndex)
         item2 = self.ui.LongitudList.item(currentIndex)
         item3 = self.ui.IndexList.item(currentIndex)
-        if item1 is not None and item2 is not None:
-            oldLatitdu = item1.text()
-            oldLongitud = item2.text()
-            oldIndex = item3.text()
-            indexi, ok3 = QInputDialog.getText(self, "Editar coordenada", "Ingrese el nuevo nombre del punto de control: ", QLineEdit.Normal, item3.text())
-            latitud, ok1 = QInputDialog.getText(self, "Editar coordenada", "Ingrese la nueva latitud: ", QLineEdit.Normal, item1.text())
-            longitud, ok2 = QInputDialog.getText(self, "Editar coordenada", "Ingrese la nueva longitud: ", QLineEdit.Normal, item2.text())
-            if ok1 and ok2 and (re.match(latVery, latitud) and re.match(lonVery,longitud)) and ok3:
-                item1.setText(latitud)
-                item2.setText(longitud)
-                item3.setText(indexi)
-                h = []
-                lati = [(self.ui.LatitudList.item(i).text()) for i in range(self.ui.LatitudList.count())]
-                longi = [(self.ui.LongitudList.item(i).text()) for i in range(self.ui.LongitudList.count())]
-                for index, i in enumerate(([(self.ui.LatitudList.item(i).text()) for i in range(self.ui.LatitudList.count())])):
-                    h.insert(0, [float(lati[index]), float(longi[index])])
-                b = calcularDistancia(h)
-                if (re.match(latVery, latitud) and re.match(lonVery,longitud)):
-                    if b > 50:
+        if item3.text() != 'Posicion En Tiempo Real':
+            if item1 is not None and item2 is not None:
+                oldLatitdu = item1.text()
+                oldLongitud = item2.text()
+                oldIndex = item3.text()
+                indexi, ok3 = QInputDialog.getText(self, "Editar coordenada", "Ingrese el nuevo nombre del punto de control: ", QLineEdit.Normal, item3.text())
+                latitud, ok1 = QInputDialog.getText(self, "Editar coordenada", "Ingrese la nueva latitud: ", QLineEdit.Normal, item1.text())
+                longitud, ok2 = QInputDialog.getText(self, "Editar coordenada", "Ingrese la nueva longitud: ", QLineEdit.Normal, item2.text())
+                if ok1 and ok2 and (re.match(latVery, latitud) and re.match(lonVery,longitud)) and ok3:
+                    item1.setText(latitud)
+                    item2.setText(longitud)
+                    item3.setText(indexi)
+                    h = []
+                    lati = [(self.ui.LatitudList.item(i).text()) for i in range(self.ui.LatitudList.count())]
+                    longi = [(self.ui.LongitudList.item(i).text()) for i in range(self.ui.LongitudList.count())]
+                    for index, i in enumerate(([(self.ui.LatitudList.item(i).text()) for i in range(self.ui.LatitudList.count())])):
+                        h.insert(0, [float(lati[index]), float(longi[index])])
+                    b = calcularDistancia(h)
+                    if (re.match(latVery, latitud) and re.match(lonVery,longitud)):
+                        if b > 50:
+                            self.error_dialog = QErrorMessage()
+                            self.error_dialog.showMessage(f'El wave no conseguira recorrer tanta distancia: {round(b, 2)}Km.')
+                            item1.setText(oldLatitdu)
+                            item2.setText(oldLongitud)      
+                            item3.setText(oldIndex) 
+                    else:
                         self.error_dialog = QErrorMessage()
-                        self.error_dialog.showMessage(f'El wave no conseguira recorrer tanta distancia: {round(b, 2)}Km.')
+                        self.error_dialog.showMessage('La latitud y longitud agregadas no son coordenadas validas.')
                         item1.setText(oldLatitdu)
-                        item2.setText(oldLongitud)      
+                        item2.setText(oldLongitud)
                         item3.setText(oldIndex) 
+
                 else:
                     self.error_dialog = QErrorMessage()
-                    self.error_dialog.showMessage('La latitud y longitud agregadas no son coordenadas validas.')
-                    item1.setText(oldLatitdu)
-                    item2.setText(oldLongitud)
-                    item3.setText(oldIndex) 
-
-            else:
-                self.error_dialog = QErrorMessage()
-                self.error_dialog.showMessage('La latitud y longitud agregadas no son numeros.')
+                    self.error_dialog.showMessage('La latitud y longitud agregadas no son numeros.')
 
     def EliminarParada(self):
         currentIndex = self.ui.LatitudList.currentRow()
         item1 = self.ui.LatitudList.item(currentIndex)
         item2 = self.ui.LongitudList.item(currentIndex)
         item3 = self.ui.IndexList.item(currentIndex)
-        if item1 is None or item2 is None or item3 is None:
+        print(currentIndex)
+        if item1 is None or item2 is None or item3 is None or item3.text() == 'Posicion En Tiempo Real':
             return
         question = QMessageBox.question(self, 'Eliminar parada', 'Seguro de eliminar el punto de control "' + str(item3.text()) + '"?', QMessageBox.Yes | QMessageBox.No)
 
@@ -309,7 +315,7 @@ class MainWindow(QMainWindow):
 
     def upThing(self):
         currentIndex = self.ui.LongitudList.currentRow()
-        if currentIndex > 0:
+        if currentIndex > 0 and currentIndex != self.ui.LatitudList.count()-1:
             item1 = self.ui.LatitudList.takeItem(currentIndex)
             item2 = self.ui.LongitudList.takeItem(currentIndex)
             item3 = self.ui.IndexList.takeItem(currentIndex)
@@ -320,7 +326,7 @@ class MainWindow(QMainWindow):
             self.ui.LongitudList.setCurrentItem(item2)
     def downThing(self):
         currentIndex = self.ui.LongitudList.currentRow()
-        if currentIndex < self.ui.LatitudList.count()-1:
+        if currentIndex < self.ui.LatitudList.count()-2 and currentIndex != self.ui.LatitudList.count()-1:
             item1 = self.ui.LatitudList.takeItem(currentIndex)
             item2 = self.ui.LongitudList.takeItem(currentIndex)
             item3 = self.ui.IndexList.takeItem(currentIndex)
@@ -344,7 +350,19 @@ class MainWindow(QMainWindow):
         # msg.setWindowTitle("Tutorial on PyQt5")
         msg.setText("La ruta fue guardada.")
         x = msg.exec_()
+    def ActualizarPosicion(self):
 
+        serial_connector = my_serial.SerialObj(115200)
+        serialForConnect = sys.argv[1]
+        serial_connector.connect(serialForConnect)
+        data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
+        data_array=data_string.split(',')
+
+        IndexI = self.ui.LatitudList.count()-1
+        item1 = self.ui.LatitudList.item(IndexI)
+        item2 = self.ui.LongitudList.item(IndexI)
+        item1 = data_array['somePosition']
+        item2 = data_array['otherPosition']
 
 def App():
     app = QApplication(sys.argv)
