@@ -28,9 +28,6 @@ const float seaLevelPressure = 101.325;  // Presión atmosférica al nivel del m
  const int DOUT_Pin = 15;   //sensor data pin
 const int SCK_Pin  = 34;   //sensor clock pin
 
-
-
-
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
@@ -210,7 +207,6 @@ void updateChannels(){
   ch6Value = flySky.readSwitch(35, false);
 
 
-
   servo0Value = map(ch1Value,0,180,pos0, pos180);
   servo1Value = map(ch2Value,0,180,pos0, pos180);
   servo2Value = map(ch3Value,20,160,pos0, pos180);
@@ -218,16 +214,31 @@ void updateChannels(){
 
 }
 
-void setServos(){
-  pca9685.setPWM(SER0_ELEVADORES, 0, servo0Value);
-  pca9685.setPWM(SER1_ALERONES, 0, servo1Value);
-  pca9685.setPWM(SER2_MOTOR, 0, servo2Value);
-  pca9685.setPWM(SER3_TIMON, 0, servo3Value);
+void setServos() {
+  // Lee los valores actuales de los servos
+  int currentServo0Value = pca9685.getPWM(SER0_ELEVADORES);
+  int currentServo1Value = pca9685.getPWM(SER1_ALERONES);
+  int currentServo2Value = pca9685.getPWM(SER2_MOTOR);
+  int currentServo3Value = pca9685.getPWM(SER3_TIMON);
 
-  Serial.println("Servos");
-  delay(100);
-  
+  // Verifica si los nuevos valores son diferentes de los actuales
+  if (servo0Value != currentServo0Value) {
+    pca9685.setPWM(SER0_ELEVADORES, 0, servo0Value);
+  }
+
+  if (servo1Value != currentServo1Value) {
+    pca9685.setPWM(SER1_ALERONES, 0, servo1Value);
+  }
+
+  if (servo2Value != currentServo2Value) {
+    pca9685.setPWM(SER2_MOTOR, 0, servo2Value);
+  }
+
+  if (servo3Value != currentServo3Value) {
+    pca9685.setPWM(SER3_TIMON, 0, servo3Value);
+  }
 }
+
 
 void Bno() {
   if (millis() - lastTime >= BNO055_SAMPLERATE_DELAY_MS) {
@@ -636,7 +647,6 @@ void setup() {
   display.println("UAV Variables");
   display.display(); 
   //chipSetup();
-  delay(1000);
 
 
 
@@ -648,15 +658,17 @@ void loop() {
   readBMP280Data();
   readMPU6050Data();
   Bno();
-  //displayInfo();  
-  
+  updateChannels();
+  print_channels();
     if (ch5Value == 1){
     Serial.println("Automatico");
+
   }
 
   else{
-   // setServos();
+   setServos();
   }
+
    
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval1) {
@@ -671,18 +683,13 @@ void loop() {
     previousMillis2 = currentMillis;
     //show_sensors();
     //print_channels();
-    show_sensors2();
+    //show_sensors2();
     //printBNO055Values();
     //saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
     // Imprime el resultado en el monitor serial
-      
-
   // Imprime el resultado en el monitor serial
-
-
-  delay(1000); // Espera un segundo entre las lecturas
+ // Espera un segundo entre las lecturas
   }
-
 
   }
   //delay(1000); // Pausa de 1 segundo entre lecturas
