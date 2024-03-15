@@ -13,7 +13,6 @@ import numpy as np
 import serial_comm as my_serial
 import sys
 
-
 yaw, roll, pitch = 0, 0, 0
 
 def animate_mesh():
@@ -64,6 +63,7 @@ class WorkerThread(QThread):
                 except:
                     pass
         #     print('Funciona')
+
 
 
 class Ui_MainWindow(object):
@@ -157,7 +157,7 @@ class Ui_MainWindow(object):
     
         #=============================================================
 
-        MainWindow.setObjectName("MainWindow")
+        MainWindow.setObjectName("Interfaz Wave")
         MainWindow.resize(862, 556)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -174,9 +174,8 @@ class Ui_MainWindow(object):
         self.Ruta1.setMinimumSize(QtCore.QSize(40, 40))
         self.Ruta1.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/newPrefix/img/map-marker (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon.addPixmap(QtGui.QPixmap(":/newPrefix/img/map-marker.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        icon.addPixmap(QtGui.QPixmap(":/newPrefix/img/map-marker (1).png"), QtGui.QIcon.Disabled, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(".\\img/map-marker (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(".\\img/map-marker.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.Ruta1.setIcon(icon)
         self.Ruta1.setIconSize(QtCore.QSize(20, 20))
         self.Ruta1.setCheckable(True)
@@ -187,7 +186,8 @@ class Ui_MainWindow(object):
         self.Modelo1.setMinimumSize(QtCore.QSize(40, 40))
         self.Modelo1.setText("")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/newPrefix/cubes (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(".\\img/settings-sliders (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(".\\img/settings-sliders.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.Modelo1.setIcon(icon1)
         self.Modelo1.setIconSize(QtCore.QSize(20, 20))
         self.Modelo1.setCheckable(True)
@@ -198,9 +198,8 @@ class Ui_MainWindow(object):
         self.Metricas1.setMinimumSize(QtCore.QSize(40, 40))
         self.Metricas1.setText("")
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon2.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        icon2.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders (1).png"), QtGui.QIcon.Disabled, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(".\\img/cubes (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(".\\img/cubes.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.Metricas1.setIcon(icon2)
         self.Metricas1.setIconSize(QtCore.QSize(20, 20))
         self.Metricas1.setCheckable(True)
@@ -222,10 +221,7 @@ class Ui_MainWindow(object):
         self.Ruta2 = QtWidgets.QPushButton(self.fullMenu)
         self.Ruta2.setMinimumSize(QtCore.QSize(40, 40))
         self.Ruta2.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/newPrefix/img/map-marker (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon3.addPixmap(QtGui.QPixmap(":/newPrefix/img/map-marker.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.Ruta2.setIcon(icon3)
+        self.Ruta2.setIcon(icon)
         self.Ruta2.setIconSize(QtCore.QSize(20, 20))
         self.Ruta2.setCheckable(True)
         self.Ruta2.setAutoExclusive(True)
@@ -233,10 +229,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.Ruta2)
         self.Modelo2 = QtWidgets.QPushButton(self.fullMenu)
         self.Modelo2.setMinimumSize(QtCore.QSize(40, 40))
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap(":/newPrefix/img/cubes (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon4.addPixmap(QtGui.QPixmap(":/newPrefix/img/cubes.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.Modelo2.setIcon(icon4)
+        self.Modelo2.setIcon(icon1)
         self.Modelo2.setIconSize(QtCore.QSize(20, 20))
         self.Modelo2.setCheckable(True)
         self.Modelo2.setAutoExclusive(True)
@@ -244,11 +237,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.Modelo2)
         self.Metricas2 = QtWidgets.QPushButton(self.fullMenu)
         self.Metricas2.setMinimumSize(QtCore.QSize(40, 40))
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon5.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        icon5.addPixmap(QtGui.QPixmap(":/newPrefix/img/settings-sliders.png"), QtGui.QIcon.Selected, QtGui.QIcon.On)
-        self.Metricas2.setIcon(icon5)
+        self.Metricas2.setIcon(icon2)
         self.Metricas2.setIconSize(QtCore.QSize(20, 20))
         self.Metricas2.setCheckable(True)
         self.Metricas2.setAutoExclusive(True)
@@ -269,9 +258,9 @@ class Ui_MainWindow(object):
         self.Menu.setMinimumSize(QtCore.QSize(30, 30))
         self.Menu.setMaximumSize(QtCore.QSize(30, 30))
         self.Menu.setText("")
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap(".\\../sideBar/img/apps.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.Menu.setIcon(icon6)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(".\\img/apps.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.Menu.setIcon(icon3)
         self.Menu.setIconSize(QtCore.QSize(20, 20))
         self.Menu.setCheckable(True)
         self.Menu.setObjectName("Menu")
@@ -382,21 +371,14 @@ class Ui_MainWindow(object):
 
         #===================================================================================
 
-
-        self.horizontalLayout_3.addWidget(view)
+        # self.horizontalLayout_3.addWidget(self.openGLWidget)
         self.stackedWidget.addWidget(self.pageModelo)
         self.verticalLayout_5.addWidget(self.stackedWidget)
         self.horizontalLayout_5.addWidget(self.Content)
         MainWindow.setCentralWidget(self.centralwidget)
 
-        for i in self.marker_coord:
-            self.LatitudList.insertItem(0,str(i[0]))
-            self.LongitudList.insertItem(0,str(i[1]))
-            self.IndexList.insertItem(0,str(i[2]))
-
-
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(1)
         self.LatitudList.setCurrentRow(-1)
         self.Metricas2.toggled['bool'].connect(self.Metricas1.setChecked) # type: ignore
         self.Modelo2.toggled['bool'].connect(self.Modelo1.setChecked) # type: ignore
@@ -412,8 +394,8 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.Ruta2.setText(_translate("MainWindow", " Ruta"))
-        self.Modelo2.setText(_translate("MainWindow", "Metricas"))
-        self.Metricas2.setText(_translate("MainWindow", "Modelo"))
+        self.Modelo2.setText(_translate("MainWindow", " Metricas"))
+        self.Metricas2.setText(_translate("MainWindow", " Modelo"))
         self.AgregarParada.setText(_translate("MainWindow", "Agregar"))
         self.EditarParada.setText(_translate("MainWindow", "Editar"))
         self.EliminarParada.setText(_translate("MainWindow", "Eliminar"))

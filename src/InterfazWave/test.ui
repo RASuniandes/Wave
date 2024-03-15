@@ -39,9 +39,8 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>:/newPrefix/img/map-marker (1).png</normaloff>
-             <normalon>:/newPrefix/img/map-marker.png</normalon>
-             <disabledoff>:/newPrefix/img/map-marker (1).png</disabledoff>:/newPrefix/img/map-marker (1).png</iconset>
+             <normaloff>img/map-marker (1).png</normaloff>
+             <normalon>img/map-marker.png</normalon>img/map-marker (1).png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -70,7 +69,8 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>:/newPrefix/cubes (1).png</normaloff>:/newPrefix/cubes (1).png</iconset>
+             <normaloff>img/settings-sliders (1).png</normaloff>
+             <normalon>img/settings-sliders.png</normalon>img/settings-sliders (1).png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -99,9 +99,8 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>:/newPrefix/img/settings-sliders (1).png</normaloff>
-             <normalon>:/newPrefix/img/settings-sliders.png</normalon>
-             <disabledoff>:/newPrefix/img/settings-sliders (1).png</disabledoff>:/newPrefix/img/settings-sliders (1).png</iconset>
+             <normaloff>img/cubes (1).png</normaloff>
+             <normalon>img/cubes.png</normalon>img/cubes (1).png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -168,8 +167,8 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>:/newPrefix/img/map-marker (1).png</normaloff>
-             <normalon>:/newPrefix/img/map-marker.png</normalon>:/newPrefix/img/map-marker (1).png</iconset>
+             <normaloff>img/map-marker (1).png</normaloff>
+             <normalon>img/map-marker.png</normalon>img/map-marker (1).png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -194,12 +193,12 @@
             </size>
            </property>
            <property name="text">
-            <string>Metricas</string>
+            <string> Metricas</string>
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>:/newPrefix/img/cubes (1).png</normaloff>
-             <normalon>:/newPrefix/img/cubes.png</normalon>:/newPrefix/img/cubes (1).png</iconset>
+             <normaloff>img/settings-sliders (1).png</normaloff>
+             <normalon>img/settings-sliders.png</normalon>img/settings-sliders (1).png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -224,13 +223,12 @@
             </size>
            </property>
            <property name="text">
-            <string>Modelo</string>
+            <string> Modelo</string>
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>:/newPrefix/img/settings-sliders (1).png</normaloff>
-             <normalon>:/newPrefix/img/settings-sliders.png</normalon>
-             <selectedon>:/newPrefix/img/settings-sliders.png</selectedon>:/newPrefix/img/settings-sliders (1).png</iconset>
+             <normaloff>img/cubes (1).png</normaloff>
+             <normalon>img/cubes.png</normalon>img/cubes (1).png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -289,7 +287,7 @@
          </property>
          <property name="icon">
           <iconset>
-           <normaloff>../sideBar/img/apps.png</normaloff>../sideBar/img/apps.png</iconset>
+           <normaloff>img/apps.png</normaloff>img/apps.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -305,7 +303,7 @@
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="pageRuta">
           <property name="mouseTracking">
