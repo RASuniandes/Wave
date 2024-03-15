@@ -377,6 +377,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.addWidget(self.Content)
         MainWindow.setCentralWidget(self.centralwidget)
 
+        for i in self.marker_coord:
+            self.LatitudList.insertItem(0,str(i[0]))
+            self.LongitudList.insertItem(0,str(i[1]))
+            self.IndexList.insertItem(0,str(i[2]))
+
+
+
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(1)
         self.LatitudList.setCurrentRow(-1)
