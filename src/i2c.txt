@@ -431,6 +431,7 @@ void displayInfo() {
 
 void updateSerial() {
   // Actualiza el serial del GPS
+  delay(500);
   while (Serial.available()) {
     Serial2.write(Serial.read()); // Forward what Serial received to Software Serial Port
   }
@@ -626,7 +627,7 @@ void setup() {
   scanI2C();
   Serial.println("Setup completed.");
   initSensors();
-  Serial2.begin(115200); // RX2 (GPIO16) y TX2 (GPIO17) en ESP32 NO CAMBIAR EL BAUD RATE
+  Serial2.begin(9600); // RX2 (GPIO16) y TX2 (GPIO17) en ESP32 NO CAMBIAR EL BAUD RATE
   Serial.println(F("Iniciando GPS..."));
  
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
@@ -637,6 +638,7 @@ void setup() {
   
   pca9685.begin();
   pca9685.setPWMFreq(60); 
+  delay(1000);
   display.clearDisplay();
 
   display.setTextSize(1);
@@ -658,7 +660,7 @@ void loop() {
   readMPU6050Data();
   Bno();
   updateChannels();
-  //print_channels();
+  print_channels();
     if (ch5Value == 1){
     Serial.println("Automatico");
 
@@ -682,7 +684,7 @@ void loop() {
     previousMillis2 = currentMillis;
     //show_sensors();
     //print_channels();
-    show_sensors2();
+    //show_sensors2();
     //printBNO055Values();
     //saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
     // Imprime el resultado en el monitor serial
@@ -693,3 +695,5 @@ void loop() {
   }
   //delay(1000); // Pausa de 1 segundo entre lecturas
    
+
+
