@@ -135,11 +135,11 @@ FlySky flySky(CH1, CH2, CH3, CH4, CH6);
 
 Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 
-#define SER0_ELEVADORES  2   //Servo Motor 0 on connector 0
-#define SER1_ALERONES  3  //Servo Motor 1 on connector 12
+#define SER0_TIMON  0   //Servo Motor 0 on connector 0
+#define SER1_ELEVADORES 1  //Servo Motor 1 on connector 12
 
-#define SER2_MOTOR  1   //Servo Motor 0 on connector 0
-#define SER3_TIMON  0
+#define SER2_MOTOR  2   //Servo Motor 0 on connector 0
+#define SER3_ALERONES  3
 
 
 const int servoMin = 150;  // Valor mínimo del pulso PWM para el servo (ajusta según sea necesario)
@@ -216,18 +216,18 @@ void updateChannels(){
 
 void setServos() {
   // Lee los valores actuales de los servos
-  int currentServo0Value = pca9685.getPWM(SER0_ELEVADORES);
-  int currentServo1Value = pca9685.getPWM(SER1_ALERONES);
+  int currentServo0Value = pca9685.getPWM(SER0_TIMON);
+  int currentServo1Value = pca9685.getPWM(SER1_ELEVADORES);
   int currentServo2Value = pca9685.getPWM(SER2_MOTOR);
-  int currentServo3Value = pca9685.getPWM(SER3_TIMON);
+  int currentServo3Value = pca9685.getPWM(SER3_ALERONES);
 
   // Verifica si los nuevos valores son diferentes de los actuales
   if (servo0Value != currentServo0Value) {
-    pca9685.setPWM(SER0_ELEVADORES, 0, servo0Value);
+    pca9685.setPWM(SER0_TIMON, 0, servo0Value);
   }
 
   if (servo1Value != currentServo1Value) {
-    pca9685.setPWM(SER1_ALERONES, 0, servo1Value);
+    pca9685.setPWM(SER1_ELEVADORES, 0, servo1Value);
   }
 
   if (servo2Value != currentServo2Value) {
@@ -235,7 +235,7 @@ void setServos() {
   }
 
   if (servo3Value != currentServo3Value) {
-    pca9685.setPWM(SER3_TIMON, 0, servo3Value);
+    pca9685.setPWM(SER3_ALERONES, 0, servo3Value);
   }
 }
 
@@ -475,39 +475,39 @@ void show_sensors(){
 
 
 void show_sensors2(){
-  Serial.print(yaw_raw_mpu);
+  Serial.print(temperature);// valor sensor temperatura MPU-6050 acelerometro y giroscopio no tan preciso
   Serial.print(", ");
-  Serial.print(pitch_raw_mpu);
+  Serial.print(pressure);//presion del BMP180 sensor presion barometrica
   Serial.print(", ");
-  Serial.print(roll_raw_mpu);
+  Serial.print(altitude);// altitude sensor presion barometrica
   Serial.print(", ");
-  Serial.print(yaw);
+  Serial.print(yaw);//yaw del MPU-6050
   Serial.print(", ");
-  Serial.print(pitch);
+  Serial.print(pitch);//pitch del MPU-6050
   Serial.print(", ");
-  Serial.print(roll);
+  Serial.print(roll);//roll del MPU-6050
   Serial.print(", ");
-  Serial.print(yawValue);
+  Serial.print(yawValue);//yaw del BNO055 brujula y giroscopio de precision
   Serial.print(", ");
-  Serial.print(pitchValue);
+  Serial.print(pitchValue);//pitch del BNO055 brujula y giroscopio de precision
   Serial.print(", ");
-  Serial.print(rollValue ); 
+  Serial.print(rollValue ); //roll del BNO055 brujula y giroscopio de precision
     if (gps.location.isValid()) {
     Latitud = gps.location.lat();
     Serial.print(", ");
-    Serial.print(Latitud, 6);
+    Serial.print(Latitud, 6);// latitud del GPS
     Longitud =gps.location.lng();
-     Serial.println(Longitud, 6);
+     Serial.println(Longitud, 6);//Longitud del GPS
      Serial.print(", ");
     conexion=false;
   }
   if (conexion==true) {
     Latitud = 0;
      Serial.print(", ");
-     Serial.print(Latitud, 6);
+     Serial.print(Latitud, 6);// latitud del gps si no hay conexion
      Serial.print(", ");
     Longitud =0;
-     Serial.println(Longitud, 6);
+     Serial.println(Longitud, 6);// longitud del gps si no hay conexion
   }
 }
 void printValueWithFixedWidth(float value, int totalWidth) {
@@ -654,11 +654,12 @@ void setup() {
 
 void loop() {
   updateChannels();
+  //print_channels();
+  show_sensors2();
   readBMP280Data();
   readMPU6050Data();
   Bno();
-  updateChannels();
-  //print_channels();
+ 
     if (ch5Value == 1){
     Serial.println("Automatico");
 
@@ -670,24 +671,23 @@ void loop() {
 
    
   unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis2 >= interval2) {
+    previousMillis2 = currentMillis;
+    //show_sensors();
+    //print_channels();
+    //show_sensors2();
+    //printBNO055Values();
+    //saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
+    // Imprime el resultado en el monitor serial
+  // Imprime el resultado en el monitor serial
+ // Espera un segundo entre las lecturas
+  }
   if (currentMillis - previousMillis >= interval1) {
     previousMillis = currentMillis;
     
     // Actualizar los valores de los sensores
     // Actualizar la pantalla
     // updateDisplay();
-  }
-
-  if (currentMillis - previousMillis2 >= interval2) {
-    previousMillis2 = currentMillis;
-    //show_sensors();
-    //print_channels();
-    show_sensors2();
-    //printBNO055Values();
-    //saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
-    // Imprime el resultado en el monitor serial
-  // Imprime el resultado en el monitor serial
- // Espera un segundo entre las lecturas
   }
 
   }
