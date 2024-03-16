@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
 
 
         #Se inicializa el menu de la app
-        self.ui.fullMenu.hide()
+        self.ui.iconOnly.hide()
         self.ui.stackedWidget.setCurrentIndex(0)
         self.ui.Ruta1.setChecked(True)
         self.ui.Ruta2.setChecked(True)
@@ -361,13 +361,15 @@ class MainWindow(QMainWindow):
         IndexI = self.ui.LatitudList.count()-1
         item1 = self.ui.LatitudList.item(IndexI)
         item2 = self.ui.LongitudList.item(IndexI)
-        item1 = data_array['somePosition']
-        item2 = data_array['otherPosition']
+        # item1 = data_array['somePosition']
+        # item2 = data_array['otherPosition']
+        item1.setText(data_array[9])
+        item1.setText(data_array[10])
 
 def App():
     app = QApplication(sys.argv)
 
-    # loading style file
+    ## loading style file
     with open("style.qss", "r") as style_file:
         style_str = style_file.read()
     app.setStyleSheet(style_str)

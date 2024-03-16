@@ -85,7 +85,7 @@ class Ui_MainWindow(object):
             # data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
             # data_array=data_string.split(',')
             if(json.loads(df)[0][2] != 'Posicion En Tiempo Real'):
-                # self.marker_coord = [[float(data_array['somePosition']), float(data_array['theOtherOne']), 'Posicion En Tiempo Real'] ,*json.loads(df)]
+                # self.marker_coord = [[float(data_array[9]), float(data_array[10]), 'Posicion En Tiempo Real'] ,*json.loads(df)]
                 self.marker_coord = [[4.706739812511032, -74.15178166325258, 'Posicion En Tiempo Real'] ,*json.loads(df)]
 
             else:
@@ -157,8 +157,9 @@ class Ui_MainWindow(object):
     
         #=============================================================
 
-        MainWindow.setObjectName("Interfaz Wave")
+        MainWindow.setObjectName("InterfazWave")
         MainWindow.resize(862, 556)
+        MainWindow.setStyleSheet("color: #FFF; border: none")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -219,6 +220,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.Ruta2 = QtWidgets.QPushButton(self.fullMenu)
+        # self.Ruta2.setStyleSheet("text-align:center;")
         self.Ruta2.setMinimumSize(QtCore.QSize(40, 40))
         self.Ruta2.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.Ruta2.setIcon(icon)
@@ -260,6 +262,7 @@ class Ui_MainWindow(object):
         self.Menu.setText("")
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap(".\\img/apps.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # icon3.addPixmap(QtGui.QPixmap(".\\img/apps (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.Menu.setIcon(icon3)
         self.Menu.setIconSize(QtCore.QSize(20, 20))
         self.Menu.setCheckable(True)
@@ -280,25 +283,32 @@ class Ui_MainWindow(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.AgregarParada = QtWidgets.QPushButton(self.pageRuta)
+        self.AgregarParada.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
         self.AgregarParada.setObjectName("AgregarParada")
         self.horizontalLayout.addWidget(self.AgregarParada)
         self.EditarParada = QtWidgets.QPushButton(self.pageRuta)
+        self.EditarParada.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
         self.EditarParada.setObjectName("EditarParada")
         self.horizontalLayout.addWidget(self.EditarParada)
         self.EliminarParada = QtWidgets.QPushButton(self.pageRuta)
+        self.EliminarParada.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
         self.EliminarParada.setObjectName("EliminarParada")
         self.horizontalLayout.addWidget(self.EliminarParada)
         self.Subir = QtWidgets.QPushButton(self.pageRuta)
+        self.Subir.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
         self.Subir.setObjectName("Subir")
         self.horizontalLayout.addWidget(self.Subir)
         self.Bajar = QtWidgets.QPushButton(self.pageRuta)
+        self.Bajar.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
         self.Bajar.setObjectName("Bajar")
         self.horizontalLayout.addWidget(self.Bajar)
         self.ActualizarDatos = QtWidgets.QPushButton(self.pageRuta)
+        self.ActualizarDatos.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
         self.ActualizarDatos.setMinimumSize(QtCore.QSize(115, 0))
         self.ActualizarDatos.setObjectName("ActualizarDatos")
         self.horizontalLayout.addWidget(self.ActualizarDatos)
         self.GuardaDatos = QtWidgets.QPushButton(self.pageRuta)
+        self.GuardaDatos.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
         self.GuardaDatos.setMinimumSize(QtCore.QSize(100, 0))
         self.GuardaDatos.setObjectName("GuardaDatos")
         self.horizontalLayout.addWidget(self.GuardaDatos)
@@ -309,6 +319,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.setObjectName("verticalLayout_8")
         self.label_3 = QtWidgets.QLabel(self.pageRuta)
         self.label_3.setObjectName("label_3")
+        #---------
+        self.label_3.setStyleSheet("color: #FFF")
         self.verticalLayout_8.addWidget(self.label_3)
         self.IndexList = QtWidgets.QListWidget(self.pageRuta)
         self.IndexList.setMaximumSize(QtCore.QSize(12000000, 16777215))
@@ -319,6 +331,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.label = QtWidgets.QLabel(self.pageRuta)
         self.label.setObjectName("label")
+        #---------
+        self.label.setStyleSheet("color: #FFF")
         self.verticalLayout_7.addWidget(self.label)
         self.LatitudList = QtWidgets.QListWidget(self.pageRuta)
         self.LatitudList.setMaximumSize(QtCore.QSize(12000000, 12000000))
@@ -329,6 +343,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.label_2 = QtWidgets.QLabel(self.pageRuta)
         self.label_2.setObjectName("label_2")
+        #---------
+        self.label_2.setStyleSheet("color: #FFF")
         self.verticalLayout_6.addWidget(self.label_2)
         self.LongitudList = QtWidgets.QListWidget(self.pageRuta)
         self.LongitudList.setMaximumSize(QtCore.QSize(12000000, 12000000))
@@ -383,7 +399,9 @@ class Ui_MainWindow(object):
             self.IndexList.insertItem(0,str(i[2]))
 
 
-
+        self.LatitudList.setStyleSheet("background-color: #BF9B6F")
+        self.LongitudList.setStyleSheet("background-color: #BF9B6F")
+        self.IndexList.setStyleSheet("background-color: #BF9B6F")
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(1)
         self.LatitudList.setCurrentRow(-1)
@@ -396,6 +414,8 @@ class Ui_MainWindow(object):
         self.Menu.toggled['bool'].connect(self.iconOnly.setVisible) # type: ignore
         self.Menu.toggled['bool'].connect(self.fullMenu.setHidden) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
