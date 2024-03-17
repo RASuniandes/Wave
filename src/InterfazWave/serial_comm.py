@@ -1,7 +1,7 @@
 # import serial
 
-import sys
-sys.path.append("/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages")
+# import sys
+# sys.path.append("/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages")
 import serial
 
 import serial.tools.list_ports
@@ -12,13 +12,14 @@ class SerialObj:
     def __init__(self, serial_speed):
         self.serial = None
         self.baud_rate = serial_speed
+        
 
     @staticmethod
     def get_ports():
         return list(serial.tools.list_ports.comports())
 
     def connect(self, port):
-        self.serial = serial.Serial(port, self.baud_rate)
+        self.serial = serial.Serial(port, self.baud_rate, timeout=1)
         self.serial.flushInput()
 
     def is_connect(self):
@@ -35,3 +36,4 @@ class SerialObj:
             return
 
         self.serial.close()
+        

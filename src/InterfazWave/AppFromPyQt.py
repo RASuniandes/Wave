@@ -43,25 +43,27 @@ def update_pitch(value):
 
 class WorkerThread(QThread):
     def run(self):
-        serial_connector = my_serial.SerialObj(115200)
+        serial_connector = my_serial.SerialObj(9600)
         # az = "COM5"
         serialForConnect = sys.argv[1]
         serial_connector.connect(serialForConnect)
+        a = 0
         while True: 
             if serial_connector.is_connect():
-                try:
-                    data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
+                # try:
+                # data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
                     
-                    data_array=data_string.split(',')
-                    print(data_array)
-                    yaw=float(data_array[6])
-                    pitch=float(data_array[7])
-                    roll=float(data_array[8])
-                    update_pitch(pitch)
-                    update_roll(roll)
-                    update_yaw(yaw)
-                except:
-                    pass
+                # data_array=data_string.split(',')
+                print(serial_connector.get_data())
+                # yaw=float(data_array[6])
+                # pitch=float(data_array[7])
+                # roll=float(data_array[8])
+                # update_pitch(pitch)
+                # update_roll(roll)
+                # update_yaw(yaw)                # except:
+                #     pass
+            
+                # print(serial_connector.get_data())
         #     print('Funciona')
 
 

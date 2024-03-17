@@ -622,7 +622,7 @@ void saveToSD(float yaw, float pitch, float roll, float yawValue, float pitchVal
 
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Wire.begin();
   scanI2C();
   Serial.println("Setup completed.");
@@ -637,7 +637,7 @@ void setup() {
   
   pca9685.begin();
   pca9685.setPWMFreq(60); 
-  delay(1000);
+  // delay(1000);
   display.clearDisplay();
 
   display.setTextSize(1);
@@ -681,10 +681,10 @@ void loop() {
 
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
-    //show_sensors();
-    //print_channels();
-    //show_sensors2();
-    //printBNO055Values();
+    // show_sensors();
+    // print_channels();
+    show_sensors2();
+    // printBNO055Values();
     //saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
     // Imprime el resultado en el monitor serial
   // Imprime el resultado en el monitor serial
