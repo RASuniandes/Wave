@@ -3,8 +3,8 @@ import io
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5 import QtWidgets, QtWebEngineWidgets, QtCore, QtWebChannel, QtGui
-import geocoder
+from PyQt5 import QtWidgets, QtWebEngineWidgets, QtCore, QtGui
+#import geocoder
 import json
 from folium import plugins
 from stl import mesh
