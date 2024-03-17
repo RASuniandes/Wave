@@ -47,30 +47,37 @@ class WorkerThread(QThread):
         # az = "COM5"
         serialForConnect = sys.argv[1]
         serial_connector.connect(serialForConnect)
-        a = 0
         while True: 
             if serial_connector.is_connect():
-                # try:
-                # data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
+                try:
+                    data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
+                    data_array=data_string.split(',')
+                    print(serial_connector.get_data())
+                    yaw=float(data_array[6])
+                    pitch=float(data_array[7])
+                    roll=float(data_array[8])
+                    coords = f"{data_array[9]}, {data_array[10]}"
+                    temp = data_array[0]
+                    presu = data_array[1]
+                    alt = data_array[2]
                     
-                # data_array=data_string.split(',')
-                print(serial_connector.get_data())
-                # yaw=float(data_array[6])
-                # pitch=float(data_array[7])
-                # roll=float(data_array[8])
-                # update_pitch(pitch)
-                # update_roll(roll)
-                # update_yaw(yaw)                # except:
-                #     pass
-            
-                # print(serial_connector.get_data())
-        #     print('Funciona')
+                    metri1.setText(f"Coordenadas (Longitud y latitud): {coords}")
+                    metri6.setText(f"Yaw (Grados): {yaw}")
+                    metri5.setText(f"Pitch (Grados): {pitch}")
+                    metri7.setText(f"Roll (Grados): {roll}")
+                    metri4.setText(f"Altitud: {alt}")
+                    metri3.setText(f"Presión (hPa): {presu}")
+                    metri2.setText(f"Temperatura: {temp}")
+                    update_pitch(pitch)
+                    update_roll(roll)
+                    update_yaw(yaw)
 
+                except:
+                    pass
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-
         #=============================================================
         try:
             myjsonFile = open('currentData.json', 'r')
@@ -158,17 +165,20 @@ class Ui_MainWindow(object):
         self.webView.setHtml(data.getvalue().decode())
     
         #=============================================================
-
-        MainWindow.setObjectName("InterfazWave")
+        MainWindow.setObjectName("MainWindow")
         MainWindow.resize(862, 556)
-        MainWindow.setStyleSheet("color: #FFF; border: none")
+        # MainWindow.setStyleSheet("border: none")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setStyleSheet("background-color: #fff")
+
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.iconOnly = QtWidgets.QWidget(self.centralwidget)
         self.iconOnly.setMaximumSize(QtCore.QSize(81, 16777215))
         self.iconOnly.setObjectName("iconOnly")
+        self.iconOnly.setStyleSheet("background-color: #161B22")
+
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.iconOnly)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -184,6 +194,8 @@ class Ui_MainWindow(object):
         self.Ruta1.setCheckable(True)
         self.Ruta1.setAutoExclusive(True)
         self.Ruta1.setObjectName("Ruta1")
+        self.Ruta1.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout.addWidget(self.Ruta1)
         self.Modelo1 = QtWidgets.QPushButton(self.iconOnly)
         self.Modelo1.setMinimumSize(QtCore.QSize(40, 40))
@@ -196,6 +208,8 @@ class Ui_MainWindow(object):
         self.Modelo1.setCheckable(True)
         self.Modelo1.setAutoExclusive(True)
         self.Modelo1.setObjectName("Modelo1")
+        self.Modelo1.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout.addWidget(self.Modelo1)
         self.Metricas1 = QtWidgets.QPushButton(self.iconOnly)
         self.Metricas1.setMinimumSize(QtCore.QSize(40, 40))
@@ -208,6 +222,8 @@ class Ui_MainWindow(object):
         self.Metricas1.setCheckable(True)
         self.Metricas1.setAutoExclusive(True)
         self.Metricas1.setObjectName("Metricas1")
+        self.Metricas1.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout.addWidget(self.Metricas1)
         self.verticalLayout_3.addLayout(self.verticalLayout)
         spacerItem = QtWidgets.QSpacerItem(20, 331, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -217,12 +233,12 @@ class Ui_MainWindow(object):
         self.fullMenu.setMinimumSize(QtCore.QSize(100, 0))
         self.fullMenu.setMaximumSize(QtCore.QSize(100, 16777215))
         self.fullMenu.setObjectName("fullMenu")
+        self.fullMenu.setStyleSheet("background-color: #161B22")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.fullMenu)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.Ruta2 = QtWidgets.QPushButton(self.fullMenu)
-        # self.Ruta2.setStyleSheet("text-align:center;")
         self.Ruta2.setMinimumSize(QtCore.QSize(40, 40))
         self.Ruta2.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.Ruta2.setIcon(icon)
@@ -230,6 +246,8 @@ class Ui_MainWindow(object):
         self.Ruta2.setCheckable(True)
         self.Ruta2.setAutoExclusive(True)
         self.Ruta2.setObjectName("Ruta2")
+        self.Ruta2.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout_2.addWidget(self.Ruta2)
         self.Modelo2 = QtWidgets.QPushButton(self.fullMenu)
         self.Modelo2.setMinimumSize(QtCore.QSize(40, 40))
@@ -238,6 +256,8 @@ class Ui_MainWindow(object):
         self.Modelo2.setCheckable(True)
         self.Modelo2.setAutoExclusive(True)
         self.Modelo2.setObjectName("Modelo2")
+        self.Modelo2.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout_2.addWidget(self.Modelo2)
         self.Metricas2 = QtWidgets.QPushButton(self.fullMenu)
         self.Metricas2.setMinimumSize(QtCore.QSize(40, 40))
@@ -245,11 +265,20 @@ class Ui_MainWindow(object):
         self.Metricas2.setIconSize(QtCore.QSize(20, 20))
         self.Metricas2.setCheckable(True)
         self.Metricas2.setAutoExclusive(True)
+        self.Metricas2.setAutoDefault(False)
         self.Metricas2.setObjectName("Metricas2")
+        self.Metricas2.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout_2.addWidget(self.Metricas2)
         self.verticalLayout_4.addLayout(self.verticalLayout_2)
         spacerItem1 = QtWidgets.QSpacerItem(20, 331, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem1)
+        self.label_5 = QtWidgets.QLabel(self.fullMenu)
+        self.label_5.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_5.setObjectName("label_5")
+        self.label_5.setStyleSheet("color: #fff; background-color: #DB5D4F; padding : 10px")
+
+        self.verticalLayout_4.addWidget(self.label_5)
         self.horizontalLayout_5.addWidget(self.fullMenu)
         self.verticalLayout_11 = QtWidgets.QVBoxLayout()
         self.verticalLayout_11.setObjectName("verticalLayout_11")
@@ -262,11 +291,12 @@ class Ui_MainWindow(object):
         self.Menu.setMinimumSize(QtCore.QSize(30, 30))
         self.Menu.setMaximumSize(QtCore.QSize(30, 30))
         self.Menu.setText("")
+        self.Menu.setStyleSheet("border: none")
+
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap(".\\img/apps.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        # icon3.addPixmap(QtGui.QPixmap(".\\img/apps (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.Menu.setIcon(icon3)
-        self.Menu.setIconSize(QtCore.QSize(20, 20))
+        self.Menu.setIconSize(QtCore.QSize(25, 25))
         self.Menu.setCheckable(True)
         self.Menu.setObjectName("Menu")
         self.verticalLayout_5.addWidget(self.Menu)
@@ -285,32 +315,33 @@ class Ui_MainWindow(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.AgregarParada = QtWidgets.QPushButton(self.pageRuta)
-        self.AgregarParada.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
+        self.AgregarParada.setObjectName("AgregarParada")
+        self.AgregarParada.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
         self.AgregarParada.setObjectName("AgregarParada")
         self.horizontalLayout.addWidget(self.AgregarParada)
         self.EditarParada = QtWidgets.QPushButton(self.pageRuta)
-        self.EditarParada.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
+        self.EditarParada.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
         self.EditarParada.setObjectName("EditarParada")
         self.horizontalLayout.addWidget(self.EditarParada)
         self.EliminarParada = QtWidgets.QPushButton(self.pageRuta)
-        self.EliminarParada.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
+        self.EliminarParada.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
         self.EliminarParada.setObjectName("EliminarParada")
         self.horizontalLayout.addWidget(self.EliminarParada)
         self.Subir = QtWidgets.QPushButton(self.pageRuta)
-        self.Subir.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
+        self.Subir.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
         self.Subir.setObjectName("Subir")
         self.horizontalLayout.addWidget(self.Subir)
         self.Bajar = QtWidgets.QPushButton(self.pageRuta)
-        self.Bajar.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
+        self.Bajar.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
         self.Bajar.setObjectName("Bajar")
         self.horizontalLayout.addWidget(self.Bajar)
         self.ActualizarDatos = QtWidgets.QPushButton(self.pageRuta)
-        self.ActualizarDatos.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
+        self.ActualizarDatos.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
         self.ActualizarDatos.setMinimumSize(QtCore.QSize(115, 0))
         self.ActualizarDatos.setObjectName("ActualizarDatos")
         self.horizontalLayout.addWidget(self.ActualizarDatos)
         self.GuardaDatos = QtWidgets.QPushButton(self.pageRuta)
-        self.GuardaDatos.setStyleSheet('border: 1px solid #bf9b6f; padding: 5px')
+        self.GuardaDatos.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
         self.GuardaDatos.setMinimumSize(QtCore.QSize(100, 0))
         self.GuardaDatos.setObjectName("GuardaDatos")
         self.horizontalLayout.addWidget(self.GuardaDatos)
@@ -321,8 +352,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.setObjectName("verticalLayout_8")
         self.label_3 = QtWidgets.QLabel(self.pageRuta)
         self.label_3.setObjectName("label_3")
-        #---------
-        self.label_3.setStyleSheet("color: #FFF")
         self.verticalLayout_8.addWidget(self.label_3)
         self.IndexList = QtWidgets.QListWidget(self.pageRuta)
         self.IndexList.setMaximumSize(QtCore.QSize(12000000, 16777215))
@@ -333,8 +362,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.label = QtWidgets.QLabel(self.pageRuta)
         self.label.setObjectName("label")
-        #---------
-        self.label.setStyleSheet("color: #FFF")
         self.verticalLayout_7.addWidget(self.label)
         self.LatitudList = QtWidgets.QListWidget(self.pageRuta)
         self.LatitudList.setMaximumSize(QtCore.QSize(12000000, 12000000))
@@ -345,8 +372,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.label_2 = QtWidgets.QLabel(self.pageRuta)
         self.label_2.setObjectName("label_2")
-        #---------
-        self.label_2.setStyleSheet("color: #FFF")
         self.verticalLayout_6.addWidget(self.label_2)
         self.LongitudList = QtWidgets.QListWidget(self.pageRuta)
         self.LongitudList.setMaximumSize(QtCore.QSize(12000000, 12000000))
@@ -357,9 +382,36 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.pageRuta)
         self.pageMetricas = QtWidgets.QWidget()
         self.pageMetricas.setObjectName("pageMetricas")
-        self.label_4 = QtWidgets.QLabel(self.pageMetricas)
-        self.label_4.setGeometry(QtCore.QRect(0, 0, 51, 21))
-        self.label_4.setObjectName("label_4")
+        self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.pageMetricas)
+        self.verticalLayout_10.setObjectName("verticalLayout_10")
+        global metri1
+        metri1 = QtWidgets.QLabel(self.pageMetricas)
+        metri1.setObjectName("metri1")
+        self.verticalLayout_10.addWidget(metri1)
+        global metri6
+        metri6 = QtWidgets.QLabel(self.pageMetricas)
+        metri6.setObjectName("metri6")
+        self.verticalLayout_10.addWidget(metri6)
+        global metri5
+        metri5 = QtWidgets.QLabel(self.pageMetricas)
+        metri5.setObjectName("metri5")
+        self.verticalLayout_10.addWidget(metri5)
+        global metri7
+        metri7 = QtWidgets.QLabel(self.pageMetricas)
+        metri7.setObjectName("metri7")
+        self.verticalLayout_10.addWidget(metri7)
+        global metri4
+        metri4 = QtWidgets.QLabel(self.pageMetricas)
+        metri4.setObjectName("metri4")
+        self.verticalLayout_10.addWidget(metri4)
+        global metri3
+        metri3 = QtWidgets.QLabel(self.pageMetricas)
+        metri3.setObjectName("metri3")
+        self.verticalLayout_10.addWidget(metri3)
+        global metri2
+        metri2 = QtWidgets.QLabel(self.pageMetricas)
+        metri2.setObjectName("metri2")
+        self.verticalLayout_10.addWidget(metri2)
         self.stackedWidget.addWidget(self.pageMetricas)
         self.pageModelo = QtWidgets.QWidget()
         self.pageModelo.setObjectName("pageModelo")
@@ -371,6 +423,7 @@ class Ui_MainWindow(object):
         #===================================================================================
 
         view = GLViewWidget(rotationMethod='quaternion')
+        view.setBackgroundColor(255,255,255, 255)
         view.setCameraPosition(distance=500) 
         view.pan(0, 0, 0) 
         view.opts['panning'] = False 
@@ -380,7 +433,7 @@ class Ui_MainWindow(object):
         faces = np.arange(points.shape[0]).reshape(-1, 3)
         mesh_data = MeshData(vertexes=points, faces=faces)
         global meshIem
-        meshIem = GLMeshItem(meshdata=mesh_data, smooth=True, drawFaces=False, drawEdges=True, edgeColor=(1, 1, 0, 1))
+        meshIem = GLMeshItem(meshdata=mesh_data, drawFaces=False, drawEdges=True, edgeColor=(1, 0.4, 0.2, 1))
         view.addItem(meshIem)
         # view.show()
         worker_thread = WorkerThread()
@@ -401,9 +454,10 @@ class Ui_MainWindow(object):
             self.IndexList.insertItem(0,str(i[2]))
 
 
-        self.LatitudList.setStyleSheet("background-color: #BF9B6F")
-        self.LongitudList.setStyleSheet("background-color: #BF9B6F")
-        self.IndexList.setStyleSheet("background-color: #BF9B6F")
+        # self.LatitudList.setStyleSheet("border: solid 1px #0D1117")
+        # self.LongitudList.setStyleSheet("background-color: #BF9B6F")
+        # self.IndexList.setStyleSheet("background-color: #BF9B6F")
+
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(1)
         self.LatitudList.setCurrentRow(-1)
@@ -417,14 +471,13 @@ class Ui_MainWindow(object):
         self.Menu.toggled['bool'].connect(self.fullMenu.setHidden) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-
-
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.Ruta2.setText(_translate("MainWindow", " Ruta"))
+        self.Ruta2.setText(_translate("MainWindow", "     Ruta"))
         self.Modelo2.setText(_translate("MainWindow", " Metricas"))
-        self.Metricas2.setText(_translate("MainWindow", " Modelo"))
+        self.Metricas2.setText(_translate("MainWindow", "  Modelo"))
+        self.label_5.setText(_translate("MainWindow", "RAS-WAVE"))
         self.AgregarParada.setText(_translate("MainWindow", "Agregar"))
         self.EditarParada.setText(_translate("MainWindow", "Editar"))
         self.EliminarParada.setText(_translate("MainWindow", "Eliminar"))
@@ -435,4 +488,10 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Elemento:"))
         self.label.setText(_translate("MainWindow", "Latitud:"))
         self.label_2.setText(_translate("MainWindow", "Longitud:"))
-        self.label_4.setText(_translate("MainWindow", "Metricas"))
+        metri1.setText(_translate("MainWindow", "Coordenadas (Longitud y latitud):  "))
+        metri6.setText(_translate("MainWindow", "Yaw (Grados):"))
+        metri5.setText(_translate("MainWindow", "Pitch (Grados): "))
+        metri7.setText(_translate("MainWindow", "Roll (Grados): "))
+        metri4.setText(_translate("MainWindow", "Altitud: "))
+        metri3.setText(_translate("MainWindow", "Presión (hPa): "))
+        metri2.setText(_translate("MainWindow", "Temperatura: "))

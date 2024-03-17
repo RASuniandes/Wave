@@ -3,8 +3,8 @@ import io
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5 import QtWidgets, QtWebEngineWidgets, QtCore, QtWebChannel, QtGui
-import geocoder
+from PyQt5 import QtWidgets, QtWebEngineWidgets, QtCore, QtGui
+#import geocoder
 import json
 from folium import plugins
 from stl import mesh
@@ -43,32 +43,29 @@ def update_pitch(value):
 
 class WorkerThread(QThread):
     def run(self):
-        serial_connector = my_serial.SerialObj(115200)
+        serial_connector = my_serial.SerialObj(9600)
         # az = "COM5"
         serialForConnect = sys.argv[1]
         serial_connector.connect(serialForConnect)
+        a = 0
         while True: 
             if serial_connector.is_connect():
                 try:
                     data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
-                    
                     data_array=data_string.split(',')
-                    print(data_array)
+                    print(serial_connector.get_data())
                     yaw=float(data_array[6])
                     pitch=float(data_array[7])
                     roll=float(data_array[8])
                     update_pitch(pitch)
                     update_roll(roll)
-                    update_yaw(yaw)
+                    update_yaw(yaw)                
                 except:
                     pass
-        #     print('Funciona')
-
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-
         #=============================================================
         try:
             myjsonFile = open('currentData.json', 'r')
@@ -85,7 +82,7 @@ class Ui_MainWindow(object):
             # data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
             # data_array=data_string.split(',')
             if(json.loads(df)[0][2] != 'Posicion En Tiempo Real'):
-                # self.marker_coord = [[float(data_array['somePosition']), float(data_array['theOtherOne']), 'Posicion En Tiempo Real'] ,*json.loads(df)]
+                # self.marker_coord = [[float(data_array[9]), float(data_array[10]), 'Posicion En Tiempo Real'] ,*json.loads(df)]
                 self.marker_coord = [[4.706739812511032, -74.15178166325258, 'Posicion En Tiempo Real'] ,*json.loads(df)]
 
             else:
@@ -156,10 +153,12 @@ class Ui_MainWindow(object):
         self.webView.setHtml(data.getvalue().decode())
     
         #=============================================================
-
-        MainWindow.setObjectName("Interfaz Wave")
+        MainWindow.setObjectName("MainWindow")
         MainWindow.resize(862, 556)
+        MainWindow.setStyleSheet("border: none")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setStyleSheet("background-color: #fff")
+
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
@@ -241,11 +240,16 @@ class Ui_MainWindow(object):
         self.Metricas2.setIconSize(QtCore.QSize(20, 20))
         self.Metricas2.setCheckable(True)
         self.Metricas2.setAutoExclusive(True)
+        self.Metricas2.setAutoDefault(False)
         self.Metricas2.setObjectName("Metricas2")
         self.verticalLayout_2.addWidget(self.Metricas2)
         self.verticalLayout_4.addLayout(self.verticalLayout_2)
         spacerItem1 = QtWidgets.QSpacerItem(20, 331, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem1)
+        self.label_5 = QtWidgets.QLabel(self.fullMenu)
+        self.label_5.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_5.setObjectName("label_5")
+        self.verticalLayout_4.addWidget(self.label_5)
         self.horizontalLayout_5.addWidget(self.fullMenu)
         self.verticalLayout_11 = QtWidgets.QVBoxLayout()
         self.verticalLayout_11.setObjectName("verticalLayout_11")
@@ -339,9 +343,29 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.pageRuta)
         self.pageMetricas = QtWidgets.QWidget()
         self.pageMetricas.setObjectName("pageMetricas")
-        self.label_4 = QtWidgets.QLabel(self.pageMetricas)
-        self.label_4.setGeometry(QtCore.QRect(0, 0, 51, 21))
-        self.label_4.setObjectName("label_4")
+        self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.pageMetricas)
+        self.verticalLayout_10.setObjectName("verticalLayout_10")
+        self.metri1 = QtWidgets.QLabel(self.pageMetricas)
+        self.metri1.setObjectName("metri1")
+        self.verticalLayout_10.addWidget(self.metri1)
+        self.metri6 = QtWidgets.QLabel(self.pageMetricas)
+        self.metri6.setObjectName("metri6")
+        self.verticalLayout_10.addWidget(self.metri6)
+        self.metri5 = QtWidgets.QLabel(self.pageMetricas)
+        self.metri5.setObjectName("metri5")
+        self.verticalLayout_10.addWidget(self.metri5)
+        self.metri7 = QtWidgets.QLabel(self.pageMetricas)
+        self.metri7.setObjectName("metri7")
+        self.verticalLayout_10.addWidget(self.metri7)
+        self.metri4 = QtWidgets.QLabel(self.pageMetricas)
+        self.metri4.setObjectName("metri4")
+        self.verticalLayout_10.addWidget(self.metri4)
+        self.metri3 = QtWidgets.QLabel(self.pageMetricas)
+        self.metri3.setObjectName("metri3")
+        self.verticalLayout_10.addWidget(self.metri3)
+        self.metri2 = QtWidgets.QLabel(self.pageMetricas)
+        self.metri2.setObjectName("metri2")
+        self.verticalLayout_10.addWidget(self.metri2)
         self.stackedWidget.addWidget(self.pageMetricas)
         self.pageModelo = QtWidgets.QWidget()
         self.pageModelo.setObjectName("pageModelo")
@@ -377,6 +401,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.addWidget(self.Content)
         MainWindow.setCentralWidget(self.centralwidget)
 
+        for i in self.marker_coord:
+            self.LatitudList.insertItem(0,str(i[0]))
+            self.LongitudList.insertItem(0,str(i[1]))
+            self.IndexList.insertItem(0,str(i[2]))
+
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(1)
         self.LatitudList.setCurrentRow(-1)
@@ -393,9 +422,10 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.Ruta2.setText(_translate("MainWindow", " Ruta"))
+        self.Ruta2.setText(_translate("MainWindow", "     Ruta"))
         self.Modelo2.setText(_translate("MainWindow", " Metricas"))
-        self.Metricas2.setText(_translate("MainWindow", " Modelo"))
+        self.Metricas2.setText(_translate("MainWindow", "  Modelo"))
+        self.label_5.setText(_translate("MainWindow", "RAS-WAVE"))
         self.AgregarParada.setText(_translate("MainWindow", "Agregar"))
         self.EditarParada.setText(_translate("MainWindow", "Editar"))
         self.EliminarParada.setText(_translate("MainWindow", "Eliminar"))
@@ -406,4 +436,10 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Elemento:"))
         self.label.setText(_translate("MainWindow", "Latitud:"))
         self.label_2.setText(_translate("MainWindow", "Longitud:"))
-        self.label_4.setText(_translate("MainWindow", "Metricas"))
+        self.metri1.setText(_translate("MainWindow", "Coordenadas (Longitud y latitud):  "))
+        self.metri6.setText(_translate("MainWindow", "Yaw (Grados):"))
+        self.metri5.setText(_translate("MainWindow", "Pitch (Grados): "))
+        self.metri7.setText(_translate("MainWindow", "Roll (Grados): "))
+        self.metri4.setText(_translate("MainWindow", "Altitud: "))
+        self.metri3.setText(_translate("MainWindow", "Presión (hPa): "))
+        self.metri2.setText(_translate("MainWindow", "Temperatura: "))
