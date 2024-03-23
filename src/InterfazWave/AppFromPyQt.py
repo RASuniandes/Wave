@@ -475,8 +475,8 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.Ruta2.setText(_translate("MainWindow", "     Ruta"))
-        self.Modelo2.setText(_translate("MainWindow", " Metricas"))
-        self.Metricas2.setText(_translate("MainWindow", "  Modelo"))
+        self.Modelo2.setText(_translate("MainWindow", "Metricas"))
+        self.Metricas2.setText(_translate("MainWindow", " Modelo"))
         self.label_5.setText(_translate("MainWindow", "RAS-WAVE"))
         self.AgregarParada.setText(_translate("MainWindow", "Agregar"))
         self.EditarParada.setText(_translate("MainWindow", "Editar"))
