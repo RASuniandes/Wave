@@ -475,39 +475,39 @@ void show_sensors(){
 
 
 void show_sensors2(){
-  Serial.print(temperature);// valor sensor temperatura MPU-6050 acelerometro y giroscopio no tan preciso
+  Serial.print(yaw_raw_mpu);
   Serial.print(", ");
-  Serial.print(pressure);//presion del BMP180 sensor presion barometrica
+  Serial.print(pitch_raw_mpu);
   Serial.print(", ");
-  Serial.print(altitude);// altitude sensor presion barometrica
+  Serial.print(roll_raw_mpu);
   Serial.print(", ");
-  Serial.print(yaw);//yaw del MPU-6050
+  Serial.print(yaw);
   Serial.print(", ");
-  Serial.print(pitch);//pitch del MPU-6050
+  Serial.print(pitch);
   Serial.print(", ");
-  Serial.print(roll);//roll del MPU-6050
+  Serial.print(roll);
   Serial.print(", ");
-  Serial.print(yawValue);//yaw del BNO055 brujula y giroscopio de precision
+  Serial.print(yawValue);
   Serial.print(", ");
-  Serial.print(pitchValue);//pitch del BNO055 brujula y giroscopio de precision
+  Serial.print(pitchValue);
   Serial.print(", ");
-  Serial.print(rollValue ); //roll del BNO055 brujula y giroscopio de precision
+  Serial.print(rollValue ); 
     if (gps.location.isValid()) {
     Latitud = gps.location.lat();
     Serial.print(", ");
-    Serial.print(Latitud, 6);// latitud del GPS
+    Serial.print(Latitud, 6);
     Longitud =gps.location.lng();
-     Serial.println(Longitud, 6);//Longitud del GPS
+     Serial.println(Longitud, 6);
      Serial.print(", ");
     conexion=false;
   }
   if (conexion==true) {
     Latitud = 0;
      Serial.print(", ");
-     Serial.print(Latitud, 6);// latitud del gps si no hay conexion
+     Serial.print(Latitud, 6);
      Serial.print(", ");
     Longitud =0;
-     Serial.println(Longitud, 6);// longitud del gps si no hay conexion
+     Serial.println(Longitud, 6);
   }
 }
 void printValueWithFixedWidth(float value, int totalWidth) {
