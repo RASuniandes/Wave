@@ -11,7 +11,6 @@ from math import radians, cos, sin, asin, sqrt
 from folium import plugins
 import json
 
-import serial_comm as my_serial
 
 latVery = r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$'
 lonVery = r'^[-+]?((1[0-7]|[1-9])?\d(\.\d+)?|180(\.0+)?)$'
@@ -64,7 +63,7 @@ class MainWindow(QMainWindow):
         self.ui.Subir.clicked.connect(self.upThing)
         self.ui.Bajar.clicked.connect(self.downThing)
         self.ui.GuardaDatos.clicked.connect(self.SaveData)
-        self.ui.ActualizarDatos.clicked.connect(self.ActualizarPosicion)
+        self.ui.ActualizarDatos.clicked.connect(self.ui.ActualizarPosicion)
 
         #Aqui se sincroniza la seleccion de las dos listas
         self.ui.LatitudList.currentRowChanged.connect(self.sync_lists1)
@@ -350,21 +349,7 @@ class MainWindow(QMainWindow):
         # msg.setWindowTitle("Tutorial on PyQt5")
         msg.setText("La ruta fue guardada.")
         x = msg.exec_()
-    def ActualizarPosicion(self):
-
-        serial_connector = my_serial.SerialObj(115200)
-        serialForConnect = sys.argv[1]
-        serial_connector.connect(serialForConnect)
-        data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
-        data_array=data_string.split(',')
-
-        IndexI = self.ui.LatitudList.count()-1
-        item1 = self.ui.LatitudList.item(IndexI)
-        item2 = self.ui.LongitudList.item(IndexI)
-        # item1 = data_array['somePosition']
-        # item2 = data_array['otherPosition']
-        item1.setText(data_array[9])
-        item1.setText(data_array[10])
+   
 
 def App():
     app = QApplication(sys.argv)

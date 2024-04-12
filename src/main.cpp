@@ -245,9 +245,12 @@ void Bno() {
     lastTime = millis();
     
     bno055_read_euler_hrp(&myEulerData);
-    // Actualizar variables globales en lugar de imprimir
-    yawValue =  360-(float(myEulerData.h) / 16.00);
-    pitchValue =(float(myEulerData.r) / 16.00);
+    // Convertir y ajustar valores eulerianos
+    float tempYaw =  (float(myEulerData.h) / 16.00);
+    yawValue = fmod(tempYaw, 360.00); // Asegura que esté en el rango de 0-359.99
+    if (yawValue < 0) yawValue += 360.00; // Ajusta si el valor es negativo
+
+    pitchValue = (float(myEulerData.r) / 16.00);
     rollValue = -(float(myEulerData.p) / 16.00);
 
     // Actualizar estados de calibración (sin imprimir)
@@ -257,7 +260,6 @@ void Bno() {
     bno055_get_magcalib_status(&magCalibStatus);
   }
 }
-
 
 void printBNO055Values() {
   Serial.print(F("Orientation (Yaw, Pitch, Roll): "));
@@ -419,14 +421,9 @@ void displayInfo() {
     Serial.print(Latitud, 6);
     Longitud =gps.location.lng();
      Serial.print(Longitud, 6);
-    conexion=false;
   }
-  if (conexion==true) {
-    Latitud = 0;
-     Serial.print(Latitud, 6);
-    Longitud =0;
-     Serial.print(Longitud, 6);
-  }
+
+
 }
 
 void updateSerial() {
@@ -473,41 +470,40 @@ void show_sensors(){
    
 
 
-
 void show_sensors2(){
-  Serial.print(yaw_raw_mpu);
+  Serial.print(temperature);// valor sensor temperatura MPU-6050 acelerometro y giroscopio no tan preciso
   Serial.print(", ");
-  Serial.print(pitch_raw_mpu);
+  Serial.print(pressure);//presion del BMP180 sensor presion barometrica
   Serial.print(", ");
-  Serial.print(roll_raw_mpu);
+  Serial.print(altitude);// altitude sensor presion barometrica
   Serial.print(", ");
-  Serial.print(yaw);
+  Serial.print(yaw);//yaw del MPU-6050
   Serial.print(", ");
-  Serial.print(pitch);
+  Serial.print(pitch);//pitch del MPU-6050
   Serial.print(", ");
-  Serial.print(roll);
+  Serial.print(roll);//roll del MPU-6050
   Serial.print(", ");
-  Serial.print(yawValue);
+  Serial.print(yawValue);//yaw del BNO055 brujula y giroscopio de precision
   Serial.print(", ");
-  Serial.print(pitchValue);
+  Serial.print(pitchValue);//pitch del BNO055 brujula y giroscopio de precision
   Serial.print(", ");
-  Serial.print(rollValue ); 
+  Serial.print(rollValue ); //roll del BNO055 brujula y giroscopio de precision
     if (gps.location.isValid()) {
     Latitud = gps.location.lat();
     Serial.print(", ");
-    Serial.print(Latitud, 6);
+    Serial.print(Latitud, 6);// latitud del GPS
     Longitud =gps.location.lng();
-     Serial.println(Longitud, 6);
+     Serial.println(Longitud, 6);//Longitud del GPS
      Serial.print(", ");
     conexion=false;
   }
   if (conexion==true) {
     Latitud = 0;
      Serial.print(", ");
-     Serial.print(Latitud, 6);
+     Serial.print(Latitud, 6);// latitud del gps si no hay conexion
      Serial.print(", ");
     Longitud =0;
-     Serial.println(Longitud, 6);
+     Serial.println(Longitud, 6);// longitud del gps si no hay conexion
   }
 }
 void printValueWithFixedWidth(float value, int totalWidth) {
@@ -655,7 +651,7 @@ void setup() {
 void loop() {
   updateChannels();
   //print_channels();
-  show_sensors2();
+  show_sensors();
   readBMP280Data();
   readMPU6050Data();
   Bno();
