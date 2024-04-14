@@ -13,6 +13,8 @@ import numpy as np
 import serial_comm as my_serial
 import sys
 
+import time
+
 yaw, roll, pitch = 0, 0, 0
 lat, lon = 0, 0
 
@@ -44,16 +46,20 @@ def update_pitch(value):
 
 class WorkerThread(QThread):
     def run(self):
-        serial_connector = my_serial.SerialObj(115200)
-        # az = "COM5"
-        serialForConnect = sys.argv[1]
-        serial_connector.connect(serialForConnect)
+        # serial_connector = my_serial.SerialObj(115200)
+    
+        # serialForConnect = sys.argv[1]
+        # serial_connector.connect(serialForConnect)
+        a = 0
         while True: 
            # if serial_connector.is_connect():
             
                 try:
-                    data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
-                    data_array=data_string.split(',')
+                    # data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
+                    # data_array=data_string.split(',')
+                    a += 1
+                    data_array = [a] * 11
+                    print(data_array)
                     yaw=float(data_array[6])
                     pitch=float(data_array[7])
                     roll=float(data_array[8])
@@ -75,13 +81,17 @@ class WorkerThread(QThread):
                     update_pitch(pitch)
                     update_roll(roll)
                     update_yaw(yaw)
+
+
+                    time.sleep(0.2)
                     
 
                 except:
-                    try:
-                        serial_connector.connect(serialForConnect)
-                    except:
-                        pass
+                    pass
+                    # try:
+                    #     serial_connector.connect(serialForConnect)
+                    # except:
+                        # pass
 
             #lse:
             #    serial_connector.connect(serialForConnect)
@@ -508,12 +518,6 @@ class Ui_MainWindow(object):
         metri2.setText(_translate("MainWindow", "Temperatura: "))
         
     def ActualizarPosicion(self):
-
-        #serial_connector = my_serial.SerialObj(115200)
-        #serialForConnect = sys.argv[1]
-        #serial_connector.connect(serialForConnect)
-        pass
-
         print(lat, lon)
         item1 = self.LatitudList.item(len(self.LatitudList)-1)
         item2 = self.LongitudList.item(len(self.LongitudList)-1)
@@ -521,13 +525,3 @@ class Ui_MainWindow(object):
         item1.setText(lat)
         item2.setText(lon)
         item3.setText(item3.text())
-        #data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
-        #data_array=data_string.split(',')
-
-        #IndexI = self.ui.LatitudList.count()-1
-        #item1 = self.ui.LatitudList.item(IndexI)
-        #item2 = self.ui.LongitudList.item(IndexI)
-        # item1 = data_array['somePosition']
-        # item2 = data_array['otherPosition']
-        #item1.setText(data_array[9])
-        #item1.setText(data_array[10])

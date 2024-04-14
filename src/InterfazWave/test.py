@@ -13,7 +13,10 @@ import numpy as np
 import serial_comm as my_serial
 import sys
 
+import time
+
 yaw, roll, pitch = 0, 0, 0
+lat, lon = 0, 0
 
 def animate_mesh():
     global yaw, roll, pitch
@@ -43,26 +46,67 @@ def update_pitch(value):
 
 class WorkerThread(QThread):
     def run(self):
-        serial_connector = my_serial.SerialObj(9600)
-        # az = "COM5"
-        serialForConnect = sys.argv[1]
-        serial_connector.connect(serialForConnect)
+        # serial_connector = my_serial.SerialObj(115200)
+    
+        # serialForConnect = sys.argv[1]
+        # serial_connector.connect(serialForConnect)
         a = 0
+        first = True
+        global altInicial
+        altInicial = 0
         while True: 
-            if serial_connector.is_connect():
+           # if serial_connector.is_connect():
+            
                 try:
-                    data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
-                    data_array=data_string.split(',')
-                    print(serial_connector.get_data())
+                    # data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
+                    # data_array=data_string.split(',')
+                    a += 1
+                    data_array = [a] * 11
+                    print(data_array)
                     yaw=float(data_array[6])
                     pitch=float(data_array[7])
                     roll=float(data_array[8])
+                    coords = f"{data_array[9]}, {data_array[10]}"
+                    global lat, lon
+                    lat = data_array[10]
+                    lon = data_array[9]
+                    temp = data_array[0]
+                    presu = data_array[1]
+                    alt = data_array[2]
+
+                    Temperatura.setText(str(temp))
+                    PunteroAltura.setGeometry(QtCore.QRect(90, 400 - (alt - altInicial)*4, 70, 20))
+                    HorizonteArt.setGeometry(QtCore.QRect(15, -(data_array[7]), 175, 175))
+                    HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)) )
+
+
+                    # metri1.setText(f"Coordenadas (Longitud y latitud): {coords}")
+                    # metri6.setText(f"Yaw (Grados): {yaw}")
+                    # metri5.setText(f"Pitch (Grados): {pitch}")
+                    # metri7.setText(f"Roll (Grados): {roll}")
+                    # metri4.setText(f"Altitud: {alt}")
+                    # metri3.setText(f"Presión (hPa): {presu}")
+                    # metri2.setText(f"Temperatura: {temp}")
                     update_pitch(pitch)
                     update_roll(roll)
-                    update_yaw(yaw)                
+                    update_yaw(yaw)
+                    if first:
+                        altInicial = alt
+                        first = False
+
+                    time.sleep(0.3)
+                    
+
                 except:
                     pass
+                    # try:
+                    #     serial_connector.connect(serialForConnect)
+                    # except:
+                        # pass
 
+            #lse:
+            #    serial_connector.connect(serialForConnect)
+                
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -154,17 +198,19 @@ class Ui_MainWindow(object):
     
         #=============================================================
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(862, 556)
-        MainWindow.setStyleSheet("border: none")
+        MainWindow.resize(862, 540)
+        MainWindow.setMinimumSize(QtCore.QSize(0, 540))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setStyleSheet("background-color: #fff")
-
+        # self.centralwidget.setStyleSheet("background-color: #fff")
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.iconOnly = QtWidgets.QWidget(self.centralwidget)
         self.iconOnly.setMaximumSize(QtCore.QSize(81, 16777215))
         self.iconOnly.setObjectName("iconOnly")
+        self.iconOnly.setStyleSheet("background-color: #161B22")
+
+
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.iconOnly)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -180,6 +226,8 @@ class Ui_MainWindow(object):
         self.Ruta1.setCheckable(True)
         self.Ruta1.setAutoExclusive(True)
         self.Ruta1.setObjectName("Ruta1")
+        self.Ruta1.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout.addWidget(self.Ruta1)
         self.Modelo1 = QtWidgets.QPushButton(self.iconOnly)
         self.Modelo1.setMinimumSize(QtCore.QSize(40, 40))
@@ -192,6 +240,8 @@ class Ui_MainWindow(object):
         self.Modelo1.setCheckable(True)
         self.Modelo1.setAutoExclusive(True)
         self.Modelo1.setObjectName("Modelo1")
+        self.Modelo1.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout.addWidget(self.Modelo1)
         self.Metricas1 = QtWidgets.QPushButton(self.iconOnly)
         self.Metricas1.setMinimumSize(QtCore.QSize(40, 40))
@@ -204,6 +254,8 @@ class Ui_MainWindow(object):
         self.Metricas1.setCheckable(True)
         self.Metricas1.setAutoExclusive(True)
         self.Metricas1.setObjectName("Metricas1")
+        self.Metricas1.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout.addWidget(self.Metricas1)
         self.verticalLayout_3.addLayout(self.verticalLayout)
         spacerItem = QtWidgets.QSpacerItem(20, 331, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -213,6 +265,8 @@ class Ui_MainWindow(object):
         self.fullMenu.setMinimumSize(QtCore.QSize(100, 0))
         self.fullMenu.setMaximumSize(QtCore.QSize(100, 16777215))
         self.fullMenu.setObjectName("fullMenu")
+        self.fullMenu.setStyleSheet("background-color: #161B22")
+
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.fullMenu)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
@@ -225,6 +279,8 @@ class Ui_MainWindow(object):
         self.Ruta2.setCheckable(True)
         self.Ruta2.setAutoExclusive(True)
         self.Ruta2.setObjectName("Ruta2")
+        self.Ruta2.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout_2.addWidget(self.Ruta2)
         self.Modelo2 = QtWidgets.QPushButton(self.fullMenu)
         self.Modelo2.setMinimumSize(QtCore.QSize(40, 40))
@@ -233,6 +289,8 @@ class Ui_MainWindow(object):
         self.Modelo2.setCheckable(True)
         self.Modelo2.setAutoExclusive(True)
         self.Modelo2.setObjectName("Modelo2")
+        self.Modelo2.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout_2.addWidget(self.Modelo2)
         self.Metricas2 = QtWidgets.QPushButton(self.fullMenu)
         self.Metricas2.setMinimumSize(QtCore.QSize(40, 40))
@@ -242,6 +300,8 @@ class Ui_MainWindow(object):
         self.Metricas2.setAutoExclusive(True)
         self.Metricas2.setAutoDefault(False)
         self.Metricas2.setObjectName("Metricas2")
+        self.Metricas2.setStyleSheet("color: #fff; border : none")
+
         self.verticalLayout_2.addWidget(self.Metricas2)
         self.verticalLayout_4.addLayout(self.verticalLayout_2)
         spacerItem1 = QtWidgets.QSpacerItem(20, 331, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -249,6 +309,8 @@ class Ui_MainWindow(object):
         self.label_5 = QtWidgets.QLabel(self.fullMenu)
         self.label_5.setAlignment(QtCore.Qt.AlignCenter)
         self.label_5.setObjectName("label_5")
+        self.label_5.setStyleSheet("color: #fff; background-color: #DB5D4F; padding : 10px")
+
         self.verticalLayout_4.addWidget(self.label_5)
         self.horizontalLayout_5.addWidget(self.fullMenu)
         self.verticalLayout_11 = QtWidgets.QVBoxLayout()
@@ -262,6 +324,8 @@ class Ui_MainWindow(object):
         self.Menu.setMinimumSize(QtCore.QSize(30, 30))
         self.Menu.setMaximumSize(QtCore.QSize(30, 30))
         self.Menu.setText("")
+        self.Menu.setStyleSheet("border: none")
+
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap(".\\img/apps.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.Menu.setIcon(icon3)
@@ -270,6 +334,7 @@ class Ui_MainWindow(object):
         self.Menu.setObjectName("Menu")
         self.verticalLayout_5.addWidget(self.Menu)
         self.stackedWidget = QtWidgets.QStackedWidget(self.Content)
+        self.stackedWidget.setMinimumSize(QtCore.QSize(0, 420))
         self.stackedWidget.setObjectName("stackedWidget")
         self.pageRuta = QtWidgets.QWidget()
         self.pageRuta.setMouseTracking(False)
@@ -285,24 +350,38 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.AgregarParada = QtWidgets.QPushButton(self.pageRuta)
         self.AgregarParada.setObjectName("AgregarParada")
+        self.AgregarParada.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout.addWidget(self.AgregarParada)
         self.EditarParada = QtWidgets.QPushButton(self.pageRuta)
         self.EditarParada.setObjectName("EditarParada")
+        self.EditarParada.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout.addWidget(self.EditarParada)
         self.EliminarParada = QtWidgets.QPushButton(self.pageRuta)
         self.EliminarParada.setObjectName("EliminarParada")
+        self.EliminarParada.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout.addWidget(self.EliminarParada)
         self.Subir = QtWidgets.QPushButton(self.pageRuta)
         self.Subir.setObjectName("Subir")
+        self.Subir.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout.addWidget(self.Subir)
         self.Bajar = QtWidgets.QPushButton(self.pageRuta)
         self.Bajar.setObjectName("Bajar")
+        self.Bajar.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout.addWidget(self.Bajar)
         self.ActualizarDatos = QtWidgets.QPushButton(self.pageRuta)
+        self.ActualizarDatos.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.ActualizarDatos.setMinimumSize(QtCore.QSize(115, 0))
         self.ActualizarDatos.setObjectName("ActualizarDatos")
         self.horizontalLayout.addWidget(self.ActualizarDatos)
         self.GuardaDatos = QtWidgets.QPushButton(self.pageRuta)
+        self.GuardaDatos.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.GuardaDatos.setMinimumSize(QtCore.QSize(100, 0))
         self.GuardaDatos.setObjectName("GuardaDatos")
         self.horizontalLayout.addWidget(self.GuardaDatos)
@@ -343,29 +422,157 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.pageRuta)
         self.pageMetricas = QtWidgets.QWidget()
         self.pageMetricas.setObjectName("pageMetricas")
-        self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.pageMetricas)
-        self.verticalLayout_10.setObjectName("verticalLayout_10")
-        self.metri1 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri1.setObjectName("metri1")
-        self.verticalLayout_10.addWidget(self.metri1)
-        self.metri6 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri6.setObjectName("metri6")
-        self.verticalLayout_10.addWidget(self.metri6)
-        self.metri5 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri5.setObjectName("metri5")
-        self.verticalLayout_10.addWidget(self.metri5)
-        self.metri7 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri7.setObjectName("metri7")
-        self.verticalLayout_10.addWidget(self.metri7)
-        self.metri4 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri4.setObjectName("metri4")
-        self.verticalLayout_10.addWidget(self.metri4)
-        self.metri3 = QtWidgets.QLabel(self.pageMetricas)
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.pageMetricas)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.verticalLayout_13 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_13.setObjectName("verticalLayout_13")
+        self.widget_2 = QtWidgets.QWidget(self.pageMetricas)
+        self.widget_2.setObjectName("widget_2")
+        self.metri3 = QtWidgets.QLabel(self.widget_2)
+        self.metri3.setGeometry(QtCore.QRect(0, 0, 118, 421))
+        self.metri3.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.metri3.setText("")
+        self.metri3.setPixmap(QtGui.QPixmap(".\\img/Untitled-3.png"))
         self.metri3.setObjectName("metri3")
-        self.verticalLayout_10.addWidget(self.metri3)
-        self.metri2 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri2.setObjectName("metri2")
-        self.verticalLayout_10.addWidget(self.metri2)
+        global PunteroAltura
+        PunteroAltura = QtWidgets.QLabel(self.widget_2)
+        PunteroAltura.setGeometry(QtCore.QRect(90, 400, 70, 20))
+        PunteroAltura.setText("")
+        PunteroAltura.setPixmap(QtGui.QPixmap(".\\img/Untitled-4.png"))
+        PunteroAltura.setObjectName("PunteroAltura")
+        self.verticalLayout_13.addWidget(self.widget_2)
+        self.label_14 = QtWidgets.QLabel(self.pageMetricas)
+        self.label_14.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.label_14.setObjectName("label_14")
+        self.verticalLayout_13.addWidget(self.label_14)
+        self.horizontalLayout_4.addLayout(self.verticalLayout_13)
+        self.verticalLayout_17 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_17.setObjectName("verticalLayout_17")
+        self.verticalLayout_14 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_14.setObjectName("verticalLayout_14")
+        self.widget_3 = QtWidgets.QWidget(self.pageMetricas)
+        self.widget_3.setObjectName("widget_3")
+        self.label_4 = QtWidgets.QLabel(self.widget_3)
+        self.label_4.setGeometry(QtCore.QRect(-15, -30, 235, 235))
+        self.label_4.setMouseTracking(False)
+        self.label_4.setStyleSheet("")
+        self.label_4.setText("")
+        self.label_4.setPixmap(QtGui.QPixmap(".\\img/Heading_indicator.png"))
+        self.label_4.setScaledContents(True)
+        self.label_4.setObjectName("label_4")
+        self.Brujula = QtWidgets.QLabel(self.widget_3)
+        self.Brujula.setGeometry(QtCore.QRect(-15, -26, 235, 235))
+        self.Brujula.setText("")
+        self.Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png"))
+        self.Brujula.setScaledContents(True)
+        self.Brujula.setObjectName("Brujula")
+        self.verticalLayout_14.addWidget(self.widget_3)
+        self.label_15 = QtWidgets.QLabel(self.pageMetricas)
+        self.label_15.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.label_15.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_15.setObjectName("label_15")
+        self.verticalLayout_14.addWidget(self.label_15)
+        self.verticalLayout_17.addLayout(self.verticalLayout_14)
+        self.verticalLayout_15 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_15.setObjectName("verticalLayout_15")
+        self.widget_4 = QtWidgets.QWidget(self.pageMetricas)
+        self.widget_4.setObjectName("widget_4")
+        self.label_8 = QtWidgets.QLabel(self.widget_4)
+        self.label_8.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.label_8.setText("")
+        self.label_8.setPixmap(QtGui.QPixmap(".\\img/Untitled-9.png"))
+        self.label_8.setScaledContents(True)
+        self.label_8.setObjectName("label_8")
+        global HorizonteArt
+        
+        HorizonteArt = QtWidgets.QLabel(self.widget_4)
+        HorizonteArt.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        HorizonteArt.setText("")
+        HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png"))
+        HorizonteArt.setScaledContents(True)
+        HorizonteArt.setObjectName("HorizonteArt")
+
+        # pixmap = QtGui.QPixmap(".\\img/Untitled-8.png")
+        HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(0)) )
+
+
+        self.label_10 = QtWidgets.QLabel(self.widget_4)
+        self.label_10.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.label_10.setText("")
+        self.label_10.setPixmap(QtGui.QPixmap(".\\img/Attitude_indicator_level_flight.png"))
+        self.label_10.setScaledContents(True)
+        self.label_10.setObjectName("label_10")
+        self.verticalLayout_15.addWidget(self.widget_4)
+        self.label_16 = QtWidgets.QLabel(self.pageMetricas)
+        self.label_16.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.label_16.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_16.setObjectName("label_16")
+        self.verticalLayout_15.addWidget(self.label_16)
+        self.verticalLayout_17.addLayout(self.verticalLayout_15)
+        self.horizontalLayout_4.addLayout(self.verticalLayout_17)
+        self.verticalLayout_16 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_16.setObjectName("verticalLayout_16")
+        self.verticalLayout_12 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_12.setObjectName("verticalLayout_12")
+        self.widget_5 = QtWidgets.QWidget(self.pageMetricas)
+        self.widget_5.setObjectName("widget_5")
+        self.label_11 = QtWidgets.QLabel(self.widget_5)
+        self.label_11.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.label_11.setMouseTracking(False)
+        self.label_11.setStyleSheet("")
+        self.label_11.setText("")
+        self.label_11.setPixmap(QtGui.QPixmap(".\\img/aircraft-36298.png"))
+        self.label_11.setScaledContents(True)
+        self.label_11.setObjectName("label_11")
+        global label_13
+        label_13 = QtWidgets.QLabel(self.widget_5)
+        label_13.setGeometry(QtCore.QRect(15, 8, 175, 175))
+        label_13.setAlignment(QtCore.Qt.AlignCenter)
+        label_13.setObjectName("label_13")
+        self.Velocidad = QtWidgets.QLabel(self.widget_5)
+        self.Velocidad.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.Velocidad.setText("")
+        self.Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png"))
+        self.Velocidad.setScaledContents(True)
+        self.Velocidad.setObjectName("Velocidad")
+        global Temperatura
+        Temperatura = QtWidgets.QLabel(self.widget_5)
+        Temperatura.setGeometry(QtCore.QRect(80, 10, 47, 13))
+        Temperatura.setAlignment(QtCore.Qt.AlignCenter)
+        Temperatura.setObjectName("Temperatura")
+        self.verticalLayout_12.addWidget(self.widget_5)
+        self.label_17 = QtWidgets.QLabel(self.pageMetricas)
+        self.label_17.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.label_17.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_17.setObjectName("label_17")
+        self.verticalLayout_12.addWidget(self.label_17)
+        self.verticalLayout_16.addLayout(self.verticalLayout_12)
+        self.verticalLayout_10 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_10.setObjectName("verticalLayout_10")
+        self.widget_6 = QtWidgets.QWidget(self.pageMetricas)
+        self.widget_6.setObjectName("widget_6")
+        self.label_21 = QtWidgets.QLabel(self.widget_6)
+        self.label_21.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.label_21.setMouseTracking(False)
+        self.label_21.setStyleSheet("")
+        self.label_21.setText("")
+        self.label_21.setPixmap(QtGui.QPixmap(".\\img/istockphoto-546787274-612x612.png"))
+        self.label_21.setScaledContents(True)
+        self.label_21.setObjectName("label_21")
+        self.Presion = QtWidgets.QLabel(self.widget_6)
+        self.Presion.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.Presion.setText("")
+        self.Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png"))
+        self.Presion.setScaledContents(True)
+        self.Presion.setObjectName("Presion")
+        self.verticalLayout_10.addWidget(self.widget_6)
+        self.label_22 = QtWidgets.QLabel(self.pageMetricas)
+        self.label_22.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.label_22.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_22.setObjectName("label_22")
+        self.verticalLayout_10.addWidget(self.label_22)
+        self.verticalLayout_16.addLayout(self.verticalLayout_10)
+        self.horizontalLayout_4.addLayout(self.verticalLayout_16)
         self.stackedWidget.addWidget(self.pageMetricas)
         self.pageModelo = QtWidgets.QWidget()
         self.pageModelo.setObjectName("pageModelo")
@@ -377,6 +584,7 @@ class Ui_MainWindow(object):
         #===================================================================================
 
         view = GLViewWidget(rotationMethod='quaternion')
+        view.setBackgroundColor(255,255,255, 255)
         view.setCameraPosition(distance=500) 
         view.pan(0, 0, 0) 
         view.opts['panning'] = False 
@@ -386,7 +594,7 @@ class Ui_MainWindow(object):
         faces = np.arange(points.shape[0]).reshape(-1, 3)
         mesh_data = MeshData(vertexes=points, faces=faces)
         global meshIem
-        meshIem = GLMeshItem(meshdata=mesh_data, smooth=True, drawFaces=False, drawEdges=True, edgeColor=(1, 1, 0, 1))
+        meshIem = GLMeshItem(meshdata=mesh_data, drawFaces=False, drawEdges=True, edgeColor=(1, 0.4, 0.2, 1))
         view.addItem(meshIem)
         # view.show()
         worker_thread = WorkerThread()
@@ -400,6 +608,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.addWidget(self.stackedWidget)
         self.horizontalLayout_5.addWidget(self.Content)
         MainWindow.setCentralWidget(self.centralwidget)
+
 
         for i in self.marker_coord:
             self.LatitudList.insertItem(0,str(i[0]))
@@ -436,10 +645,18 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Elemento:"))
         self.label.setText(_translate("MainWindow", "Latitud:"))
         self.label_2.setText(_translate("MainWindow", "Longitud:"))
-        self.metri1.setText(_translate("MainWindow", "Coordenadas (Longitud y latitud):  "))
-        self.metri6.setText(_translate("MainWindow", "Yaw (Grados):"))
-        self.metri5.setText(_translate("MainWindow", "Pitch (Grados): "))
-        self.metri7.setText(_translate("MainWindow", "Roll (Grados): "))
-        self.metri4.setText(_translate("MainWindow", "Altitud: "))
-        self.metri3.setText(_translate("MainWindow", "Presión (hPa): "))
-        self.metri2.setText(_translate("MainWindow", "Temperatura: "))
+        self.label_14.setText(_translate("MainWindow", "Altura"))
+        self.label_15.setText(_translate("MainWindow", "Brujula"))
+        self.label_16.setText(_translate("MainWindow", "Horizonte artificial"))
+        Temperatura.setText(_translate("MainWindow", "0.0"))
+        self.label_17.setText(_translate("MainWindow", "Anometro"))
+        self.label_22.setText(_translate("MainWindow", "Presion manifold"))
+
+    def ActualizarPosicion(self):
+        print(lat, lon)
+        item1 = self.LatitudList.item(len(self.LatitudList)-1)
+        item2 = self.LongitudList.item(len(self.LongitudList)-1)
+        item3 = self.IndexList.item(len(self.IndexList)-1)
+        item1.setText(lat)
+        item2.setText(lon)
+        item3.setText(item3.text())

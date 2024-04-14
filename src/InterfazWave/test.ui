@@ -7,8 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>862</width>
-    <height>556</height>
+    <height>540</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>540</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
@@ -315,6 +321,12 @@
        </item>
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>420</height>
+          </size>
+         </property>
          <property name="currentIndex">
           <number>1</number>
          </property>
@@ -471,55 +483,387 @@
           </layout>
          </widget>
          <widget class="QWidget" name="pageMetricas">
-          <layout class="QVBoxLayout" name="verticalLayout_10">
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
-            <widget class="QLabel" name="metri1">
-             <property name="text">
-              <string>Coordenadas (Longitud y latitud):  </string>
-             </property>
-            </widget>
+            <layout class="QVBoxLayout" name="verticalLayout_13">
+             <item>
+              <widget class="QWidget" name="widget_2" native="true">
+               <widget class="QLabel" name="metri3">
+                <property name="geometry">
+                 <rect>
+                  <x>0</x>
+                  <y>0</y>
+                  <width>118</width>
+                  <height>421</height>
+                 </rect>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="pixmap">
+                 <pixmap>img/Untitled-3.png</pixmap>
+                </property>
+               </widget>
+               <widget class="QLabel" name="PunteroAltura">
+                <property name="geometry">
+                 <rect>
+                  <x>90</x>
+                  <y>400</y>
+                  <width>70</width>
+                  <height>20</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="pixmap">
+                 <pixmap>img/Untitled-4.png</pixmap>
+                </property>
+               </widget>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_14">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Altura</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
-            <widget class="QLabel" name="metri6">
-             <property name="text">
-              <string>Yaw (Grados):</string>
-             </property>
-            </widget>
+            <layout class="QVBoxLayout" name="verticalLayout_17">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_14">
+               <item>
+                <widget class="QWidget" name="widget_3" native="true">
+                 <widget class="QLabel" name="label_4">
+                  <property name="geometry">
+                   <rect>
+                    <x>-15</x>
+                    <y>-30</y>
+                    <width>235</width>
+                    <height>235</height>
+                   </rect>
+                  </property>
+                  <property name="mouseTracking">
+                   <bool>false</bool>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true"/>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>img/Heading_indicator.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                 <widget class="QLabel" name="Brujula">
+                  <property name="geometry">
+                   <rect>
+                    <x>-15</x>
+                    <y>-26</y>
+                    <width>235</width>
+                    <height>235</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>img/Untitled-7.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_15">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Brujula</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_15">
+               <item>
+                <widget class="QWidget" name="widget_4" native="true">
+                 <widget class="QLabel" name="label_8">
+                  <property name="geometry">
+                   <rect>
+                    <x>15</x>
+                    <y>0</y>
+                    <width>175</width>
+                    <height>175</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>img/Untitled-9.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                 <widget class="QLabel" name="HorizonteArt">
+                  <property name="geometry">
+                   <rect>
+                    <x>15</x>
+                    <y>40</y>
+                    <width>175</width>
+                    <height>175</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>img/Untitled-8.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                 <widget class="QLabel" name="label_10">
+                  <property name="geometry">
+                   <rect>
+                    <x>15</x>
+                    <y>0</y>
+                    <width>175</width>
+                    <height>175</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>img/Attitude_indicator_level_flight.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_16">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Horizonte artificial</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
            </item>
            <item>
-            <widget class="QLabel" name="metri5">
-             <property name="text">
-              <string>Pitch (Grados): </string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="metri7">
-             <property name="text">
-              <string>Roll (Grados): </string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="metri4">
-             <property name="text">
-              <string>Altitud: </string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="metri3">
-             <property name="text">
-              <string>Presión (hPa): </string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="metri2">
-             <property name="text">
-              <string>Temperatura: </string>
-             </property>
-            </widget>
+            <layout class="QVBoxLayout" name="verticalLayout_16">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_12">
+               <item>
+                <widget class="QWidget" name="widget_5" native="true">
+                 <widget class="QLabel" name="label_11">
+                  <property name="geometry">
+                   <rect>
+                    <x>15</x>
+                    <y>0</y>
+                    <width>175</width>
+                    <height>175</height>
+                   </rect>
+                  </property>
+                  <property name="mouseTracking">
+                   <bool>false</bool>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true"/>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>img/aircraft-36298.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                 <widget class="QLabel" name="label_13">
+                  <property name="geometry">
+                   <rect>
+                    <x>15</x>
+                    <y>8</y>
+                    <width>175</width>
+                    <height>175</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string>0.0</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                 <widget class="QLabel" name="Velocidad">
+                  <property name="geometry">
+                   <rect>
+                    <x>15</x>
+                    <y>0</y>
+                    <width>175</width>
+                    <height>175</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>img/Untitled-10.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                 <widget class="QLabel" name="Temperatura">
+                  <property name="geometry">
+                   <rect>
+                    <x>80</x>
+                    <y>10</y>
+                    <width>47</width>
+                    <height>13</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string>0.0</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_17">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Anometro</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <widget class="QWidget" name="widget_6" native="true">
+                 <widget class="QLabel" name="label_21">
+                  <property name="geometry">
+                   <rect>
+                    <x>15</x>
+                    <y>0</y>
+                    <width>175</width>
+                    <height>175</height>
+                   </rect>
+                  </property>
+                  <property name="mouseTracking">
+                   <bool>false</bool>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true"/>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>img/istockphoto-546787274-612x612.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                 <widget class="QLabel" name="Presion">
+                  <property name="geometry">
+                   <rect>
+                    <x>15</x>
+                    <y>0</y>
+                    <width>175</width>
+                    <height>175</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>img/Untitled-11.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_22">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Presion manifold</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
