@@ -55,6 +55,8 @@ class WorkerThread(QThread):
         global altInicial
         altInicial = 0
         while True: 
+                time.sleep(0.1)
+
            # if serial_connector.is_connect():
             
                 try:
@@ -76,8 +78,11 @@ class WorkerThread(QThread):
 
                     Temperatura.setText(str(temp))
                     PunteroAltura.setGeometry(QtCore.QRect(90, 400 - (alt - altInicial)*4, 70, 20))
-                    HorizonteArt.setGeometry(QtCore.QRect(15, -(data_array[7]), 175, 175))
-                    HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)) )
+                    HorizonteArt.setGeometry(QtCore.QRect(15, -int(pitch), 175, 175))
+                    HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)))
+                    Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate((presu/100)*360)))
+                    Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png").transformed(QtGui.QTransform().rotate(yaw)))
+                    Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw)))
 
 
                     # metri1.setText(f"Coordenadas (Longitud y latitud): {coords}")
@@ -93,8 +98,6 @@ class WorkerThread(QThread):
                     if first:
                         altInicial = alt
                         first = False
-
-                    time.sleep(0.3)
                     
 
                 except:
@@ -460,12 +463,17 @@ class Ui_MainWindow(object):
         self.label_4.setPixmap(QtGui.QPixmap(".\\img/Heading_indicator.png"))
         self.label_4.setScaledContents(True)
         self.label_4.setObjectName("label_4")
-        self.Brujula = QtWidgets.QLabel(self.widget_3)
-        self.Brujula.setGeometry(QtCore.QRect(-15, -26, 235, 235))
-        self.Brujula.setText("")
-        self.Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png"))
-        self.Brujula.setScaledContents(True)
-        self.Brujula.setObjectName("Brujula")
+
+        global Brujula
+
+        Brujula = QtWidgets.QLabel(self.widget_3)
+        Brujula.setGeometry(QtCore.QRect(-15, -26, 235, 235))
+        Brujula.setText("")
+        Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png"))
+        Brujula.setScaledContents(True)
+        Brujula.setObjectName("Brujula")
+
+
         self.verticalLayout_14.addWidget(self.widget_3)
         self.label_15 = QtWidgets.QLabel(self.pageMetricas)
         self.label_15.setMaximumSize(QtCore.QSize(16777215, 30))
@@ -491,10 +499,6 @@ class Ui_MainWindow(object):
         HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png"))
         HorizonteArt.setScaledContents(True)
         HorizonteArt.setObjectName("HorizonteArt")
-
-        # pixmap = QtGui.QPixmap(".\\img/Untitled-8.png")
-        HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(0)) )
-
 
         self.label_10 = QtWidgets.QLabel(self.widget_4)
         self.label_10.setGeometry(QtCore.QRect(15, 0, 175, 175))
@@ -529,12 +533,15 @@ class Ui_MainWindow(object):
         label_13.setGeometry(QtCore.QRect(15, 8, 175, 175))
         label_13.setAlignment(QtCore.Qt.AlignCenter)
         label_13.setObjectName("label_13")
-        self.Velocidad = QtWidgets.QLabel(self.widget_5)
-        self.Velocidad.setGeometry(QtCore.QRect(15, 0, 175, 175))
-        self.Velocidad.setText("")
-        self.Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png"))
-        self.Velocidad.setScaledContents(True)
-        self.Velocidad.setObjectName("Velocidad")
+
+        global Velocidad
+        Velocidad = QtWidgets.QLabel(self.widget_5)
+        Velocidad.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        Velocidad.setText("")
+        Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png"))
+        Velocidad.setScaledContents(True)
+        Velocidad.setObjectName("Velocidad")
+
         global Temperatura
         Temperatura = QtWidgets.QLabel(self.widget_5)
         Temperatura.setGeometry(QtCore.QRect(80, 10, 47, 13))
@@ -559,12 +566,15 @@ class Ui_MainWindow(object):
         self.label_21.setPixmap(QtGui.QPixmap(".\\img/istockphoto-546787274-612x612.png"))
         self.label_21.setScaledContents(True)
         self.label_21.setObjectName("label_21")
-        self.Presion = QtWidgets.QLabel(self.widget_6)
-        self.Presion.setGeometry(QtCore.QRect(15, 0, 175, 175))
-        self.Presion.setText("")
-        self.Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png"))
-        self.Presion.setScaledContents(True)
-        self.Presion.setObjectName("Presion")
+        global Presion
+        Presion = QtWidgets.QLabel(self.widget_6)
+        Presion.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        Presion.setText("")
+        Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png"))
+        Presion.setScaledContents(True)
+        Presion.setObjectName("Presion")
+        # Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(300)))
+
         self.verticalLayout_10.addWidget(self.widget_6)
         self.label_22 = QtWidgets.QLabel(self.pageMetricas)
         self.label_22.setMaximumSize(QtCore.QSize(16777215, 30))

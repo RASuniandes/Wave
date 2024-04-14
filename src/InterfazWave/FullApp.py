@@ -6,8 +6,8 @@ import folium
 import io
 import geocoder
 import re
-# from AppFromPyQt import Ui_MainWindow
-from test import Ui_MainWindow
+from AppFromPyQt import Ui_MainWindow
+# from test import Ui_MainWindow
 from math import radians, cos, sin, asin, sqrt
 from folium import plugins
 import json
