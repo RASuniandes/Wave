@@ -50,41 +50,35 @@ class WorkerThread(QThread):
     
         serialForConnect = sys.argv[1]
         serial_connector.connect(serialForConnect)
-        a = 0
         first = True
         global altInicial
         altInicial = 0
         while True: 
-                # time.sleep(0.1)
 
            if serial_connector.is_connect():
             
                 try:
-                    data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
-                    data_array=data_string.split(',')
-                    # a += 1
-                    # data_array = [a] * 11
-                    # print(data_array)
+                    data_string = serial_connector.get_data().decode('utf-8').replace('\r\n','')
+                    data_array = data_string.split(',')
                     yaw=float(data_array[6])
                     pitch=float(data_array[7])
                     roll=float(data_array[8])
-                    coords = f"{data_array[9]}, {data_array[10]}"
                     global lat, lon
                     lat = data_array[10]
                     lon = data_array[9]
                     temp = data_array[0]
-                    presu = data_array[1]
-                    alt = data_array[2]
+                    presu = float(data_array[1])
+                    alt = float(data_array[2])
 
                     Temperatura.setText(str(temp))
+                    
                     PunteroAltura.setGeometry(QtCore.QRect(90, 400 - (alt - altInicial)*4, 70, 20))
                     HorizonteArt.setGeometry(QtCore.QRect(15, -int(pitch), 175, 175))
                     HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)))
-                    Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate((presu/100)*360)))
-                    Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png").transformed(QtGui.QTransform().rotate(yaw)))
-                    Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw)))
-
-
+                    Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png").transformed(QtGui.QTransform().rotate(-yaw)))
+                    Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((presu/133.322)/50)*360)))
+                    #Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw)))
+                    
                     # metri1.setText(f"Coordenadas (Longitud y latitud): {coords}")
                     # metri6.setText(f"Yaw (Grados): {yaw}")
                     # metri5.setText(f"Pitch (Grados): {pitch}")
