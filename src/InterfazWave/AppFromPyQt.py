@@ -72,9 +72,9 @@ class WorkerThread(QThread):
 
                     Temperatura.setText(str(temp))
                     
-                    PunteroAltura.setGeometry(QtCore.QRect(90, 400 - (alt - altInicial)*4, 70, 20))
+                    PunteroAltura.setGeometry(QtCore.QRect(90, 400 - int(alt - altInicial)*4, 70, 20))
                     HorizonteArt.setGeometry(QtCore.QRect(15, -int(pitch), 175, 175))
-                    HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)))
+                    HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)), QtCore.Qt.SmoothTransformation)
                     Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png").transformed(QtGui.QTransform().rotate(-yaw)))
                     Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((presu/133.322)/50)*360)))
                     #Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw)))
@@ -100,9 +100,6 @@ class WorkerThread(QThread):
                         serial_connector.connect(serialForConnect)
                     except:
                         pass
-
-            #lse:
-            #    serial_connector.connect(serialForConnect)
                 
 
 class Ui_MainWindow(object):
@@ -116,16 +113,8 @@ class Ui_MainWindow(object):
 
         df = myjsonFile.read()
         if(df != ''):
-
-            # serial_connector = my_serial.SerialObj(115200)
-            # serialForConnect = sys.argv[1]
-            # serial_connector.connect(serialForConnect)
-            # data_string=serial_connector.get_data().decode('utf-8').replace('\r\n','')
-            # data_array=data_string.split(',')
             if(json.loads(df)[0][2] != 'Posicion En Tiempo Real'):
-                # self.marker_coord = [[float(data_array[9]), float(data_array[10]), 'Posicion En Tiempo Real'] ,*json.loads(df)]
-                self.marker_coord = [[4.706739812511032, -74.15178166325258, 'Posicion En Tiempo Real'] ,*json.loads(df)]
-
+                self.marker_coord = [[lon, lat, 'Posicion En Tiempo Real'] ,*json.loads(df)]
             else:
                 self.marker_coord = [*json.loads(df)]
 
@@ -494,6 +483,7 @@ class Ui_MainWindow(object):
         HorizonteArt.setScaledContents(True)
         HorizonteArt.setObjectName("HorizonteArt")
 
+
         self.label_10 = QtWidgets.QLabel(self.widget_4)
         self.label_10.setGeometry(QtCore.QRect(15, 0, 175, 175))
         self.label_10.setText("")
@@ -567,6 +557,7 @@ class Ui_MainWindow(object):
         Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png"))
         Presion.setScaledContents(True)
         Presion.setObjectName("Presion")
+
         # Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(300)))
 
         self.verticalLayout_10.addWidget(self.widget_6)
