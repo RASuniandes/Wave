@@ -64,20 +64,20 @@ class WorkerThread(QThread):
                     pitch=float(data_array[7])
                     roll=float(data_array[8])
                     global lat, lon
-                    lat = data_array[10]
-                    lon = data_array[9]
+                    lat = (data_array[10])
+                    lon = (data_array[9])
                     temp = data_array[0]
                     presu = float(data_array[1])
                     alt = float(data_array[2])
 
                     Temperatura.setText(str(temp))
-                    
+
                     PunteroAltura.setGeometry(QtCore.QRect(90, 400 - int(alt - altInicial)*4, 70, 20))
                     HorizonteArt.setGeometry(QtCore.QRect(15, -int(pitch), 175, 175))
-                    HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)), QtCore.Qt.SmoothTransformation)
+                    HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)))
                     Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png").transformed(QtGui.QTransform().rotate(-yaw)))
                     Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((presu/133.322)/50)*360)))
-                    #Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw)))
+                    Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw)))
                     
                     # metri1.setText(f"Coordenadas (Longitud y latitud): {coords}")
                     # metri6.setText(f"Yaw (Grados): {yaw}")
