@@ -64,9 +64,9 @@ class WorkerThread(QThread):
                     yaw=float(data_array[6])
                     pitch=float(data_array[7])
                     roll=float(data_array[8])
-                    #global lat, lon
-                    #lat = (data_array[10])
-                    #lon = (data_array[9])
+                    global lat, lon
+                    #lat = (data_array[9])
+                    #lon = (data_array[10])
                     temp = data_array[0]
                     presu = float(data_array[1])
                     alt = float(data_array[2])
