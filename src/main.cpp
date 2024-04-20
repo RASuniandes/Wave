@@ -123,12 +123,12 @@ unsigned long lastTime = 0;
 const int chipSelect = 2; 
 
 // Canales radio control 
-#define CH1 25
-#define CH2 26
-#define CH3 27
-#define CH4 32
-#define CH5 33
-#define CH6 35
+#define CH1 7
+#define CH2 6
+#define CH3 5
+#define CH4 4
+#define CH5 3
+#define CH6 2
 
 // Configurar receptor
 FlySky flySky(CH1, CH2, CH3, CH4, CH6);
@@ -618,7 +618,7 @@ void updateSerial() {
 
 void setup() {
   Serial.begin(115200);
-  Wire.begin();
+  Wire.begin(8, 9);  
   scanI2C();
   Serial.println("Setup completed.");
   initSensors();
@@ -673,7 +673,7 @@ void loop() {
     
     // Actualizar los valores de los sensores
     // Actualizar la pantalla
-    // updateDisplay();
+    updateDisplay();
   }
 
   }
