@@ -673,7 +673,7 @@ void loop() {
     
     // Actualizar los valores de los sensores
     // Actualizar la pantalla
-    // updateDisplay();
+    updateDisplay();
   }
 
   }
