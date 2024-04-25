@@ -15,8 +15,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>0</width>
-    <height>560</height>
+    <width>862</width>
+    <height>500</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -147,6 +147,12 @@
              <normaloff>img/chart-line-up (1).png</normaloff>
              <normalon>img/chart-line-up.png</normalon>img/chart-line-up (1).png</iconset>
            </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
         </layout>
@@ -190,7 +196,7 @@
           <bool>true</bool>
          </property>
          <property name="autoExclusive">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -319,12 +325,18 @@
             </size>
            </property>
            <property name="text">
-            <string>Graficas</string>
+            <string> Graficas</string>
            </property>
            <property name="icon">
             <iconset>
              <normaloff>img/chart-line-up (1).png</normaloff>
              <normalon>img/chart-line-up.png</normalon>img/chart-line-up (1).png</iconset>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -358,7 +370,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Retorno</string>
+          <string> Retorno</string>
          </property>
          <property name="icon">
           <iconset>
@@ -370,6 +382,9 @@
            <width>20</width>
            <height>20</height>
           </size>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -423,7 +438,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="pageRuta">
           <property name="mouseTracking">
@@ -751,7 +766,7 @@
                   <property name="geometry">
                    <rect>
                     <x>5</x>
-                    <y>0</y>
+                    <y>6</y>
                     <width>190</width>
                     <height>190</height>
                    </rect>
@@ -946,7 +961,59 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="pageGraficas"/>
+         <widget class="QWidget" name="pageGraficas">
+          <layout class="QVBoxLayout" name="verticalLayout_18">
+           <item>
+            <widget class="QGraphicsView" name="graphicsView"/>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QPushButton" name="pushButton_6">
+               <property name="text">
+                <string>Yaw</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton">
+               <property name="text">
+                <string>Pitch y Roll</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_2">
+               <property name="text">
+                <string>Altitud</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_3">
+               <property name="text">
+                <string>Temperatura</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_4">
+               <property name="text">
+                <string>Presión</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_5">
+               <property name="text">
+                <string>Velocidad</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="pageModelo">
           <layout class="QHBoxLayout" name="horizontalLayout_3">
            <item>
@@ -1121,6 +1188,38 @@
     <hint type="destinationlabel">
      <x>34</x>
      <y>167</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Retorno2</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>Retorno</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>118</x>
+     <y>524</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>53</x>
+     <y>523</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Retorno</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>Retorno2</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>42</x>
+     <y>514</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>102</x>
+     <y>519</y>
     </hint>
    </hints>
   </connection>
