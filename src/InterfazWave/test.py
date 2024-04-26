@@ -9,6 +9,7 @@ import json
 from folium import plugins
 from stl import mesh
 from pyqtgraph.opengl import GLViewWidget, MeshData, GLMeshItem
+import pyqtgraph as pg
 import numpy as np
 import serial_comm as my_serial
 import sys
@@ -76,15 +77,14 @@ class WorkerThread(QThread):
                     HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)))
                     Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png").transformed(QtGui.QTransform().rotate(-yaw)))
                     Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((presu/133.322)/50)*360)))
-                    Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw)))
+                    Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw))) #==================================================================================================Toca Cambiarlo
                     
-                    # metri1.setText(f"Coordenadas (Longitud y latitud): {coords}")
-                    # metri6.setText(f"Yaw (Grados): {yaw}")
-                    # metri5.setText(f"Pitch (Grados): {pitch}")
-                    # metri7.setText(f"Roll (Grados): {roll}")
-                    # metri4.setText(f"Altitud: {alt}")
-                    # metri3.setText(f"Presión (hPa): {presu}")
-                    # metri2.setText(f"Temperatura: {temp}")
+                    metri3_2.setText(f"Presion manifold ({round(presu,2)})")
+                    metri5.setText(f"Horizonte artificial ({round(pitch, 2)}, {round(roll,2)})")
+                    metri7.setText(f"Norte (Roll) ({round(roll, 2)})")
+                    metri4.setText(f"Altitud ({alt})")
+                    metri8.setText(f"Anometro ({round(yaw, 2)})") #==================================================================================================Toca Cambiarlo
+
                     update_pitch(pitch)
                     update_roll(roll)
                     update_yaw(yaw)
@@ -470,10 +470,13 @@ class Ui_MainWindow(object):
         PunteroAltura.setObjectName("PunteroAltura")
 
         self.verticalLayout_13.addWidget(self.widget_2)
-        self.metri4 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri4.setMaximumSize(QtCore.QSize(16777215, 20))
-        self.metri4.setObjectName("metri4")
-        self.verticalLayout_13.addWidget(self.metri4)
+
+        global metri4
+        metri4 = QtWidgets.QLabel(self.pageMetricas)
+        metri4.setMaximumSize(QtCore.QSize(16777215, 20))
+        metri4.setObjectName("metri4")
+        self.verticalLayout_13.addWidget(metri4)
+
         self.horizontalLayout_4.addLayout(self.verticalLayout_13)
         self.verticalLayout_17 = QtWidgets.QVBoxLayout()
         self.verticalLayout_17.setObjectName("verticalLayout_17")
@@ -499,11 +502,14 @@ class Ui_MainWindow(object):
         Brujula.setObjectName("Brujula")
 
         self.verticalLayout_14.addWidget(self.widget_3)
-        self.metri7 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri7.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.metri7.setAlignment(QtCore.Qt.AlignCenter)
-        self.metri7.setObjectName("metri7")
-        self.verticalLayout_14.addWidget(self.metri7)
+
+        global metri7
+        metri7 = QtWidgets.QLabel(self.pageMetricas)
+        metri7.setMaximumSize(QtCore.QSize(16777215, 30))
+        metri7.setAlignment(QtCore.Qt.AlignCenter)
+        metri7.setObjectName("metri7")
+        self.verticalLayout_14.addWidget(metri7)
+
         self.verticalLayout_17.addLayout(self.verticalLayout_14)
         self.verticalLayout_15 = QtWidgets.QVBoxLayout()
         self.verticalLayout_15.setObjectName("verticalLayout_15")
@@ -531,11 +537,14 @@ class Ui_MainWindow(object):
         self.label_10.setScaledContents(True)
         self.label_10.setObjectName("label_10")
         self.verticalLayout_15.addWidget(self.widget_4)
-        self.metri5 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri5.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.metri5.setAlignment(QtCore.Qt.AlignCenter)
-        self.metri5.setObjectName("metri5")
-        self.verticalLayout_15.addWidget(self.metri5)
+
+        global metri5
+        metri5 = QtWidgets.QLabel(self.pageMetricas)
+        metri5.setMaximumSize(QtCore.QSize(16777215, 30))
+        metri5.setAlignment(QtCore.Qt.AlignCenter)
+        metri5.setObjectName("metri5")
+        self.verticalLayout_15.addWidget(metri5)
+
         self.verticalLayout_17.addLayout(self.verticalLayout_15)
         self.horizontalLayout_4.addLayout(self.verticalLayout_17)
         self.verticalLayout_16 = QtWidgets.QVBoxLayout()
@@ -568,11 +577,14 @@ class Ui_MainWindow(object):
         Temperatura.setObjectName("Temperatura")
 
         self.verticalLayout_12.addWidget(self.widget_5)
-        self.metri8 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri8.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.metri8.setAlignment(QtCore.Qt.AlignCenter)
-        self.metri8.setObjectName("metri8")
-        self.verticalLayout_12.addWidget(self.metri8)
+
+        global metri8
+        metri8 = QtWidgets.QLabel(self.pageMetricas)
+        metri8.setMaximumSize(QtCore.QSize(16777215, 30))
+        metri8.setAlignment(QtCore.Qt.AlignCenter)
+        metri8.setObjectName("metri8")
+        self.verticalLayout_12.addWidget(metri8)
+
         self.verticalLayout_16.addLayout(self.verticalLayout_12)
         self.verticalLayout_10 = QtWidgets.QVBoxLayout()
         self.verticalLayout_10.setObjectName("verticalLayout_10")
@@ -596,11 +608,14 @@ class Ui_MainWindow(object):
         Presion.setObjectName("Presion")
 
         self.verticalLayout_10.addWidget(self.widget_6)
-        self.metri3_2 = QtWidgets.QLabel(self.pageMetricas)
-        self.metri3_2.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.metri3_2.setAlignment(QtCore.Qt.AlignCenter)
-        self.metri3_2.setObjectName("metri3_2")
-        self.verticalLayout_10.addWidget(self.metri3_2)
+
+        global metri3_2
+        metri3_2 = QtWidgets.QLabel(self.pageMetricas)
+        metri3_2.setMaximumSize(QtCore.QSize(16777215, 30))
+        metri3_2.setAlignment(QtCore.Qt.AlignCenter)
+        metri3_2.setObjectName("metri3_2")
+        self.verticalLayout_10.addWidget(metri3_2)
+
         self.verticalLayout_16.addLayout(self.verticalLayout_10)
         self.horizontalLayout_4.addLayout(self.verticalLayout_16)
         self.stackedWidget.addWidget(self.pageMetricas)
@@ -608,28 +623,56 @@ class Ui_MainWindow(object):
         self.pageGraficas.setObjectName("pageGraficas")
         self.verticalLayout_18 = QtWidgets.QVBoxLayout(self.pageGraficas)
         self.verticalLayout_18.setObjectName("verticalLayout_18")
-        self.graphicsView = QtWidgets.QGraphicsView(self.pageGraficas)
-        self.graphicsView.setObjectName("graphicsView")
-        self.verticalLayout_18.addWidget(self.graphicsView)
+
+        global plot_graph
+        plot_graph = pg.PlotWidget()
+        plot_graph.setBackground("#F0F0F0")
+        pen = pg.mkPen(color=(255, 0, 0), width=2)
+        time = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        temperature = [30, 32, 34, 32, 33, 31, 29, 32, 35, 30]
+        plot_graph.plot(time, temperature, pen=pen, symbol="h", symbolSize=10)
+        plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Altitud (m)</span>'
+        )
+        plot_graph.setLabel(
+            "bottom",
+            '<span style="font-size: 12px">Tiempo (s)</span>'
+        )
+        plot_graph.showGrid(x=True, y=True)
+
+        self.verticalLayout_18.addWidget(plot_graph)
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.pushButton_6 = QtWidgets.QPushButton(self.pageGraficas)
         self.pushButton_6.setObjectName("pushButton_6")
+        self.pushButton_6.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout_6.addWidget(self.pushButton_6)
         self.pushButton = QtWidgets.QPushButton(self.pageGraficas)
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout_6.addWidget(self.pushButton)
         self.pushButton_2 = QtWidgets.QPushButton(self.pageGraficas)
         self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_2.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout_6.addWidget(self.pushButton_2)
         self.pushButton_3 = QtWidgets.QPushButton(self.pageGraficas)
         self.pushButton_3.setObjectName("pushButton_3")
+        self.pushButton_3.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout_6.addWidget(self.pushButton_3)
         self.pushButton_4 = QtWidgets.QPushButton(self.pageGraficas)
         self.pushButton_4.setObjectName("pushButton_4")
+        self.pushButton_4.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout_6.addWidget(self.pushButton_4)
         self.pushButton_5 = QtWidgets.QPushButton(self.pageGraficas)
         self.pushButton_5.setObjectName("pushButton_5")
+        self.pushButton_5.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout_6.addWidget(self.pushButton_5)
         self.verticalLayout_18.addLayout(self.horizontalLayout_6)
         self.stackedWidget.addWidget(self.pageGraficas)
@@ -642,7 +685,7 @@ class Ui_MainWindow(object):
         #===================================================================================
 
         view = GLViewWidget(rotationMethod='quaternion')
-        view.setBackgroundColor(255,255,255, 255)
+        view.setBackgroundColor(240,240,240, 0)
         view.setCameraPosition(distance=500) 
         view.pan(0, 0, 0) 
         view.opts['panning'] = False 
@@ -707,12 +750,12 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Elemento:"))
         self.label.setText(_translate("MainWindow", "Latitud:"))
         self.label_2.setText(_translate("MainWindow", "Longitud:"))
-        self.metri4.setText(_translate("MainWindow", "Altura ()"))
-        self.metri7.setText(_translate("MainWindow", "Brujula ()"))
-        self.metri5.setText(_translate("MainWindow", "Horizonte artificial (,)"))
+        metri4.setText(_translate("MainWindow", "Altura ()"))
+        metri7.setText(_translate("MainWindow", "Brujula ()"))
+        metri5.setText(_translate("MainWindow", "Horizonte artificial (,)"))
         Temperatura.setText(_translate("MainWindow", "0.0"))
-        self.metri8.setText(_translate("MainWindow", "Anometro ()"))
-        self.metri3_2.setText(_translate("MainWindow", "Presion manifold ()"))
+        metri8.setText(_translate("MainWindow", "Anometro ()"))
+        metri3_2.setText(_translate("MainWindow", "Presion manifold ()"))
         self.pushButton_6.setText(_translate("MainWindow", "Yaw"))
         self.pushButton.setText(_translate("MainWindow", "Pitch y Roll"))
         self.pushButton_2.setText(_translate("MainWindow", "Altitud"))
