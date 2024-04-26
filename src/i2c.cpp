@@ -8,6 +8,8 @@
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
+#include "NAVEGACION/control.h"
+
 
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -15,6 +17,7 @@
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
+Control controll;
 Adafruit_BMP280 bmp;
 Adafruit_MPU6050 mpu;
 
@@ -432,6 +435,12 @@ void saveToSD(float yaw, float pitch, float roll, float yawValue, float pitchVal
   } else {
     Serial.println("Error al abrir el archivo");
   }
+}
+
+void control(){
+
+  mag, ang = controll.darPolar();
+
 }
 
 
