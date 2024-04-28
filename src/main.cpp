@@ -11,6 +11,17 @@
 #include <TinyGPSPlus.h>
 #include <Adafruit_PWMServoDriver.h>
 #include "telemetria/FlySky.h"
+#include <SPI.h>
+#include <RF24.h>
+
+#define CE_PIN   21
+#define CSN_PIN 16
+
+RF24 radio(CE_PIN, CSN_PIN);
+
+const byte address[6] = "00001";
+
+
 
 
 // GPS declaracion
@@ -24,8 +35,11 @@ const float seaLevelPressure = 101.325;  // Presión atmosférica al nivel del m
  float Latitud=0;
  float Longitud=0;
 
+ const int TX2 = 11; // Pines de transmisión y recepción del GPS
+ const int RX2 = 10;
+
 // Pines pitot
- const int DOUT_Pin = 15;   //sensor data pin
+const int DOUT_Pin = 15;   //sensor data pin
 const int SCK_Pin  = 34;   //sensor clock pin
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -494,6 +508,16 @@ void show_sensors2() {
     }
   }
   Serial.println(); // Agregar nueva línea al final para separar las lecturas
+
+  char text[10];
+  dtostrf(rollValue, 8, 3, text) ;
+  radio.write(&text, sizeof(text));
+  Serial.print("Imprimiendo en el radio: ");
+  Serial.print(text);
+}
+void sendMessage(String message) {
+  
+  radio.write(&message, sizeof(message));
 }
 
 void printValueWithFixedWidth(float value, int totalWidth) {
@@ -527,32 +551,17 @@ void updateDisplay() {
   display.setCursor(0,0);
 
   // Imprime los títulos
-  display.println("Sens    MPU    BNO");
 
   // Imprime Yaw
-  display.print("Yaw:  ");
-  printValueWithFixedWidth(yaw, 6);
-  display.print(" ");
-  printValueWithFixedWidth(yawValue, 6);
+  display.print("Yaw: ");
+  printValueWithFixedWidth(yawValue, 3);
   display.println();
-
-  // Imprime Pitch
-  display.print("Pitch:");
-  printValueWithFixedWidth(pitch, 6);
-  display.print(" ");
-  printValueWithFixedWidth(pitchValue, 6);
+  display.print("Pitch: ");
+  printValueWithFixedWidth(pitchValue, 3);
   display.println();
-
-  // Imprime Roll
   display.print("Roll: ");
-  printValueWithFixedWidth(roll, 6);
-  display.print(" ");
-  printValueWithFixedWidth(rollValue, 6);
+  printValueWithFixedWidth(rollValue, 1);
   display.println();
-
-  display.println("----------------");
-
-
   display.print("Temp: "); display.print(temperature); display.println(" C");
   display.print("Alt: "); display.print(altitude); display.println(" m");
   display.display();
@@ -622,9 +631,10 @@ void setup() {
   scanI2C();
   Serial.println("Setup completed.");
   initSensors();
-  Serial2.begin(9600); // RX2 (GPIO16) y TX2 (GPIO17) en ESP32 NO CAMBIAR EL BAUD RATE
+  
+  Serial2.begin(9600,SERIAL_8N1, RX2, TX2); // RX2 (GPIO16) y TX2 (GPIO17) en ESP32 NO CAMBIAR EL BAUD RATE
   Serial.println(F("Iniciando GPS..."));
- 
+  
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
     for(;;);
@@ -642,6 +652,9 @@ void setup() {
   display.println("UAV Variables");
   display.display(); 
   //chipSetup();
+  radio.begin();
+  radio.openWritingPipe(address);
+  radio.setPALevel(RF24_PA_LOW);
 
 
 
