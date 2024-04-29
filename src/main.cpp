@@ -13,6 +13,11 @@
 #include "telemetria/FlySky.h"
 #include <SPI.h>
 #include <RF24.h>
+#include "NAVEGACION\control.h"
+
+
+
+
 
 #define CE_PIN   21
 #define CSN_PIN 16
@@ -145,7 +150,10 @@ const int chipSelect = 2;
 #define CH6 2
 
 // Configurar receptor
+
+// receptor y servos
 FlySky flySky(CH1, CH2, CH3, CH4, CH6);
+
 
 Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 
@@ -163,7 +171,9 @@ const int servoMax = 600;  // Valor máximo del pulso PWM para el servo (ajusta 
 unsigned int pos0=172; // ancho de pulso en cuentas para pocicion 0°
 unsigned int pos180=565; // ancho de pulso en cuentas para la pocicion 180°
 
-
+#define MIN_PULSE_WIDTH 600
+#define MAX_PULSE_WIDTH 2600
+#define FREQUENCY 60
 
 int ch1Value = 0;
 int ch2Value = 0;
@@ -179,6 +189,13 @@ int servo2Value = 0;
 int servo3Value = 0;
 int servo4Value = 0;
 
+
+int pulseWidth(int angle) {
+  int pulse_wide, analog_value;
+  pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
+  analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
+  return analog_value;
+}
 
 void print_channels(){
 
@@ -209,25 +226,6 @@ void print_channels(){
 
 
 }
-
-void updateChannels(){
-
-    // Obtiene los valores dos canais dentro da faixa de -100 a 100
-  ch1Value = flySky.getChannel1Value();
-  ch2Value = flySky.getChannel2Value();
-  ch3Value = flySky.getChannel3Value();
-  ch4Value = flySky.getChannel4Value();
-  ch5Value = flySky.readSwitch(33, false); // Canal 5 es el switch 5
-  ch6Value = flySky.readSwitch(35, false);
-
-
-  servo0Value = map(ch1Value,0,180,pos0, pos180);
-  servo1Value = map(ch2Value,0,180,pos0, pos180);
-  servo2Value = map(ch3Value,20,160,pos0, pos180);
-  servo3Value = map(ch4Value,0,180,pos0, pos180);
-
-}
-
 void setServos() {
   // Lee los valores actuales de los servos
 
@@ -239,6 +237,33 @@ void setServos() {
     pca9685.setPWM(SER3_TIMON, 0, servo3Value);
   
 }
+void updateChannels(){
+
+    // Obtiene los valores dos canais dentro da faixa de -100 a 100
+  ch1Value = flySky.getChannel1Value();
+  ch2Value = flySky.getChannel2Value();
+  ch3Value = flySky.getChannel3Value();
+  ch4Value = flySky.getChannel4Value();
+  ch5Value = flySky.readSwitch(33, false); // Canal 5 es el switch 5
+  ch6Value = flySky.readSwitch(35, false);
+
+  /*
+  servo0Value = map(ch1Value,0,180,pos0, pos180);
+  servo1Value = map(ch2Value,0,180,pos0, pos180);
+  servo2Value = map(ch3Value,20,160,pos0, pos180);
+  servo3Value = map(ch4Value,0,180,pos0, pos180);
+
+
+  */
+  servo0Value = pulseWidth(ch1Value);
+  servo1Value = pulseWidth(ch2Value);
+  servo2Value = pulseWidth(ch3Value);
+  servo3Value = pulseWidth(ch4Value);
+  
+
+}
+
+
 
 
 void Bno() {
@@ -509,11 +534,12 @@ void show_sensors2() {
   }
   Serial.println(); // Agregar nueva línea al final para separar las lecturas
 
-  char text[10];
+  /*char text[10];
   dtostrf(rollValue, 8, 3, text) ;
   radio.write(&text, sizeof(text));
-  Serial.print("Imprimiendo en el radio: ");
+  //Serial.print("Imprimiendo en el radio: ");
   Serial.print(text);
+  */
 }
 void sendMessage(String message) {
   
@@ -564,6 +590,11 @@ void updateDisplay() {
   display.println();
   display.print("Temp: "); display.print(temperature); display.println(" C");
   display.print("Alt: "); display.print(altitude); display.println(" m");
+  display.println();
+  display.print("gps: ");
+  printValueWithFixedWidth(Latitud, 2);
+  printValueWithFixedWidth(Longitud, 2);
+
   display.display();
 }
 
@@ -642,7 +673,7 @@ void setup() {
   }
   
   pca9685.begin();
-  pca9685.setPWMFreq(60); 
+  pca9685.setPWMFreq(FREQUENCY); 
   display.clearDisplay();
 
   display.setTextSize(1);
@@ -662,7 +693,8 @@ void setup() {
 
 void loop() {
   updateChannels();
-//print_channels();
+  //setServos();
+  
   readBMP280Data();
   readMPU6050Data();
   Bno();
@@ -673,7 +705,7 @@ void loop() {
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
     //show_sensors();
-    //print_channels();
+   //print_channels();
     //show_sensors2();
     //printBNO055Values();
     //saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
