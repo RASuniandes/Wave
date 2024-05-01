@@ -72,6 +72,7 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_3.clicked.connect(self.ui.Grafica4)
         self.ui.pushButton_4.clicked.connect(self.ui.Grafica5)
         self.ui.pushButton_5.clicked.connect(self.ui.Grafica6)
+        self.ui.pushButton_19.clicked.connect(self.ui.Grafica19)
 
 
         #Aqui se sincroniza la seleccion de las dos listas

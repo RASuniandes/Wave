@@ -666,6 +666,11 @@ class Ui_MainWindow(object):
         self.pushButton.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
 
         self.horizontalLayout_6.addWidget(self.pushButton)
+        self.pushButton_19 = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton_19.setObjectName("pushButton")
+        self.pushButton_19.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
+        self.horizontalLayout_6.addWidget(self.pushButton_19)
         self.pushButton_2 = QtWidgets.QPushButton(self.pageGraficas)
         self.pushButton_2.setObjectName("pushButton_2")
         self.pushButton_2.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
@@ -769,9 +774,10 @@ class Ui_MainWindow(object):
         metri8.setText(_translate("MainWindow", "Anometro ()"))
         metri3_2.setText(_translate("MainWindow", "Presion manifold ()"))
         self.pushButton_6.setText(_translate("MainWindow", "Yaw"))
-        self.pushButton.setText(_translate("MainWindow", "Pitch "))
-        self.pushButton_2.setText(_translate("MainWindow", "Roll"))
-        self.pushButton_3.setText(_translate("MainWindow", "Altitud"))
+        self.pushButton.setText(_translate("MainWindow", "Roll"))
+        self.pushButton_19.setText(_translate("MainWindow", "Pitch"))
+        self.pushButton_2.setText(_translate("MainWindow", "Altitud"))
+        self.pushButton_3.setText(_translate("MainWindow", "Temperatura"))
         self.pushButton_4.setText(_translate("MainWindow", "Presión"))
         self.pushButton_5.setText(_translate("MainWindow", "Temperatura"))
 
@@ -794,22 +800,21 @@ class Ui_MainWindow(object):
     def Grafica2(self):
         pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
-    
+        self.plot_graph.plot(gra['tiempo'], gra['roll'], pen=pen , symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Roll</span>'
+        )   
+    def Grafica19(self):
+        pen = pg.mkPen(color=(255, 0, 0), width=2)
+        self.plot_graph.clear()
         self.plot_graph.plot(gra['tiempo'], gra['pitch'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
-            '<span style="font-size: 12px">Pitch°</span>'
+            '<span style="font-size: 12px">Pitch</span>'
         )        
     
     def Grafica3(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=1)
-        self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['roll'], pen=pen, symbol="h", symbolSize=0)
-        self.plot_graph.setLabel(
-            "left",
-            '<span style="font-size: 12px">Roll °</span>'
-        )  
-    def Grafica4(self):
         pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
         self.plot_graph.plot(gra['tiempo'], gra['altitud'], pen=pen, symbol="h", symbolSize=0)
@@ -817,7 +822,14 @@ class Ui_MainWindow(object):
             "left",
             '<span style="font-size: 12px">Altitud (m)</span>'
         )
-        
+    def Grafica4(self):
+        pen = pg.mkPen(color=(255, 0, 0), width=2)
+        self.plot_graph.clear()
+        self.plot_graph.plot(gra['tiempo'], gra['temperatura'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Temperatura (C)</span>'
+        )
     def Grafica5(self):
         pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
