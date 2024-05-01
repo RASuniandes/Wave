@@ -14,7 +14,29 @@
 #include <SPI.h>
 #include <RF24.h>
 #include "NAVEGACION\control.h"
+#include <vector>
+#include <iostream>
 
+float VelocidadActual = 0;
+float k_distanciaAuxiliar = 100;
+float kp = 2;
+float kd = 0.1;
+float cte_saturacion = 100;
+float condicionActualizacion = 0;
+float tiempo=0;
+Control Controlador(k_distanciaAuxiliar, kp, kd, cte_saturacion, condicionActualizacion);
+
+
+float inputCoords[Control::MAX_COORDINATES][2] = {{4.653453, -74.093492}, 
+                          {4.691751, -74.124330}, 
+                          {4.635802, -74.127502},
+                          {4.705188, -74.037882},
+                          {4.648194, -74.101032},
+                          {4.686006, -74.074529},
+                          {4.591923, -74.123288}
+                          };
+float outputCoords[Control::MAX_COORDINATES][2];
+int numCoords = 8;  // Asegúrate de que esta variable refleje la cantidad real de coordenadas proporcionadas
 
 
 
@@ -490,7 +512,22 @@ void show_sensors(){
 
 }
 
-   
+void data_gps(){
+  while (Serial2.available() > 0) {
+    if (gps.encode(Serial2.read())) {
+      if (gps.location.isValid()) {
+        Latitud = gps.location.lat();
+        Longitud = gps.location.lng();
+
+      } 
+      }
+      else {
+        Latitud = 0;
+        Longitud = 0;
+
+    }
+  }
+}   
 
 
 
@@ -512,26 +549,10 @@ void show_sensors2() {
   Serial.print(pitchValue); // pitch del BNO055 brujula y giroscopio de precision
   Serial.print(", ");
   Serial.print(rollValue); // roll del BNO055 brujula y giroscopio de precision
-
-  while (Serial2.available() > 0) {
-    if (gps.encode(Serial2.read())) {
-      if (gps.location.isValid()) {
-        Latitud = gps.location.lat();
-        Longitud = gps.location.lng();
-        Serial.print(", ");
-        Serial.print(Latitud, 6);
-        Serial.print(", ");
-        Serial.print(Longitud, 6);
-      } else {
-        Latitud = 0;
-        Longitud = 0;
-        Serial.print(", ");
-        Serial.print(Latitud, 6);
-        Serial.print(", ");
-        Serial.print(Longitud, 6);
-      }
-    }
-  }
+  Serial.print(", ");
+  Serial.print(Latitud, 6);
+  Serial.print(", ");
+  Serial.print(Longitud, 6);
   Serial.println(); // Agregar nueva línea al final para separar las lecturas
 
   /*char text[10];
@@ -655,7 +676,13 @@ void updateSerial() {
 }
 }
 
+void  Control(){
+  Controlador.Update_Position(Latitud, Longitud,yawValue);
+  Controlador.Update_Velocidad(VelocidadActual);
+  Controlador.Update_orientation(yawValue,rollValue,pitchValue);
+  Controlador.Update_tiempo(tiempo);
 
+}
 void setup() {
   Serial.begin(115200);
   Wire.begin(8, 9);  
@@ -687,21 +714,37 @@ void setup() {
   radio.openWritingPipe(address);
   radio.setPALevel(RF24_PA_LOW);
 
+  Controlador.waitPoints_coordenadas_a_rectangulares(inputCoords, numCoords);
 
-
+    for (int i = 0; i < numCoords; ++i) {
+      Serial.print("Coordenada ");
+      Serial.print(i);
+      Serial.print(": X = ");
+      Serial.print(outputCoords[i][0]);
+      Serial.print(", Y = ");
+      Serial.println(outputCoords[i][1]);
+  }
 }
 
+ 
+
+
+
 void loop() {
+  unsigned long currentMillis = millis();
+  tiempo=millis();
   updateChannels();
-  //setServos();
-  
-  readBMP280Data();
+  setServos();
+  data_gps();
+  readBMP280Data(); 
   readMPU6050Data();
   Bno();
   show_sensors2();
-
+  Control();
+  
+  //imprimirCoordenadas(CoordenadasRectangulares);
    
-  unsigned long currentMillis = millis();
+  
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
     //show_sensors();

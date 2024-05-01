@@ -769,11 +769,11 @@ class Ui_MainWindow(object):
         metri8.setText(_translate("MainWindow", "Anometro ()"))
         metri3_2.setText(_translate("MainWindow", "Presion manifold ()"))
         self.pushButton_6.setText(_translate("MainWindow", "Yaw"))
-        self.pushButton.setText(_translate("MainWindow", "Pitch y Roll"))
-        self.pushButton_2.setText(_translate("MainWindow", "Altitud"))
-        self.pushButton_3.setText(_translate("MainWindow", "Temperatura"))
+        self.pushButton.setText(_translate("MainWindow", "Pitch "))
+        self.pushButton_2.setText(_translate("MainWindow", "Roll"))
+        self.pushButton_3.setText(_translate("MainWindow", "Altitud"))
         self.pushButton_4.setText(_translate("MainWindow", "Presión"))
-        self.pushButton_5.setText(_translate("MainWindow", "Velocidad"))
+        self.pushButton_5.setText(_translate("MainWindow", "Temperatura"))
 
     def ActualizarPosicion(self):
         print(lat, lon)
@@ -784,51 +784,88 @@ class Ui_MainWindow(object):
         item2.setText(lon)
         item3.setText(item3.text())
     def Grafica1(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=2)
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['yaw'], pen=pen, symbol="h", symbolSize=10)
+        self.plot_graph.plot(gra['tiempo'], gra['yaw'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
-            '<span style="font-size: 12px">Yaw</span>'
+            '<span style="font-size: 12px">Yaw °</span>'
         )                
     def Grafica2(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=2)
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['roll'], pen=pen, symbol="h", symbolSize=10)
-        self.plot_graph.plot(gra['tiempo'], gra['pitch'], pen=pen, symbol="h", symbolSize=10)
+    
+        self.plot_graph.plot(gra['tiempo'], gra['pitch'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
-            '<span style="font-size: 12px">Pitch-Roll</span>'
+            '<span style="font-size: 12px">Pitch°</span>'
         )        
+    
     def Grafica3(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=2)
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['altitud'], pen=pen, symbol="h", symbolSize=10)
+        self.plot_graph.plot(gra['tiempo'], gra['roll'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Roll °</span>'
+        )  
+    def Grafica4(self):
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        self.plot_graph.plot(gra['tiempo'], gra['altitud'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
             '<span style="font-size: 12px">Altitud (m)</span>'
         )
-    def Grafica4(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=2)
-        self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['temperatura'], pen=pen, symbol="h", symbolSize=10)
-        self.plot_graph.setLabel(
-            "left",
-            '<span style="font-size: 12px">Temperatura (C)</span>'
-        )
+        
     def Grafica5(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=2)
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['presion'], pen=pen, symbol="h", symbolSize=10)
+        self.plot_graph.plot(gra['tiempo'], gra['presion'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
             '<span style="font-size: 12px">Presion (Pha)</span>'
         )
     def Grafica6(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=2)
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['velocidad'], pen=pen, symbol="h", symbolSize=10)
+        self.plot_graph.plot(gra['tiempo'], gra['temperatura'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Temperatura °(C)</span>'
+        )    
+    
+    """  
+    def Grafica3(self):
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        self.plot_graph.plot(gra['tiempo'], gra['altitud'], pen=pen, symbol="h", symbolSize=1)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Altitud (m)</span>'
+        )
+    def Grafica4(self):
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        self.plot_graph.plot(gra['tiempo'], gra['temperatura'], pen=pen, symbol="h", symbolSize=1)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Temperatura (C)</span>'
+        )
+    def Grafica5(self):
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        self.plot_graph.plot(gra['tiempo'], gra['presion'], pen=pen, symbol="h", symbolSize=1)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Presion (Pha)</span>'
+        )
+    def Grafica6(self):
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        self.plot_graph.plot(gra['tiempo'], gra['velocidad'], pen=pen, symbol="h", symbolSize=1)
         self.plot_graph.setLabel(
             "left",
             '<span style="font-size: 12px">Velocidad (k/h)</span>'
         )
+    """
