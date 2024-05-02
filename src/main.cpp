@@ -21,7 +21,7 @@ float VelocidadActual = 0;
 float k_distanciaAuxiliar = 100;
 float kp = 2;
 float kd = 0.1;
-float cte_saturacion = 100;
+float cte_saturacion = 10;
 float condicionActualizacion = 0;
 float tiempo=0;
 Control Controlador(k_distanciaAuxiliar, kp, kd, cte_saturacion, condicionActualizacion);
@@ -680,7 +680,10 @@ void  Control(){
   Controlador.Update_Position(Latitud, Longitud,yawValue);
   Controlador.Update_Velocidad(VelocidadActual);
   Controlador.Update_orientation(yawValue,rollValue,pitchValue);
+  
   Controlador.Update_tiempo(tiempo);
+  Controlador.Update_Velocidad(60);
+  Controlador.UAV_Search();
 
 }
 void setup() {
@@ -732,14 +735,14 @@ void setup() {
 
 void loop() {
   unsigned long currentMillis = millis();
-  tiempo=millis();
+  tiempo=currentMillis;
   updateChannels();
   setServos();
   data_gps();
   readBMP280Data(); 
   readMPU6050Data();
   Bno();
-  show_sensors2();
+  //show_sensors2();
   Control();
   
   //imprimirCoordenadas(CoordenadasRectangulares);
@@ -747,6 +750,9 @@ void loop() {
   
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
+    Serial.print("tiempo: "); 
+    Serial.println(tiempo);
+    Controlador.ImprimirDatos();
     //show_sensors();
    //print_channels();
     //show_sensors2();

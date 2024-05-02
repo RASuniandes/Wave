@@ -3,6 +3,162 @@
 #include <iostream>
 #include <vector>
 
+float  Control::darPolarMagnitude(float x, float y) {
+    return std::hypot(x, y);
+}
+
+float  Control::darPolarAngle(float x, float y) {
+    return Radians_to_Degrees(std::atan2(y, x));
+}
+
+float  Control::darRectangularMagnitude(float mag, float ang) {
+    return mag * std::cos(M_PI * ang / 180);
+}
+
+
+float  Control::darRectangularAngle(float mag, float ang) {
+    return mag * std::sin(M_PI * ang / 180);
+}
+
+
+float  Control::darErrorPosicion (float x_actual, float y_actual, float x_final, float y_final) {
+    float diffX = x_final - x_actual;
+    float diffY = y_final - y_actual;
+    
+    // Llamar a la función darPolar para obtener la magnitud y el ángulo
+    return darPolarMagnitude(diffX, diffY);
+}
+
+float  Control::darPendiente_m(float x1, float y1, float x2, float y2) {
+    float m, b;
+    if (x1 - y1 == 0) {
+        m = 9999;
+    } else {
+        m = (y2 - y1) / (y2 - y1);
+    }
+    return m;
+}
+
+
+
+float  Control::darPendiente_b(float x1, float y1, float x2, float y2) {
+    float m, b;
+    m=darPendiente_m(x1, y1, x2, y2);
+    b = y2 - m * x2;
+    return m;
+}
+
+float  Control::proyectarPunto_x(float x1,float y1, float Pendiente, float intersepto) {
+    float xi = -(intersepto * Pendiente - Pendiente * y1 - x1) / ((Pendiente * Pendiente) + 1);
+    float yi = Pendiente * xi + intersepto;
+    return xi;
+}
+
+float  Control::proyectarPunto_y(float x1,float y1, float Pendiente, float intersepto) {
+    float xi = proyectarPunto_x(x1, y1, Pendiente, intersepto);
+    float yi = Pendiente * xi + intersepto;
+    return yi;
+}
+
+int Control::signo(float x) {
+    return (x >= 0) ? 1 : -1;
+}
+float Control::darCorreccionAngular(float AnguloActual, float AnguloDeseado) {
+    float ErrorAngular = AnguloDeseado - AnguloActual;
+    if (std::abs(ErrorAngular) < 180) {
+        return ErrorAngular;
+    } else {
+        return ErrorAngular - 360 * signo(ErrorAngular);
+    }
+}
+
+float Control::darDerivada(float ValorActual, float ValorAnterior, float dt) {
+    return (ValorActual - ValorAnterior) / dt;
+}
+float Control::darAnguloBanqueo(float PorcentajeAleronIzquierdo, float AnguloBanqueoAnterior, float dt) {
+    return (-1 * 1.2 * PorcentajeAleronIzquierdo * dt + AnguloBanqueoAnterior);
+}
+
+float Control::Degress_to_Radians(float grados){
+    return (grados * M_PI) / 180;
+}
+float Control::Radians_to_Degrees(float radianes){
+    return (radianes * 180) / M_PI;
+}
+
+std::vector<float> Control::darPuntoIntermedio(float PuntoProyectado_x,float PuntoProyectado_y, float angulo, float Pendiente, float intersepto, float k_distanciaAuxiliar, float PuntoObjetivo_x, float PuntoObjetivo_y) {
+    /*
+    # Retorna el punto intermedio (P3') en [x,y] sobre la recta definida por la pendiente y el intersecto a una distancia k_distanciaAuxiliar del punto proyectado sobre la recta y que este más cercano a PuntoObjetivo
+    # PuntoProyectado (Pi) en [x,y]
+    # El ángulo corresponde al angulo de la recta respecto a la horizontal (°)
+    # Pendiente como escalar
+    # intersecto como escalar
+    # k_distanciaAuxiliar
+    # PuntoObjetivo como [x,y]
+    
+    */
+    float x1 = PuntoProyectado_x + k_distanciaAuxiliar * std::cos(std::atan(Pendiente));
+    float y1 = Pendiente * x1 + intersepto;
+    float x2 = PuntoProyectado_x - k_distanciaAuxiliar * std::cos(std::atan(Pendiente));
+    float y2 = Pendiente * x2 + intersepto;
+    if (std::hypot(PuntoObjetivo_x - x1, PuntoObjetivo_y - y1) < std::hypot(PuntoObjetivo_x - x2, PuntoObjetivo_y - y2)) {
+        return {x1, y1};
+    } else {
+        return {x2, y2};
+    }
+}  
+
+std::vector<float> Control::darControlAleron(float Error, float DerivadaError, float kp, float kd, float cte_saturacion, float AnguloBanqueo) {
+    float controlador;
+    if (std::abs(AnguloBanqueo) < 25) {
+        controlador = -kp * Error + kd * (DerivadaError);
+        if (std::abs(controlador) > 100) {
+            controlador = 100 * signo(controlador);
+        }
+    } else if (std::abs(AnguloBanqueo) < 30) {
+        controlador = -kp * Error + kd * (DerivadaError);
+        if (std::abs(controlador) > 100) {
+            controlador = 100 * signo(controlador);
+        }
+        float penalizacion = (std::abs(AnguloBanqueo) - 25) / 5;
+        controlador = controlador * (1 - penalizacion);
+    } else {
+        controlador = cte_saturacion * AnguloBanqueo / 100;
+    }
+    return {controlador, -controlador};
+}
+
+
+
+std::vector<float> Control::darAngulo_360_180(float anguloLeido) {
+    float ang_encontrado_360, ang_encontrado_180;
+    if (std::abs(anguloLeido) > 360) {
+        float ang_encontrado_360 = std::modf(anguloLeido / 360, &ang_encontrado_360) * 360 * signo(anguloLeido);
+        ang_encontrado_180 = (std::abs(ang_encontrado_360) <= 180) ? ang_encontrado_360 : ang_encontrado_360 - 360;
+    } else {
+        ang_encontrado_360 = anguloLeido;
+        if (std::abs(anguloLeido) < 180) {
+            ang_encontrado_180 = ang_encontrado_360;
+        } else {
+            ang_encontrado_180 = ang_encontrado_360 - 360 * signo(ang_encontrado_360);
+        }
+    }
+    return {ang_encontrado_360, ang_encontrado_180};
+}
+
+std::vector<float> Control::darVelocidadAngular_ICC(float PoseActual_x, float PoseActual_y, float PoseActual_theta, float AnguloBanqueo, float VelocidadActual) {
+    if (AnguloBanqueo == 0) {
+        return {0, 0, 0, 0};
+    } else {
+        float RadioGiro = std::abs((VelocidadActual * VelocidadActual) / (9.81 * std::tan(M_PI * AnguloBanqueo / 180)));
+        float VelocidadAngular = (VelocidadActual / RadioGiro) * signo(AnguloBanqueo) * 180 / M_PI;
+        float Icc_x = RadioGiro * std::cos(M_PI * PoseActual_theta / 180 + signo(AnguloBanqueo) * M_PI / 2) + PoseActual_x;
+        float Icc_y = RadioGiro * std::sin(M_PI * PoseActual_theta  / 180 + signo(AnguloBanqueo) * M_PI / 2) + PoseActual_y;
+        return {VelocidadAngular, Icc_x, Icc_y, RadioGiro};
+    }
+}
+
+
 
 void Control::waitPoints_coordenadas_a_rectangulares(const float inputCoords[MAX_COORDINATES][2], int numCoords) {
     float factor = 6371 * 2 * M_PI / 360;  // Factor para convertir grados a "kilómetros lineales"
@@ -12,7 +168,7 @@ void Control::waitPoints_coordenadas_a_rectangulares(const float inputCoords[MAX
     outputCoords[0][0] = 0;
     outputCoords[0][1] = 0;
 
-    for (int i = 1; i < numCoords; ++i) {
+    for (int i = 0; i < numCoords-1; ++i) {
         float lonDiff = inputCoords[i][1] - inputCoords[0][1];
         float latDiff = inputCoords[i][0] - inputCoords[0][0];
         outputCoords[i][0] = lonDiff * factor * 1000;  // Conversión de longitud a metros
@@ -42,9 +198,9 @@ void Control::Update_Position(float latitude, float longitude, float theta1) {
 
 void Control::Update_orientation(float yaw, float pitch, float roll) {
     /*Actualiza valores de orientación*/
-    yawUAV = yaw;
-    pitchUAV = pitch;
-    rollUAV = roll;
+    yawUAV = Degress_to_Radians(yaw);
+    pitchUAV = Degress_to_Radians(pitch);
+    rollUAV = Degress_to_Radians(roll);
 }
 
 
@@ -56,8 +212,8 @@ void Control::Update_Velocidad(float VelocidadActual1) {
 void Control::Update_tiempo(float time){
     float time_act=tiempo_actual;
     tiempo_actual=time;
-    dt=tiempo_actual=tiempo_anterior;
-    float tiempo_anterior=time_act;
+    dt=(tiempo_actual-tiempo_anterior)/1000;
+    tiempo_anterior=time_act;
 
 
 }
@@ -93,8 +249,10 @@ void Control::UAV_Search(){
         y_intermedio=puntoIntermedio[1];
         vectorRumboDeseado_x=x_intermedio-latitudeUAV;
         vectorRumboDeseado_y=y_intermedio-longitudeUAV;
+
+        
         vectorRumboDeseado_magnitud=darPolarMagnitude(vectorRumboDeseado_x, vectorRumboDeseado_y);
-        vectorRumboDeseado_angulo=darPolarAngle(vectorRumboDeseado_x, vectorRumboDeseado_y);
+        vectorRumboDeseado_angulo=(darPolarAngle(vectorRumboDeseado_x, vectorRumboDeseado_y));
         
 
 
@@ -103,7 +261,7 @@ void Control::UAV_Search(){
         VelocidadErrorAngular=darDerivada(ErrorAngular, ErrorAngularAnterior, dt);
 
         //Revisar roll UAV angulo de Banqueo
-        std::vector<float> PorcentajeAleron=darControlAleron(ErrorAngular, VelocidadErrorAngular, kp, kd, cte_saturacion, rollUAV);
+        std::vector<float> PorcentajeAleron=darControlAleron(ErrorAngular, VelocidadErrorAngular, kp, kd, cte_saturacion, AnguloBanqueo);
         PorcentajeAleronIzquierdo=PorcentajeAleron[0];
         PorcentajeAleronDerecho=PorcentajeAleron[1];
 
@@ -117,6 +275,7 @@ void Control::UAV_Search(){
         ICC_x=ICC[1];
         ICC_y=ICC[2];
         RadioGiro=ICC[3];
+        ErrorAngularAnterior=ErrorAngular;
 
     
     }
@@ -126,157 +285,20 @@ void Control::UAV_Search(){
 
 
 }
-
-float darPolarMagnitude(float x, float y) {
-    return std::hypot(x, y);
-}
-
-float darPolarAngle(float x, float y) {
-    return std::atan2(y, x);
-}
-
-float darRectangularMagnitude(float mag, float ang) {
-    return mag * std::cos(M_PI * ang / 180);
-}
-
-
-float darRectangularAngle(float mag, float ang) {
-    return mag * std::sin(M_PI * ang / 180);
-}
-
-
-float darErrorPosicion (float x_actual, float y_actual, float x_final, float y_final) {
-    float diffX = x_final - x_actual;
-    float diffY = y_final - y_actual;
-    
-    // Llamar a la función darPolar para obtener la magnitud y el ángulo
-    return darPolarMagnitude(diffX, diffY);
-}
-
-float darPendiente_m(float x1, float y1, float x2, float y2) {
-    float m, b;
-    if (x1 - y1 == 0) {
-        m = 9999;
-    } else {
-        m = (y2 - y1) / (y2 - y1);
-    }
-    return m;
-}
-
-
-
-float darPendiente_b(float x1, float y1, float x2, float y2) {
-    float m, b;
-    m=darPendiente_m(x1, y1, x2, y2);
-    b = y2 - m * x2;
-    return m;
-}
-
-float proyectarPunto_x(float x1,float y1, float Pendiente, float intersepto) {
-    float xi = -(intersepto * Pendiente - Pendiente * y1 - x1) / ((Pendiente * Pendiente) + 1);
-    float yi = Pendiente * xi + intersepto;
-    return xi;
-}
-
-float proyectarPunto_y(float x1,float y1, float Pendiente, float intersepto) {
-    float xi = proyectarPunto_x(x1, y1, Pendiente, intersepto);
-    float yi = Pendiente * xi + intersepto;
-    return yi;
-}
-
-
-std::vector<float> darPuntoIntermedio(float PuntoProyectado_x,float PuntoProyectado_y, float angulo, float Pendiente, float intersepto, float k_distanciaAuxiliar, float PuntoObjetivo_x, float PuntoObjetivo_y) {
-    /*
-    # Retorna el punto intermedio (P3') en [x,y] sobre la recta definida por la pendiente y el intersecto a una distancia k_distanciaAuxiliar del punto proyectado sobre la recta y que este más cercano a PuntoObjetivo
-    # PuntoProyectado (Pi) en [x,y]
-    # El ángulo corresponde al angulo de la recta respecto a la horizontal (°)
-    # Pendiente como escalar
-    # intersecto como escalar
-    # k_distanciaAuxiliar
-    # PuntoObjetivo como [x,y]
-    
-    */
-    float x1 = PuntoProyectado_x + k_distanciaAuxiliar * std::cos(std::atan(Pendiente));
-    float y1 = Pendiente * x1 + intersepto;
-    float x2 = PuntoProyectado_x - k_distanciaAuxiliar * std::cos(std::atan(Pendiente));
-    float y2 = Pendiente * x2 + intersepto;
-    if (std::hypot(PuntoObjetivo_x - x1, PuntoObjetivo_y - y1) < std::hypot(PuntoObjetivo_x - x2, PuntoObjetivo_y - y2)) {
-        return {x1, y1};
-    } else {
-        return {x2, y2};
-    }
-}  
-
-float darCorreccionAngular(float AnguloActual, float AnguloDeseado) {
-    float ErrorAngular = AnguloDeseado - AnguloActual;
-    if (std::abs(ErrorAngular) < 180) {
-        return ErrorAngular;
-    } else {
-        return ErrorAngular - 360 * signo(ErrorAngular);
-    }
-}
-int signo(float x) {
-    return (x >= 0) ? 1 : -1;
-}
-float darDerivada(float ValorActual, float ValorAnterior, float dt) {
-    return (ValorActual - ValorAnterior) / dt;
-}
-std::vector<float> darControlAleron(float Error, float DerivadaError, float kp, float kd, float cte_saturacion, float AnguloBanqueo) {
-    float controlador;
-    if (std::abs(AnguloBanqueo) < 25) {
-        controlador = -kp * Error + kd * DerivadaError;
-        if (std::abs(controlador) > 100) {
-            controlador = 100 * signo(controlador);
-        }
-    } else if (std::abs(AnguloBanqueo) < 30) {
-        controlador = -kp * Error + kd * DerivadaError;
-        if (std::abs(controlador) > 100) {
-            controlador = 100 * signo(controlador);
-        }
-        float penalizacion = (std::abs(AnguloBanqueo) - 25) / 5;
-        controlador = controlador * (1 - penalizacion);
-    } else {
-        controlador = cte_saturacion * AnguloBanqueo / 100;
-    }
-    return {controlador, -controlador};
-}
-
-float darAnguloBanqueo(float PorcentajeAleronIzquierdo, float AnguloBanqueoAnterior, float dt) {
-    return (-1 * 1.2 * PorcentajeAleronIzquierdo * dt + AnguloBanqueoAnterior);
-}
-
-
-std::vector<float> darAngulo_360_180(float anguloLeido) {
-    float ang_encontrado_360, ang_encontrado_180;
-    if (std::abs(anguloLeido) > 360) {
-        float ang_encontrado_360 = std::modf(anguloLeido / 360, &ang_encontrado_360) * 360 * signo(anguloLeido);
-        ang_encontrado_180 = (std::abs(ang_encontrado_360) <= 180) ? ang_encontrado_360 : ang_encontrado_360 - 360;
-    } else {
-        ang_encontrado_360 = anguloLeido;
-        if (std::abs(anguloLeido) < 180) {
-            ang_encontrado_180 = ang_encontrado_360;
-        } else {
-            ang_encontrado_180 = ang_encontrado_360 - 360 * signo(ang_encontrado_360);
-        }
-    }
-    return {ang_encontrado_360, ang_encontrado_180};
-}
-
-std::vector<float> darVelocidadAngular_ICC(float PoseActual_x, float PoseActual_y, float PoseActual_theta, float AnguloBanqueo, float VelocidadActual) {
-    if (AnguloBanqueo == 0) {
-        return {0, 0, 0, 0};
-    } else {
-        float RadioGiro = std::abs((VelocidadActual * VelocidadActual) / (9.81 * std::tan(M_PI * AnguloBanqueo / 180)));
-        float VelocidadAngular = (VelocidadActual / RadioGiro) * signo(AnguloBanqueo) * 180 / M_PI;
-        float Icc_x = RadioGiro * std::cos(M_PI * PoseActual_theta / 180 + signo(AnguloBanqueo) * M_PI / 2) + PoseActual_x;
-        float Icc_y = RadioGiro * std::sin(M_PI * PoseActual_theta  / 180 + signo(AnguloBanqueo) * M_PI / 2) + PoseActual_y;
-        return {VelocidadAngular, Icc_x, Icc_y, RadioGiro};
-    }
-}
-
-
 void Control::ImprimirDatos() {
-    Serial.println("==== Datos Importantes ====");
+    Serial.println("\n \n \n==== Datos Importantes ====");
+    Serial.print("Dt");
+    Serial.println(dt);
+    Serial.print("Tiempo Actual: ");
+    Serial.println(tiempo_actual);
+    Serial.print("Tiempo Anterior: ");
+    Serial.println(tiempo_anterior);
+
+    Serial.print("Latitud Actual del UAVt: ");
+    Serial.println(latitudeUAV, 6); // 6 dígitos decimales
+    Serial.print("Longitud Actual del UAV: ");
+    Serial.println(longitudeUAV, 6);
+
     Serial.print("Latitud Actual del Waypoint: ");
     Serial.println(actual_waitpoint_latitude, 6); // 6 dígitos decimales
     Serial.print("Longitud Actual del Waypoint: ");
@@ -287,25 +309,50 @@ void Control::ImprimirDatos() {
     Serial.print("Longitud del Siguiente Waypoint: ");
     Serial.println(siguiente_waitpoint_longitude, 6);
 
-    Serial.print("Error de Posición: ");
-    Serial.println(errorPosicion);
 
     Serial.print("Magnitud del Vector Waypoint: ");
-    Serial.println(vector_waitpoint_magnitud);
+    Serial.println(vector_waitpoint_magnitud,6);
     Serial.print("Ángulo del Vector Waypoint: ");
-    Serial.println(vector_waitpoint_angulo);
+    Serial.println(vector_waitpoint_angulo,6);
 
     Serial.print("Ángulo de Rumbo Deseado: ");
-    Serial.println(vectorRumboDeseado_angulo);
+    Serial.println(vectorRumboDeseado_angulo,6);
     Serial.print("Magnitud de Rumbo Deseado: ");
-    Serial.println(vectorRumboDeseado_magnitud);
+    Serial.println(vectorRumboDeseado_magnitud,6);
+
+    Serial.print("Error de Posición: ");
+    Serial.println(errorPosicion);
+    Serial.print("Error Angular: ");
+    Serial.println(ErrorAngular,6);
+    Serial.print("Velocidad Error Angular: ");
+    Serial.println(VelocidadErrorAngular,6);
+
+
 
     Serial.print("Radio de Giro: ");
-    Serial.println(RadioGiro);
+    Serial.println(RadioGiro,6);
     Serial.print("Velocidad Angular Actual: ");
-    Serial.println(VelocidadAngularActual);
+    Serial.println(VelocidadAngularActual,6);
+
+    Serial.print("Theta: ");
+    Serial.println(theta,6);
+    Serial.print("Angulo de Banqueo: ");
+    Serial.println(AnguloBanqueo,6);
+
+    Serial.print("Index ");
+    Serial.println(index_waitpoint_actual);
+    /*
+    Serial.println("waitpoints: ");
+    for (int i = 0; i < num_waitpoints; ++i) {
+        Serial.print(waitPoints[i][0],6);
+        Serial.print(", ");
+        Serial.println(waitPoints[i][1],6);
+    }
     Serial.println("===========================");
+    */
 }
+
+
 /*
 std::vector<float> darPoseFutura(std::vector<float> PoseActual, float VelocidadActual, float VelocidadAngularActual, std::vector<float> Icc, float dt) {
     if (VelocidadAngularActual == 0) {

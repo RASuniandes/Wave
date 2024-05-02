@@ -12,7 +12,7 @@ public:
     static const int MAX_COORDINATES = 100;
     float VelocidadActual;
     float k_distanciaAuxiliar;
-    float dt;
+    
     float kp;
     float kd;
     float cte_saturacion;
@@ -72,7 +72,6 @@ public:
     Control(float k_distanciaAuxiliar, float kp, float kd, float cte_saturacion,float condicionActualizacion):
 
         k_distanciaAuxiliar(k_distanciaAuxiliar),
-        dt(dt),
         kp(kp), 
         kd(kd), 
         cte_saturacion(cte_saturacion),
@@ -104,19 +103,29 @@ float darPendiente_b(float x1, float y1, float x2, float y2);
 float darCorreccionAngular(float AnguloActual, float AnguloDeseado);
 float darDerivada(float ValorActual, float ValorAnterior, float dt);
 float darAnguloBanqueo(float PorcentajeAleronIzquierdo, float AnguloBanqueoAnterior, float dt);
+float proyectarPunto_x(float x1,float y1, float Pendiente, float intersepto);
+float proyectarPunto_y(float x1,float y1, float Pendiente, float intersepto);
+float darRectangularMagnitude(float mag, float ang);
+float darRectangularAngle(float mag, float ang);
+float Degress_to_Radians(float grados);
+float Radians_to_Degrees(float radianes);
 
 
-std::vector<float> darPuntoIntermediofloat(float PuntoProyectado_x, float PuntoProyectado_y,float angulo, float Pendiente, float interescto, float k_distanciaAuxiliar, float PuntoObjetivo_x, float PuntoObjetivo_y);
-std::vector<float> darPoseFutura(std::vector<float> PoseActual, float VelocidadActual, float VelocidadAngularActual, std::vector<float> Icc, float dt);
-std::vector<float> darVelocidadAngular_ICC(float PoseActual_x, float PoseActual_y, float PoseActual_theta,float AnguloBanqueo, float VelocidadActual);
-std::vector<float> darPolar(float x, float y);
-std::vector<float> darRectangular(float mag, float ang);
-std::vector<float> darPendiente(std::vector<float> Punto1, std::vector<float> Punto2);
-std::vector<float> proyectarPunto(std::vector<float> Punto, float Pendiente, float interescto);
+
 std::vector<float> darControlAleron(float Error, float DerivadaError, float kp, float kd, float cte_saturacion, float AnguloBanqueo);
 std::vector<float> darAngulo_360_180(float anguloLeido);
+std::vector<float> darPuntoIntermedio(float PuntoProyectado_x, float PuntoProyectado_y,float angulo, float Pendiente, float interescto, float k_distanciaAuxiliar, float PuntoObjetivo_x, float PuntoObjetivo_y);
+std::vector<float> darVelocidadAngular_ICC(float PoseActual_x, float PoseActual_y, float PoseActual_theta,float AnguloBanqueo, float VelocidadActual);
+
+//std::vector<float> darPoseFutura(std::vector<float> PoseActual, float VelocidadActual, float VelocidadAngularActual, std::vector<float> Icc, float dt);
+//std::vector<float> darPolar(float x, float y);
+//std::vector<float> darRectangular(float mag, float ang);
+//std::vector<float> darPendiente(std::vector<float> Punto1, std::vector<float> Punto2);
+//std::vector<float> proyectarPunto(std::vector<float> Punto, float Pendiente, float interescto);
+
+
 
 };
 
 
-#endif; // Fix: Added a semicolon at the end of the line
+#endif // Fix: Added a semicolon at the end of the line
