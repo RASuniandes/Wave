@@ -1,0 +1,24 @@
+#include <SPI.h>
+#include <RH_RF24.h>
+
+#define RF_CE_PIN    21  // Pin CE del módulo RF
+#define RF_CSN_PIN   16  // Pin CSN del módulo RF
+
+RH_RF24 rf24(RF_CE_PIN, RF_CSN_PIN); // Inicialización del módulo RF
+
+void setup() {
+  Serial.begin(9600);
+  
+  if (!rf24.init())
+    Serial.println("Error al iniciar el módulo RF");
+}
+
+void loop() {
+  const char *message = "Hola, mundo!";
+  
+  rf24.send((uint8_t *)message, strlen(message));
+  rf24.waitPacketSent();
+  
+  Serial.println("Mensaje enviado.");
+  delay(1000);
+}
