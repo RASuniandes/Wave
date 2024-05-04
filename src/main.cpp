@@ -520,12 +520,13 @@ void data_gps(){
         Longitud = gps.location.lng();
 
       } 
-      }
-      else {
+            else {
         Latitud = 0;
         Longitud = 0;
 
     }
+      }
+
   }
 }   
 
