@@ -1,0 +1,113 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_MPU6050.h>
+#include "BNO055_support.h"
+#include <Adafruit_SSD1306.h>
+#include "FS.h"
+#include "SD.h"
+#include "SPI.h"
+#include <TinyGPSPlus.h>
+#include <Adafruit_PWMServoDriver.h>
+#include "telemetria/FlySky.h"
+#include <SPI.h>
+#include <RF24.h>
+
+
+
+
+
+
+#define SER0_ELEVADORES  0   //Servo Motor 0 on connector 0
+#define SER1_ALERONES 1  //Servo Motor 1 on connector 12
+
+#define SER2_MOTOR  2   //Servo Motor 0 on connector 0
+#define SER3_TIMON  3
+
+
+const int servoMin = 150;  // Valor mínimo del pulso PWM para el servo (ajusta según sea necesario)
+const int servoMax = 600;  // Valor máximo del pulso PWM para el servo (ajusta según sea necesario)
+
+
+unsigned int pos0=172; // ancho de pulso en cuentas para pocicion 0°
+unsigned int pos180=565; // ancho de pulso en cuentas para la pocicion 180°
+
+#define MIN_PULSE_WIDTH 600
+#define MAX_PULSE_WIDTH 2600
+#define FREQUENCY 60
+
+Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
+
+float devicesFound = 0.0;
+
+void scanI2C() {
+  Serial.println("Scanning I2C Addresses");
+  uint8_t cnt = 0;
+  Wire.setClock(100000);
+
+  for (uint8_t i = 0; i < 128; i++) {
+    Wire.beginTransmission(i);
+    uint8_t ec = Wire.endTransmission(true);
+
+    if (ec == 0) {
+      if (i < 16) Serial.print('0');
+      Serial.print(i, HEX);
+      cnt++;
+    } else {
+      Serial.print("..");
+    }
+    
+    Serial.print(' ');
+    if ((i & 0x0F) == 0x0F) Serial.println();
+  }
+
+  Serial.print("Scan Completed, ");
+  Serial.print(cnt);
+  Serial.println(" I2C Devices found.");
+
+  devicesFound = cnt;
+
+  if (devicesFound == 0) {
+    Serial.println("No I2C devices found.");
+  } else {
+    Serial.println("I2C devices found.");
+  }
+}
+
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(8, 9);  //SDA, SCL
+
+  pca9685.begin();
+
+ 
+
+  Serial.println("Servo test!");
+  pca9685.setPWMFreq(FREQUENCY); 
+  scanI2C();
+
+}
+
+
+int pulseWidth(int angle) {
+  int pulse_wide, analog_value;
+  pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
+  analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
+  return analog_value;
+}
+
+void loop() {
+  pca9685.setPWM(SER0_ELEVADORES , 0, pulseWidth(0));
+  Serial.print("Servo test "); 
+  Serial.println( " 0°"); 
+  delay(1000);
+  pca9685.setPWM(SER0_ELEVADORES , 0, pulseWidth(90));
+  Serial.println( " 90°"); 
+  delay(1000);
+  pca9685.setPWM(SER0_ELEVADORES , 0, pulseWidth(180));
+  Serial.println( " 180°"); 
+  delay(1000);
+
+}

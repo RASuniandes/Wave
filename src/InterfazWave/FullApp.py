@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
 
         #Se inicializa el menu de la app
         self.ui.iconOnly.hide()
-        self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.stackedWidget.setCurrentIndex(2)
         self.ui.Ruta1.setChecked(True)
         self.ui.Ruta2.setChecked(True)
         # self.ui.Menu.setChecked(True)
@@ -65,6 +65,15 @@ class MainWindow(QMainWindow):
         self.ui.Bajar.clicked.connect(self.downThing)
         self.ui.GuardaDatos.clicked.connect(self.SaveData)
         self.ui.ActualizarDatos.clicked.connect(self.ui.ActualizarPosicion)
+
+        self.ui.pushButton_6.clicked.connect(self.ui.Grafica1)
+        self.ui.pushButton.clicked.connect(self.ui.Grafica2)
+        self.ui.pushButton_2.clicked.connect(self.ui.Grafica3)
+        self.ui.pushButton_3.clicked.connect(self.ui.Grafica4)
+        self.ui.pushButton_4.clicked.connect(self.ui.Grafica5)
+        self.ui.pushButton_5.clicked.connect(self.ui.Grafica6)
+        self.ui.pushButton_19.clicked.connect(self.ui.Grafica19)
+
 
         #Aqui se sincroniza la seleccion de las dos listas
         self.ui.LatitudList.currentRowChanged.connect(self.sync_lists1)
@@ -87,8 +96,8 @@ class MainWindow(QMainWindow):
 
 
     def on_stackedWidget_currentChanged(self, index):
-        btn_list = self.ui.iconOnly.findChildren(QPushButton) \
-                    + self.ui.fullMenu.findChildren(QPushButton)
+        btn_list = self.ui.verticalLayout_2.findChildren(QPushButton) \
+                    + self.ui.verticalLayout.findChildren(QPushButton)
         
         for btn in btn_list:
             if index in [5, 6]:
@@ -111,9 +120,15 @@ class MainWindow(QMainWindow):
         self.ui.stackedWidget.setCurrentIndex(1)
 
     def on_Metricas1_toggled(self):
-        self.ui.stackedWidget.setCurrentIndex(2)
+        self.ui.stackedWidget.setCurrentIndex(3)
 
     def on_Metricas2_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(3)
+
+    def on_Graficas2_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(2)
+
+    def on_Graficas_toggled(self):
         self.ui.stackedWidget.setCurrentIndex(2)
     
     #Paradas ======================================
