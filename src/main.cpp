@@ -742,17 +742,17 @@ void loop() {
   readBMP280Data(); 
   readMPU6050Data();
   Bno();
-  //show_sensors2();
-  Control();
+  show_sensors2();
+  //Control();
   
   //imprimirCoordenadas(CoordenadasRectangulares);
    
   
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
-    Serial.print("tiempo: "); 
-    Serial.println(tiempo);
-    Controlador.ImprimirDatos();
+    //Serial.print("tiempo: "); 
+    //Serial.println(tiempo);
+    //Controlador.ImprimirDatos();
     //show_sensors();
    //print_channels();
     //show_sensors2();
