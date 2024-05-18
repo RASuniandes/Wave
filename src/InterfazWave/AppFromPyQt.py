@@ -15,6 +15,7 @@ import serial_comm as my_serial
 import sys
 import time
 
+
 global gra
 gra = {
     'tiempo': [],
@@ -68,62 +69,78 @@ class WorkerThread(QThread):
         first = True
         global altInicial
         altInicial = 0
+        global tiempInicial
+        tiempInicial = time.time()
         
         while True: 
 
            if serial_connector.is_connect():
             
                 try:
-                    print(currentPlot)
                     data_string = serial_connector.get_data().decode('utf-8').replace('\r\n','')
-                    data_array = data_string.split(',')
-                    print(data_array)
-                    yaw=float(data_array[6])
-                    pitch=float(data_array[7])
-                    roll=float(data_array[8])
+                    s = data_string.replace("{" ,"")
+                    finalstring = s.replace("}" , "")
+
+                    #Splitting the string based on , we get key value pairs
+                    list = finalstring.split(",")
+
+                    dictionary ={}
+                    for i in list:
+                        #Get Key Value pairs separately to store in dictionary
+                        keyvalue = i.split(":")
+
+                        #Replacing the single quotes in the leading.
+                        m= keyvalue[0].strip('\'').replace(' ', '')
+                        m = m.replace("\'", "")
+                        dictionary[m] = float(keyvalue[1].strip('"\''))
+
+                    yaw= dictionary['yaw']
+                    pitch= dictionary['pitch']
+                    roll= dictionary['roll']
                     global lat, lon
-                    lat = (data_array[-2])
-                    lon = (data_array[-1])
-                    temp = data_array[0]
-                    presu = float(data_array[1])
-                    alt = float(data_array[2])
+                    lat = (dictionary['latitud'])
+                    lon = (dictionary['longitud'])
+                    # temp = data_array[0]
+                    # presu = float(data_array[1])
+                    # alt = float(data_array[2])
+                    Temperatura.setText(str(dictionary['temperatura']))
 
-                    Temperatura.setText(str(temp))
-
-                    PunteroAltura.setGeometry(QtCore.QRect(90, 400 - int(alt - altInicial)*4, 70, 20))
+                    PunteroAltura.setGeometry(QtCore.QRect(90, 400 - int(dictionary['altitud'] - altInicial)*4, 70, 20))
                     HorizonteArt.setGeometry(QtCore.QRect(15, -int(pitch), 175, 175))
                     HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)))
                     Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png").transformed(QtGui.QTransform().rotate(-yaw)))
-                    Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((presu/133.322)/50)*360)))
+                    Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((dictionary['presion']/133.322)/50)*360)))
                     Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw))) #==================================================================================================Toca Cambiarlo
                     
-                    metri3_2.setText(f"Presion manifold ({round(presu,2)})")
+
+
+                    metri3_2.setText(f"Presion manifold ({round(dictionary['presion'],2)})")
                     metri5.setText(f"Horizonte artificial ({round(pitch, 2)}, {round(roll,2)})")
                     metri7.setText(f"Norte (Roll) ({round(roll, 2)})")
-                    metri4.setText(f"Altitud ({alt})")
+                    metri4.setText(f"Altitud ({dictionary['altitud']})")
                     metri8.setText(f"Anometro ({round(yaw, 2)})") #==================================================================================================Toca Cambiarlo
 
-                    gra['tiempo'].append(time.time())
+                    gra['tiempo'].append(time.time() - tiempInicial)
                     gra['yaw'].append(yaw)
                     gra['pitch'].append(pitch)
                     gra['roll'].append(roll)
-                    gra['altitud'].append(alt)
-                    gra["presion"].append(presu)
-                    gra['temperatura'].append(float(temp))
+                    gra['altitud'].append(dictionary['altitud'])
+                    gra["presion"].append(dictionary['presion'])
+                    gra['temperatura'].append(dictionary['temperatura'])
                     gra['velocidad'].append(yaw) #==================================================================================================Toca Cambiarlo
                     
-
-                    #========================================================================================================Auto Graph
-                    pen = pg.mkPen(color=(255, 0, 0), width=1)
-                    plot_graph.plot(gra['tiempo'], gra[currentPlot[0]], pen=pen, symbol="h", symbolSize=0)
+                    # ========================================================================================================Auto Graph
+                    # pen = pg.mkPen(color=(255, 0, 0), width=1)
+                    # plot_graph.clear()
+                    # plot_graph.setData(gra['tiempo'], gra[currentPlot[0]])
 
                     update_pitch(pitch)
                     update_roll(roll)
                     update_yaw(yaw)
                     if first:
-                        altInicial = alt
+                        altInicial = dictionary["altitud"]
                         first = False
-                    
+
                 except:
                     pass
                     try:
@@ -136,10 +153,10 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         #=============================================================
         try:
-            myjsonFile = open('currentData.json', 'r')
+            myjsonFile = open('./datosGuardados/currentData.json', 'r')
         except:
             open("currentData.json", "x")
-            myjsonFile = open('currentData.json', 'r')
+            myjsonFile = open('./datosGuardados/currentData.json', 'r')
 
         df = myjsonFile.read()
         if(df != ''):
@@ -655,26 +672,36 @@ class Ui_MainWindow(object):
         self.verticalLayout_18 = QtWidgets.QVBoxLayout(self.pageGraficas)
         self.verticalLayout_18.setObjectName("verticalLayout_18")
 
-        global plot_graph
-
-        plot_graph = pg.PlotWidget()
-        plot_graph.setBackground("#F0F0F0")
-        plot_graph.setLabel(
+        # global plot_graph
+        self.plot_graph = pg.PlotWidget()
+        self.plot_graph.setBackground("#F0F0F0")
+        self.plot_graph.setLabel(
             "bottom",
             '<span style="font-size: 12px">Tiempo (s)</span>'
         )
-        plot_graph.setLabel(
+        self.plot_graph.setLabel(
         "left",
         '<span style="font-size: 12px">Yaw °</span>'
         )      
-        plot_graph.showGrid(x=True, y=True)
+        self.plot_graph.showGrid(x=True, y=True)
 
-        self.verticalLayout_18.addWidget(plot_graph)
+        self.verticalLayout_18.addWidget(self.plot_graph)
+
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(50)  # Update every 50 ms
+        self.timer.timeout.connect(self.update_plot)
+        self.timer.start()
+
+        self.pushButton_21 = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton_21.setObjectName("pushButton_19")
+        self.pushButton_21.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.pushButton_6 = QtWidgets.QPushButton(self.pageGraficas)
         self.pushButton_6.setObjectName("pushButton_6")
         self.pushButton_6.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+        self.horizontalLayout_6.addWidget(self.pushButton_21)
 
         self.horizontalLayout_6.addWidget(self.pushButton_6)
         self.pushButton = QtWidgets.QPushButton(self.pageGraficas)
@@ -715,14 +742,14 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
 
 
-
-        self.pushButton_6.clicked.connect(Grafica1)
-        self.pushButton.clicked.connect(Grafica2)
-        self.pushButton_2.clicked.connect(Grafica3)
-        self.pushButton_3.clicked.connect(Grafica4)
-        self.pushButton_4.clicked.connect(Grafica5)
-        self.pushButton_5.clicked.connect(Grafica6)
-        self.pushButton_19.clicked.connect(Grafica19)
+        self.pushButton_21.clicked.connect(self.SaveData)
+        self.pushButton_6.clicked.connect(self.Grafica1)
+        self.pushButton.clicked.connect(self.Grafica2)
+        self.pushButton_2.clicked.connect(self.Grafica3)
+        self.pushButton_3.clicked.connect(self.Grafica4)
+        self.pushButton_4.clicked.connect(self.Grafica5)
+        self.pushButton_5.clicked.connect(self.Grafica6)
+        self.pushButton_19.clicked.connect(self.Grafica19)
 
         # self.openGLWidget = QtWidgets.QOpenGLWidget(self.pageModelo)
         # self.openGLWidget.setObjectName("openGLWidget")
@@ -807,7 +834,7 @@ class Ui_MainWindow(object):
         self.pushButton_3.setText(_translate("MainWindow", "Temperatura"))
         self.pushButton_4.setText(_translate("MainWindow", "Presión"))
         self.pushButton_5.setText(_translate("MainWindow", "Velocidad"))
-
+        self.pushButton_21.setText(_translate("MainWindow", "Guardar Historial"))
     def ActualizarPosicion(self):
         print(lat, lon)
         item1 = self.LatitudList.item(len(self.LatitudList)-1)
@@ -816,102 +843,85 @@ class Ui_MainWindow(object):
         item1.setText(lat)
         item2.setText(lon)
         item3.setText(item3.text())  
-    
-    """  
-    def Grafica3(self):
+    def update_plot(self):
+
         pen = pg.mkPen(color=(255, 0, 0), width=1)
+            # Convert lists to numpy arrays
+        x_data = gra['tiempo']
+        y_data = gra[currentPlot[0]]
+        self.plot_graph.plot(x_data, y_data, pen=pen)  # Update the plot data
+        # self.plot_graph.setPen(pen) 
+
+    def SaveData(self):
+        json_object = json.dumps(gra)
+        with open("./datosGuardados/DatosUAV.json", "w") as outfile:
+            outfile.write(json_object)
+        msg = QMessageBox()
+        # msg.setWindowTitle("Tutorial on PyQt5")
+        msg.setText("Los datos fueron guardados.")
+        msg.exec_()
+
+    def Grafica1(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['altitud'], pen=pen, symbol="h", symbolSize=1)
+        currentPlot[0] = 'yaw'
+        # self.plot_graph.plot(gra['tiempo'], gra['yaw'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Yaw °</span>'
+        )                
+    def Grafica2(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        currentPlot[0] = 'roll'
+        # self.plot_graph.plot(gra['tiempo'], gra['roll'], pen=pen , symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Roll</span>'
+        )   
+    def Grafica19(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=2)
+        self.plot_graph.clear()
+        currentPlot[0] = 'pitch'
+        # self.plot_graph.plot(gra['tiempo'], gra['pitch'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Pitch</span>'
+        )        
+
+    def Grafica3(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        currentPlot[0] = 'altitud'
+        # self.plot_graph.plot(gra['tiempo'], gra['altitud'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
             '<span style="font-size: 12px">Altitud (m)</span>'
         )
     def Grafica4(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=1)
+        # pen = pg.mkPen(color=(255, 0, 0), width=2)
         self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['temperatura'], pen=pen, symbol="h", symbolSize=1)
+        currentPlot[0] = 'temperatura'
+        # self.plot_graph.plot(gra['tiempo'], gra['temperatura'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
             '<span style="font-size: 12px">Temperatura (C)</span>'
         )
     def Grafica5(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=1)
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['presion'], pen=pen, symbol="h", symbolSize=1)
+        currentPlot[0] = 'presion'
+        # self.plot_graph.plot(gra['tiempo'], gra['presion'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
             '<span style="font-size: 12px">Presion (Pha)</span>'
         )
     def Grafica6(self):
-        pen = pg.mkPen(color=(255, 0, 0), width=1)
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
         self.plot_graph.clear()
-        self.plot_graph.plot(gra['tiempo'], gra['velocidad'], pen=pen, symbol="h", symbolSize=1)
+        currentPlot[0] = 'velocidad'
+        # self.plot_graph.plot(gra['tiempo'], gra['velocidad'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
-            '<span style="font-size: 12px">Velocidad (k/h)</span>'
-        )
-    """
-def Grafica1():
-    # pen = pg.mkPen(color=(255, 0, 0), width=1)
-    plot_graph.clear()
-    currentPlot[0] = 'yaw'
-    # self.plot_graph.plot(gra['tiempo'], gra['yaw'], pen=pen, symbol="h", symbolSize=0)
-    plot_graph.setLabel(
-        "left",
-        '<span style="font-size: 12px">Yaw °</span>'
-    )                
-def Grafica2():
-    # pen = pg.mkPen(color=(255, 0, 0), width=1)
-    plot_graph.clear()
-    currentPlot[0] = 'roll'
-    # self.plot_graph.plot(gra['tiempo'], gra['roll'], pen=pen , symbol="h", symbolSize=0)
-    plot_graph.setLabel(
-        "left",
-        '<span style="font-size: 12px">Roll</span>'
-    )   
-def Grafica19():
-    # pen = pg.mkPen(color=(255, 0, 0), width=2)
-    plot_graph.clear()
-    currentPlot[0] = 'pitch'
-    # self.plot_graph.plot(gra['tiempo'], gra['pitch'], pen=pen, symbol="h", symbolSize=0)
-    plot_graph.setLabel(
-        "left",
-        '<span style="font-size: 12px">Pitch</span>'
-    )        
-
-def Grafica3():
-    # pen = pg.mkPen(color=(255, 0, 0), width=1)
-    plot_graph.clear()
-    currentPlot[0] = 'altitud'
-    # self.plot_graph.plot(gra['tiempo'], gra['altitud'], pen=pen, symbol="h", symbolSize=0)
-    plot_graph.setLabel(
-        "left",
-        '<span style="font-size: 12px">Altitud (m)</span>'
-    )
-def Grafica4():
-    # pen = pg.mkPen(color=(255, 0, 0), width=2)
-    plot_graph.clear()
-    currentPlot[0] = 'temperatura'
-    # self.plot_graph.plot(gra['tiempo'], gra['temperatura'], pen=pen, symbol="h", symbolSize=0)
-    plot_graph.setLabel(
-        "left",
-        '<span style="font-size: 12px">Temperatura (C)</span>'
-    )
-def Grafica5():
-    # pen = pg.mkPen(color=(255, 0, 0), width=1)
-    plot_graph.clear()
-    currentPlot[0] = 'presion'
-    # self.plot_graph.plot(gra['tiempo'], gra['presion'], pen=pen, symbol="h", symbolSize=0)
-    plot_graph.setLabel(
-        "left",
-        '<span style="font-size: 12px">Presion (Pha)</span>'
-    )
-def Grafica6():
-    # pen = pg.mkPen(color=(255, 0, 0), width=1)
-    plot_graph.clear()
-    currentPlot[0] = 'velocidad'
-    # self.plot_graph.plot(gra['tiempo'], gra['velocidad'], pen=pen, symbol="h", symbolSize=0)
-    plot_graph.setLabel(
-        "left",
-        '<span style="font-size: 12px">Velociad (km/h)</span>'
+            '<span style="font-size: 12px">Velociad (km/h)</span>'
     )  

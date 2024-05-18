@@ -66,6 +66,8 @@ class MainWindow(QMainWindow):
         self.ui.GuardaDatos.clicked.connect(self.SaveData)
         self.ui.ActualizarDatos.clicked.connect(self.ui.ActualizarPosicion)
 
+
+
         # self.ui.pushButton_6.clicked.connect(self.ui.Grafica1)
         # self.ui.pushButton.clicked.connect(self.ui.Grafica2)
         # self.ui.pushButton_2.clicked.connect(self.ui.Grafica3)
@@ -359,7 +361,7 @@ class MainWindow(QMainWindow):
             h.insert(0, [float(lati[index]), float(longi[index]), indexi[index]])
         self.ui.marker_coord = h
         json_object = json.dumps(h)
-        with open("currentData.json", "w") as outfile:
+        with open("./datosGuardados/currentData.json", "w") as outfile:
             outfile.write(json_object)
         msg = QMessageBox()
         # msg.setWindowTitle("Tutorial on PyQt5")
