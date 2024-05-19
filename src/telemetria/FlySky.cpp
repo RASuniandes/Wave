@@ -49,3 +49,4 @@ bool FlySky::getAutomaticFly() {
 void FlySky::updateAutomaticFly() {
   automatic = digitalRead(ch5_pin);
 }
+

@@ -1,0 +1,231 @@
+#include <Wire.h>
+#include <EEPROM.h>
+#include "BNO055_support.h"
+
+// Variables para almacenar los datos del BNO055
+struct bno055_t myBNO;
+struct bno055_euler myEulerData;
+struct bno055_mag magData;
+
+// Variables para almacenar las lecturas
+float yawValue = 0.0;
+float pitchValue = 0.0;
+float rollValue = 0.0;
+float mag_x = 0.0;
+float mag_y = 0.0;
+float mag_z = 0.0;
+
+// Variables para el estado de calibración
+unsigned char accelCalibStatus = 0;
+unsigned char magCalibStatus = 0;
+unsigned char gyroCalibStatus = 0;
+unsigned char sysCalibStatus = 0;
+
+// Variables para el offset
+struct bno055_accel_offset_t {
+  int16_t x;
+  int16_t y;
+  int16_t z;
+};
+
+struct bno055_gyro_offset_t {
+  int16_t x;
+  int16_t y;
+  int16_t z;
+};
+
+struct bno055_mag_offset_t {
+  int16_t x;
+  int16_t y;
+  int16_t z;
+};
+
+struct bno055_accel_offset_t accel_offset;
+struct bno055_gyro_offset_t gyro_offset;
+struct bno055_mag_offset_t mag_offset;
+
+void readAccelOffset(struct bno055_accel_offset_t* offset) {
+  uint8_t buffer[6];
+  bno055_read_register(ACC_OFFSET_X_LSB_ADDR, buffer, 6);
+  offset->x = (int16_t)buffer[0] | ((int16_t)buffer[1] << 8);
+  offset->y = (int16_t)buffer[2] | ((int16_t)buffer[3] << 8);
+  offset->z = (int16_t)buffer[4] | ((int16_t)buffer[5] << 8);
+}
+
+void readGyroOffset(struct bno055_gyro_offset_t* offset) {
+  uint8_t buffer[6];
+  bno055_read_register(BNO055_GYR_DATA_X_LSB_ADDR, buffer, 6);
+  offset->x = (int16_t)buffer[0] | ((int16_t)buffer[1] << 8);
+  offset->y = (int16_t)buffer[2] | ((int16_t)buffer[3] << 8);
+  offset->z = (int16_t)buffer[4] | ((int16_t)buffer[5] << 8);
+}
+
+void readMagOffset(struct bno055_mag_offset_t* offset) {
+  uint8_t buffer[6];
+  bno055_read_register(BNO055_MAG_DATA_X_LSB_ADDR, buffer, 6);
+  offset->x = (int16_t)buffer[0] | ((int16_t)buffer[1] << 8);
+  offset->y = (int16_t)buffer[2] | ((int16_t)buffer[3] << 8);
+  offset->z = (int16_t)buffer[4] | ((int16_t)buffer[5] << 8);
+}
+
+void writeAccelOffset(struct bno055_accel_offset_t* offset) {
+  uint8_t buffer[6];
+  buffer[0] = offset->x & 0xFF;
+  buffer[1] = (offset->x >> 8) & 0xFF;
+  buffer[2] = offset->y & 0xFF;
+  buffer[3] = (offset->y >> 8) & 0xFF;
+  buffer[4] = offset->z & 0xFF;
+  buffer[5] = (offset->z >> 8) & 0xFF;
+  bno055_write_register(BNO055_ACC_DATA_X_LSB_ADDR, buffer, 6);
+}
+
+void writeGyroOffset(struct bno055_gyro_offset_t* offset) {
+  uint8_t buffer[6];
+  buffer[0] = offset->x & 0xFF;
+  buffer[1] = (offset->x >> 8) & 0xFF;
+  buffer[2] = offset->y & 0xFF;
+  buffer[3] = (offset->y >> 8) & 0xFF;
+  buffer[4] = offset->z & 0xFF;
+  buffer[5] = (offset->z >> 8) & 0xFF;
+  bno055_write_register(BNO055_GYR_DATA_X_LSB_ADDR, buffer, 6);
+}
+
+void writeMagOffset(struct bno055_mag_offset_t* offset) {
+  uint8_t buffer[6];
+  buffer[0] = offset->x & 0xFF;
+  buffer[1] = (offset->x >> 8) & 0xFF;
+  buffer[2] = offset->y & 0xFF;
+  buffer[3] = (offset->y >> 8) & 0xFF;
+  buffer[4] = offset->z & 0xFF;
+  buffer[5] = (offset->z >> 8) & 0xFF;
+  bno055_write_register(BNO055_MAG_DATA_X_MSB_ADDR, buffer, 6);
+}
+
+void saveCalibrationData() {
+  bno055_set_operation_mode(OPERATION_MODE_CONFIG);
+  delay(25);
+
+  // Leer los valores de offset
+  readAccelOffset(&accel_offset);
+  readGyroOffset(&gyro_offset);
+  readMagOffset(&mag_offset);
+
+  // Guardar los valores en EEPROM
+  EEPROM.put(0, accel_offset);
+  EEPROM.put(sizeof(accel_offset), gyro_offset);
+  EEPROM.put(sizeof(accel_offset) + sizeof(gyro_offset), mag_offset);
+  EEPROM.commit();
+
+  // Volver al modo NDOF
+  bno055_set_operation_mode(OPERATION_MODE_NDOF);
+  delay(25);
+
+  Serial.println("Calibration data saved.");
+}
+
+void restoreCalibrationData() {
+  // Leer los valores desde EEPROM
+  EEPROM.get(0, accel_offset);
+  EEPROM.get(sizeof(accel_offset), gyro_offset);
+  EEPROM.get(sizeof(accel_offset) + sizeof(gyro_offset), mag_offset);
+
+  bno055_set_operation_mode(OPERATION_MODE_CONFIG);
+  delay(25);
+
+  // Escribir los valores de offset
+  writeAccelOffset(&accel_offset);
+  writeGyroOffset(&gyro_offset);
+  writeMagOffset(&mag_offset);
+
+  // Volver al modo NDOF
+  bno055_set_operation_mode(OPERATION_MODE_NDOF);
+  delay(25);
+
+  Serial.println("Calibration data restored.");
+}
+
+void checkCalibrationStatus() {
+  bno055_get_accelcalib_status(&accelCalibStatus);
+  bno055_get_gyrocalib_status(&gyroCalibStatus);
+  bno055_get_syscalib_status(&sysCalibStatus);
+  bno055_get_magcalib_status(&magCalibStatus);
+
+  Serial.print("Calibration Status -> ");
+  Serial.print("Accel: "); Serial.print(accelCalibStatus);
+  Serial.print("  Gyro: "); Serial.print(gyroCalibStatus);
+  Serial.print("  Sys: "); Serial.print(sysCalibStatus);
+  Serial.print("  Mag: "); Serial.println(magCalibStatus);
+}
+
+void Bno() {
+  // Leer los datos de Euler (Yaw, Pitch, Roll)
+  bno055_read_euler_hrp(&myEulerData);
+  yawValue =  360 - (float(myEulerData.h) / 16.0);
+  pitchValue = (float(myEulerData.r) / 16.0);
+  rollValue = -(float(myEulerData.p) / 16.0);
+
+  // Leer los datos del magnetómetro (X, Y, Z)
+  if (bno055_read_mag_xyz(&magData) == SUCCESS) {
+    mag_x = magData.x;
+    mag_y = magData.y;
+    mag_z = magData.z;
+  } else {
+    Serial.println("Error reading magnetometer data.");
+  }
+
+  // Actualizar los estados de calibración
+  bno055_get_accelcalib_status(&accelCalibStatus);
+  bno055_get_gyrocalib_status(&gyroCalibStatus);
+  bno055_get_syscalib_status(&sysCalibStatus);
+  bno055_get_magcalib_status(&magCalibStatus);
+}
+
+void displaySensorData() {
+  Serial.print("Yaw: "); Serial.print(yawValue);
+  Serial.print("  \tPitch: "); Serial.print(pitchValue);
+  Serial.print("  \tRoll: "); Serial.println(rollValue);
+
+  Serial.print("Mag X: "); Serial.print(mag_x);
+  Serial.print("  \tMag Y: "); Serial.print(mag_y);
+  Serial.print("  \tMag Z: "); Serial.println(mag_z);
+
+  Serial.print("Calib Accel: "); Serial.print(accelCalibStatus);
+  Serial.print("  \tGyro: "); Serial.print(gyroCalibStatus);
+  Serial.print("  \tSys: "); Serial.print(sysCalibStatus);
+  Serial.print("  \tMag: "); Serial.println(magCalibStatus);
+}
+
+void setup() {
+  // Inicializar la comunicación serie para la depuración
+  Serial.begin(115200);
+  Wire.begin();
+  EEPROM.begin(512);
+
+  // Inicializar el BNO055
+  BNO_Init(&myBNO);
+
+  // Restaurar los valores de calibración desde EEPROM
+  restoreCalibrationData();
+
+  bno055_set_operation_mode(OPERATION_MODE_NDOF);
+
+  Serial.println("BNO055 Initialized.");
+  delay(1000);  // Esperar un momento para asegurar la inicialización completa
+}
+
+void loop() {
+  // Leer y mostrar los datos del BNO055
+  Bno();
+
+  // Mostrar los datos leídos
+  displaySensorData();
+
+  // Guardar los valores de calibración cada cierto tiempo
+  static unsigned long lastSaveTime = 0;
+  if (millis() - lastSaveTime > 60000) {  // Guardar cada 60 segundos
+    saveCalibrationData();
+    lastSaveTime = millis();
+  }
+
+  delay(1000);
+}

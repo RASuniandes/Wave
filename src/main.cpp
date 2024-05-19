@@ -16,6 +16,7 @@
 #include "NAVEGACION\control.h"
 #include <vector>
 #include <iostream>
+#include "HMC5883L.h"
 
 float VelocidadActual = 0;
 float k_distanciaAuxiliar = 100;
@@ -24,6 +25,7 @@ float kd = 0.1;
 float cte_saturacion = 10;
 float condicionActualizacion = 0;
 float tiempo=0;
+float compass_value=0;
 Control Controlador(k_distanciaAuxiliar, kp, kd, cte_saturacion, condicionActualizacion);
 
 
@@ -48,6 +50,9 @@ RF24 radio(CE_PIN, CSN_PIN);
 
 const byte address[6] = "00001";
 
+// Compass
+HMC5883L compass;
+float compass_degrees = 0.0;
 
 
 
@@ -79,6 +84,9 @@ Adafruit_MPU6050 mpu;
 
 struct bno055_t myBNO;
 struct bno055_euler myEulerData;
+struct bno055_mag magData;
+
+float mag_x, mag_y, mag_z;
 
 boolean bmpInitialized = false;
 boolean mpuInitialized = false;
@@ -145,6 +153,8 @@ float rollValue = 0.0;
 float pitchValue = 0.0;
 
 // boleano 
+
+
 
 boolean conexion=true;
 
@@ -285,7 +295,20 @@ void updateChannels(){
 
 }
 
-
+float calculateHeading(float mx, float my) {
+    // Calcular el ángulo en radianes
+    float heading_rad = atan2(my, mx);
+    
+    // Convertir el ángulo a grados
+    float heading_deg = heading_rad * 180.0 / M_PI;
+    
+    // Asegurarse de que el ángulo esté en el rango de 0 a 360 grados
+    if (heading_deg < 0) {
+        heading_deg += 360;
+    }
+    
+    return heading_deg;
+}
 
 
 void Bno() {
@@ -299,6 +322,14 @@ void Bno() {
     rollValue = -(float(myEulerData.p) / 16.00);
 
     // Actualizar estados de calibración (sin imprimir)
+    bno055_read_mag_xyz(&magData);
+    mag_x=magData.x;
+    mag_y=magData.y;
+    mag_z=magData.z;
+
+    compass_value = calculateHeading(mag_x, mag_y);
+    
+
     bno055_get_accelcalib_status(&accelCalibStatus);
     bno055_get_gyrocalib_status(&gyroCalibStatus);
     bno055_get_syscalib_status(&sysCalibStatus);
@@ -325,12 +356,21 @@ void printBNO055Values() {
   Serial.print(F(", "));
   Serial.println(magCalibStatus, DEC);
 }
+void initializeCompass() {
+  compass.initialize();
+  if (compass.testConnection()) {
+    Serial.println("HMC5883L initialized successfully.");
+  } else {
+    Serial.println("Error initializing HMC5883L.");
+  }
+}
 
 void initSensors() {
   bmpInitialized = bmp.begin(0x76);
   mpuInitialized = mpu.begin(0x68);
   BNO_Init(&myBNO);
   bno055_set_operation_mode(OPERATION_MODE_NDOF);
+  //initializeCompass();
 }
 
 void readBMP280Data() {
@@ -533,27 +573,31 @@ void data_gps(){
 
 
 void show_sensors2() {
+  Serial.print("{temperatura:");
   Serial.print(temperature); // valor sensor temperatura MPU-6050 acelerometro y giroscopio no tan preciso
-  Serial.print(", ");
+  Serial.print(", presion:");
   Serial.print(pressure); // presion del BMP180 sensor presion barometrica
-  Serial.print(", ");
+  Serial.print(", altitud:");
   Serial.print(altitude); // altitude sensor presion barometrica
-  Serial.print(", ");
+  Serial.print(", yaw1:");
   Serial.print(yaw); // yaw del MPU-6050
-  Serial.print(", ");
+  Serial.print(", pitch1:");
   Serial.print(pitch); // pitch del MPU-6050
-  Serial.print(", ");
+  Serial.print(", roll1:");
   Serial.print(roll); // roll del MPU-6050
-  Serial.print(", ");
+  Serial.print(", yaw:");
   Serial.print(yawValue); // yaw del BNO055 brujula y giroscopio de precision
-  Serial.print(", ");
+  Serial.print(", pitch:");
   Serial.print(pitchValue); // pitch del BNO055 brujula y giroscopio de precision
-  Serial.print(", ");
+  Serial.print(", roll:");
   Serial.print(rollValue); // roll del BNO055 brujula y giroscopio de precision
-  Serial.print(", ");
+  Serial.print(", compass:");
+  Serial.print(compass_value); // magnetometro x
+  Serial.print(", latitud:");
   Serial.print(Latitud, 6);
-  Serial.print(", ");
+  Serial.print(", longitud:");
   Serial.print(Longitud, 6);
+  Serial.print("}");
   Serial.println(); // Agregar nueva línea al final para separar las lecturas
 
   /*char text[10];
@@ -677,6 +721,9 @@ void updateSerial() {
 }
 }
 
+//Compass
+
+
 void  Control(){
   Controlador.Update_Position(Latitud, Longitud,yawValue);
   Controlador.Update_Velocidad(VelocidadActual);
@@ -717,6 +764,7 @@ void setup() {
   radio.begin();
   radio.openWritingPipe(address);
   radio.setPALevel(RF24_PA_LOW);
+  // 13 0X0d DIRECCIÓN i2c
 
   Controlador.waitPoints_coordenadas_a_rectangulares(inputCoords, numCoords);
 
@@ -744,6 +792,7 @@ void loop() {
   readMPU6050Data();
   Bno();
   show_sensors2();
+  //compass_degrees=getCompassHeading() ;
   //Control();
   
   //imprimirCoordenadas(CoordenadasRectangulares);
@@ -759,9 +808,10 @@ void loop() {
     //show_sensors2();
     //printBNO055Values();
     //saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
-    // Imprime el resultado en el monitor serial
-  // Imprime el resultado en el monitor serial
- // Espera un segundo entre las lecturas
+    //Serial.print("Heading: ");
+    //Serial.print(mag_x);
+    //Serial.print(",");
+    //Serial.println(mag_y);
   }
   if (currentMillis - previousMillis >= interval1) {
     previousMillis = currentMillis;
