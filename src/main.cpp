@@ -342,25 +342,6 @@ void beepOnGpsDetection() {
     }
 }
 
-void beepOnGpsDetection() {
-    if (gpsDetected) {
-      if (beepCount) {
-        Serial.print("tono: ");
-        Serial.println(beepCount);
-        tone(BUZZER, NOTE_C7, 300);  // Emitir un pitido
-        delay(500);  // Esperar a que el pitido termine
-        noTone(BUZZER);  // Apagar el buzzer
-        tone(BUZZER, NOTE_C7, 300);  // Emitir un pitido
-        delay(500);  // Esperar a que el pitido termine
-        noTone(BUZZER);  // Apagar el buzzer
-        tone(BUZZER, NOTE_C7, 300);  // Emitir un pitido
-        delay(500);  // Esperar a que el pitido termine
-        noTone(BUZZER);  // Apagar el buzzer
-        beepCount=false;
-      }
-    }
-}
-
 
 void print_channels(){
 
