@@ -17,16 +17,30 @@
 #include <vector>
 #include <iostream>
 #include "HMC5883L.h"
+#include <SPI.h>
+#include <SD.h>
+
+// Pines para el lector de tarjetas SD
+#define MOSI_PIN 35
+#define SCK_PIN 36
+#define MISO_PIN 37
+#define CS_PIN 38
+
+File myFile;
+bool fileCreated = false;
+String fileName;
+
+
 
 float VelocidadActual = 0;
-float k_distanciaAuxiliar = 100;
+float distanciaAuxiliar = 100;
 float kp = 2;
 float kd = 0.1;
 float cte_saturacion = 10;
 float condicionActualizacion = 0;
 float tiempo=0;
 float compass_value=0;
-Control Controlador(k_distanciaAuxiliar, kp, kd, cte_saturacion, condicionActualizacion);
+Control Controlador(distanciaAuxiliar, kp, kd, cte_saturacion, condicionActualizacion);
 
 
 float inputCoords[Control::MAX_COORDINATES][2] = {{4.653453, -74.093492}, 
@@ -67,8 +81,9 @@ const float seaLevelPressure = 101.325;  // Presión atmosférica al nivel del m
  float Latitud=0;
  float Longitud=0;
 
- const int TX2 = 11; // Pines de transmisión y recepción del GPS
- const int RX2 = 10;
+const int TX2 = 11; // Pines de transmisión y recepción del GPS
+const int RX2 = 10;
+bool gpsDetected = false;
 
 // Pines pitot
 const int DOUT_Pin = 15;   //sensor data pin
@@ -171,7 +186,7 @@ unsigned long lastTime = 0;
 #define BNO055_SAMPLERATE_DELAY_MS (100)
 
 //SD values
-const int chipSelect = 2; 
+const int chipSelect = 38; 
 
 // Canales radio control 
 #define CH1 7
@@ -181,12 +196,12 @@ const int chipSelect = 2;
 #define CH5 3
 #define CH6 2
 
+
+
 // Configurar receptor
 
 // receptor y servos
-FlySky flySky(CH1, CH2, CH3, CH4, CH6);
-
-
+FlySky flySky(CH1, CH2, CH3, CH4, CH5,CH6);
 Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 
 #define SER0_ELEVADORES  0   //Servo Motor 0 on connector 0
@@ -205,7 +220,7 @@ unsigned int pos180=565; // ancho de pulso en cuentas para la pocicion 180°
 
 #define MIN_PULSE_WIDTH 600
 #define MAX_PULSE_WIDTH 2600
-#define FREQUENCY 60
+#define FREQUENCY 50
 
 int ch1Value = 0;
 int ch2Value = 0;
@@ -214,6 +229,23 @@ int ch4Value = 0;
 int ch5Value = 0;
 int ch6Value = 0;
 
+// values_default_chanels
+int min_limit_c1 = 0;
+int max_limit_c1 = 100;
+int default_value_c1 = 90;
+
+int min_limit_c2 = 0;
+int max_limit_c2 = 180;
+int default_value_c2 = 90;
+
+int min_limit_c3 = 0;
+int max_limit_c3 = 180;
+int default_value_c3 = 90;
+
+int min_limit_c4 = 0;
+int max_limit_c4 = 180;
+int default_value_c4 = 90;
+
 
 int servo0Value = 0;
 int servo1Value = 0;
@@ -221,13 +253,114 @@ int servo2Value = 0;
 int servo3Value = 0;
 int servo4Value = 0;
 
+//Buzzer
+int numberError=0 ;
+bool beepCount = true;
+#define BUZZER 46
+#define NOTE_E7 2637
+#define NOTE_C7 2093
+#define NOTE_G7 3136
+#define NOTE_G6 1568
+#define NOTE_E6 1319
+#define NOTE_A6 1760
+#define NOTE_AS6 1865
+#define NOTE_B6 1976
+#define NOTE_A7 3520
+#define NOTE_F7 2794
+#define NOTE_D7 2349
 
-int pulseWidth(int angle) {
-  int pulse_wide, analog_value;
-  pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
-  analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
-  return analog_value;
+
+void init_buzzer(){
+  pinMode(BUZZER, OUTPUT);
 }
+// Notas de la canción de Mario (parte corta)
+int melody[] = {
+  NOTE_E7, NOTE_E7, 0, NOTE_E7,
+  0, NOTE_C7, NOTE_E7, 0,
+  NOTE_G7, 0, 0,  0,
+  NOTE_G6, 0, 0, 0,
+  NOTE_C7, 0, 0, NOTE_G6,
+  0, 0, NOTE_E6, 0,
+  0, NOTE_A6, NOTE_B6, NOTE_AS6,
+  NOTE_A6, NOTE_G6, NOTE_E7, NOTE_G7,
+  NOTE_A7, NOTE_F7, NOTE_G7, 0,
+  NOTE_E7, NOTE_C7, NOTE_D7, NOTE_B6,
+  0, 0, NOTE_C7, 0, 0, NOTE_G6,
+  0, 0, NOTE_E6, 0, 0, NOTE_A6,
+  NOTE_B6, NOTE_AS6, NOTE_A6, NOTE_G6,
+  NOTE_E7, NOTE_G7, NOTE_A7, NOTE_F7,
+  NOTE_G7, 0, NOTE_E7, NOTE_C7,
+  NOTE_D7, NOTE_B6, 0, 0
+};
+
+int noteDurations[] = {
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12
+};
+// Función para reproducir la canción de Mario (parte corta)
+void playBuzzer() {
+  for (int thisNote = 0; thisNote < 16; thisNote++) {
+
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(BUZZER, melody[thisNote], noteDuration);
+
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    noTone(BUZZER);
+  }
+}
+const long interval = 1000;
+void beepOnGpsDetection() {
+    if (gpsDetected) {
+      if (beepCount) {
+        Serial.print("tono: ");
+        Serial.println(beepCount);
+        tone(BUZZER, NOTE_C7, 300);  // Emitir un pitido
+        delay(500);  // Esperar a que el pitido termine
+        noTone(BUZZER);  // Apagar el buzzer
+        tone(BUZZER, NOTE_C7, 300);  // Emitir un pitido
+        delay(500);  // Esperar a que el pitido termine
+        noTone(BUZZER);  // Apagar el buzzer
+        tone(BUZZER, NOTE_C7, 300);  // Emitir un pitido
+        delay(500);  // Esperar a que el pitido termine
+        noTone(BUZZER);  // Apagar el buzzer
+        beepCount=false;
+      }
+    }
+}
+
+void beepOnGpsDetection() {
+    if (gpsDetected) {
+      if (beepCount) {
+        Serial.print("tono: ");
+        Serial.println(beepCount);
+        tone(BUZZER, NOTE_C7, 300);  // Emitir un pitido
+        delay(500);  // Esperar a que el pitido termine
+        noTone(BUZZER);  // Apagar el buzzer
+        tone(BUZZER, NOTE_C7, 300);  // Emitir un pitido
+        delay(500);  // Esperar a que el pitido termine
+        noTone(BUZZER);  // Apagar el buzzer
+        tone(BUZZER, NOTE_C7, 300);  // Emitir un pitido
+        delay(500);  // Esperar a que el pitido termine
+        noTone(BUZZER);  // Apagar el buzzer
+        beepCount=false;
+      }
+    }
+}
+
 
 void print_channels(){
 
@@ -269,29 +402,36 @@ void setServos() {
     pca9685.setPWM(SER3_TIMON, 0, servo3Value);
   
 }
+
+int pulseWidth(int angle) {
+  int pulse_wide, analog_value;
+  pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
+  analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
+  return analog_value;
+}
+
 void updateChannels(){
 
     // Obtiene los valores dos canais dentro da faixa de -100 a 100
-  ch1Value = flySky.getChannel1Value();
-  ch2Value = flySky.getChannel2Value();
-  ch3Value = flySky.getChannel3Value();
-  ch4Value = flySky.getChannel4Value();
-  ch5Value = flySky.readSwitch(33, false); // Canal 5 es el switch 5
-  ch6Value = flySky.readSwitch(35, false);
+  ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
+  ch2Value = flySky.getChannel2Value(min_limit_c2, max_limit_c2, default_value_c2);
+  ch3Value = flySky.getChannel3Value(min_limit_c3, max_limit_c3, default_value_c3);
+  ch4Value = flySky.getChannel4Value(min_limit_c4, max_limit_c4, default_value_c4);
+  ch5Value = flySky.readSwitch(CH5, false); // Canal 5 es el switch 5
+  ch6Value = flySky.readSwitch(CH6, false);
 
-  /*
+ 
   servo0Value = map(ch1Value,0,180,pos0, pos180);
   servo1Value = map(ch2Value,0,180,pos0, pos180);
   servo2Value = map(ch3Value,20,160,pos0, pos180);
   servo3Value = map(ch4Value,0,180,pos0, pos180);
 
-
-  */
+   /*
   servo0Value = pulseWidth(ch1Value);
   servo1Value = pulseWidth(ch2Value);
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
-  
+  */
 
 }
 
@@ -376,7 +516,7 @@ void initSensors() {
 void readBMP280Data() {
   //temperature = bmp.readTemperature();
   pressure = bmp.readPressure() / 100.0F;
-  altitude = bmp.readAltitude(1013.25);
+  altitude = bmp.readAltitude(1028); //  La presión del aire al nivel del mar es 1028 hPa (QNH).
 }
 
 void KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2]) {
@@ -553,22 +693,96 @@ void show_sensors(){
 }
 
 void data_gps(){
+  bool validLocation = false;
+  numberError++;
   while (Serial2.available() > 0) {
+    validLocation = true;
     if (gps.encode(Serial2.read())) {
       if (gps.location.isValid()) {
+        
+        gpsDetected = true;
+        numberError=0;
+        
         Latitud = gps.location.lat();
         Longitud = gps.location.lng();
-
+    
       } 
-            else {
-        Latitud = 0;
-        Longitud = 0;
+
 
     }
-      }
+
 
   }
-}   
+
+  if (!validLocation && (numberError > 10)) {
+    gpsDetected = false;
+              
+        beepCount=true;
+      }
+  }
+
+
+void createNewFile() {
+  int fileCounter = 0;
+  File root = SD.open("/");
+  File file = root.openNextFile();
+
+  while (file) {
+    fileCounter++;
+    file = root.openNextFile();
+  }
+
+  fileName = "/dataSaved_" + String(fileCounter + 1) + ".csv";
+
+  // Crea y abre el archivo para escribir, y escribe la cabecera
+  myFile = SD.open(fileName, FILE_WRITE);
+  if (myFile) {
+    myFile.println("temperatura,presion,altitud,yaw1,pitch1,roll1,yaw,pitch,roll,compass,latitud,longitud");
+    myFile.close();
+    fileCreated = true;
+    Serial.println("File created: " + fileName);
+  } else {
+    Serial.println("Error creating file.");
+  }
+}
+
+
+
+void saveData() {
+  // Abre el archivo para añadir datos
+  myFile = SD.open(fileName, FILE_APPEND);
+  if (myFile) {
+    // Escribe los datos en el archivo
+    myFile.print(temperature);
+    myFile.print(",");
+    myFile.print(pressure);
+    myFile.print(",");
+    myFile.print(altitude);
+    myFile.print(",");
+    myFile.print(yawValue);
+    myFile.print(",");
+    myFile.print(pitchValue);
+    myFile.print(",");
+    myFile.print(rollValue);
+    myFile.print(",");
+    myFile.print(yaw);
+    myFile.print(",");
+    myFile.print(pitch);
+    myFile.print(",");
+    myFile.print(roll);
+    myFile.print(",");
+    myFile.print(compass_value);
+    myFile.print(",");
+    myFile.print(Latitud);
+    myFile.print(",");
+    myFile.println(Longitud);
+    myFile.close();
+    //Serial.println("Data written to file: " + fileName);
+  } else {
+    //Serial.println("Error opening file for writing.");
+  }
+}
+
 
 
 
@@ -594,9 +808,9 @@ void show_sensors2() {
   Serial.print(", compass:");
   Serial.print(compass_value); // magnetometro x
   Serial.print(", latitud:");
-  Serial.print(Latitud, 6);
+  Serial.print(Latitud,6);
   Serial.print(", longitud:");
-  Serial.print(Longitud, 6);
+  Serial.print(Longitud,6);
   Serial.print("}");
   Serial.println(); // Agregar nueva línea al final para separar las lecturas
 
@@ -645,71 +859,18 @@ void updateDisplay() {
   // Imprime los títulos
 
   // Imprime Yaw
-  display.print("Yaw: ");
-  printValueWithFixedWidth(yawValue, 3);
-  display.println();
-  display.print("Pitch: ");
-  printValueWithFixedWidth(pitchValue, 3);
-  display.println();
-  display.print("Roll: ");
-  printValueWithFixedWidth(rollValue, 1);
-  display.println();
+  display.print("Compas: "); display.print(compass_value); display.println(" °");
+  display.print("Yaw: ");printValueWithFixedWidth(yawValue, 3);display.println();
+  display.print("Pitch: ");printValueWithFixedWidth(pitchValue, 3);display.println();
+  display.print("Roll: ");printValueWithFixedWidth(rollValue, 1);display.println();
   display.print("Temp: "); display.print(temperature); display.println(" C");
   display.print("Alt: "); display.print(altitude); display.println(" m");
-  display.println();
-  display.print("gps: ");
-  printValueWithFixedWidth(Latitud, 2);
-  printValueWithFixedWidth(Longitud, 2);
-
+  display.print("Lat: "); display.print(Latitud,6);display.println();
+  display.print("Long: "); display.print(Longitud,6);display.println();
   display.display();
 }
 
-void chipSetup() {
-  if (!SD.begin(chipSelect)) {
-    Serial.println("La inicialización de la tarjeta SD falló!");
-    while (true); // Detiene el programa si falla
-  }
-  Serial.println("La tarjeta SD está inicializada.");
 
-  // Verifica si el archivo ya existe
-  String dataFileName = "/sensors_data.csv";
-  if (!SD.exists(dataFileName)) {
-    // Crea un nuevo archivo y escribe la cabecera si el archivo no existe
-    File file = SD.open(dataFileName, FILE_WRITE);
-    if (file) {
-      file.println("Timestamp,Yaw,MPU_Yaw,Pitch,MPU_Pitch,Roll,MPU_Roll");
-      file.close();
-    } else {
-      Serial.println("Error al crear el archivo");
-    }
-  }
-}
-
-void saveToSD(float yaw, float pitch, float roll, float yawValue, float pitchValue, float rollValue) {
-  // Abre el archivo para agregar datos
-  File file = SD.open("/sensors_data.csv", FILE_APPEND);
-  if (file) {
-    // Escribe los datos actuales de los sensores en el archivo CSV
-    file.print(millis());
-    file.print(",");
-    file.print(yaw);
-    file.print(",");
-    file.print(yawValue);
-    file.print(",");
-    file.print(pitch);
-    file.print(",");
-    file.print(pitchValue);
-    file.print(",");
-    file.print(roll);
-    file.print(",");
-    file.println(rollValue);
-    
-    file.close(); // Cierra el archivo para guardar los cambios
-    //Serial.println("Datos guardados.");
-  } else {
-    Serial.println("Error al abrir el archivo");
-  }
-}
 void updateSerial() {
   delay(500);
   while (Serial.available()) {
@@ -749,6 +910,16 @@ void setup() {
     for(;;);
     
   }
+
+  SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, CS_PIN);
+
+  if (!SD.begin(CS_PIN, SPI)) {
+    Serial.println("Initialization of SD card failed!");
+    return;
+  }
+  Serial.println("SD card is ready to use.");
+
+  createNewFile();
   
   pca9685.begin();
   pca9685.setPWMFreq(FREQUENCY); 
@@ -776,6 +947,15 @@ void setup() {
       Serial.print(", Y = ");
       Serial.println(outputCoords[i][1]);
   }
+  
+  if (gps.location.isValid()){
+    
+   }
+  init_buzzer();
+
+  
+
+  playBuzzer();
 }
 
  
@@ -791,6 +971,7 @@ void loop() {
   readBMP280Data(); 
   readMPU6050Data();
   Bno();
+  beepOnGpsDetection();
   show_sensors2();
   //compass_degrees=getCompassHeading() ;
   //Control();
@@ -800,6 +981,7 @@ void loop() {
   
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
+    saveData();
     //Serial.print("tiempo: "); 
     //Serial.println(tiempo);
     //Controlador.ImprimirDatos();
@@ -807,7 +989,7 @@ void loop() {
    //print_channels();
     //show_sensors2();
     //printBNO055Values();
-    //saveToSD(yaw, pitch, roll, yawValue, pitchValue, rollValue);
+    
     //Serial.print("Heading: ");
     //Serial.print(mag_x);
     //Serial.print(",");
