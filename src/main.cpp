@@ -230,20 +230,20 @@ int ch5Value = 0;
 int ch6Value = 0;
 
 // values_default_chanels
-int min_limit_c1 = 0;
-int max_limit_c1 = 180;
-int default_value_c1 = 90;
+int min_limit_c1 = 20;
+int max_limit_c1 = 140;
+int default_value_c1 = 80;
 
-int min_limit_c2 = 0;
-int max_limit_c2 = 180;
+int min_limit_c2 = 50;
+int max_limit_c2 = 130;
 int default_value_c2 = 90;
 
-int min_limit_c3 = 0;
-int max_limit_c3 = 180;
-int default_value_c3 = 90;
+int min_limit_c3 = 30;
+int max_limit_c3 = 150;
+int default_value_c3 = 30;
 
-int min_limit_c4 = 0;
-int max_limit_c4 = 180;
+int min_limit_c4 = 30;
+int max_limit_c4 = 150;
 int default_value_c4 = 90;
 
 
@@ -394,25 +394,18 @@ int pulseWidth(int angle) {
 void updateChannels(){
 
     // Obtiene los valores dos canais dentro da faixa de -100 a 100
+
   ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
   ch2Value = flySky.getChannel2Value(min_limit_c2, max_limit_c2, default_value_c2);
   ch3Value = flySky.getChannel3Value(min_limit_c3, max_limit_c3, default_value_c3);
   ch4Value = flySky.getChannel4Value(min_limit_c4, max_limit_c4, default_value_c4);
   ch5Value = flySky.readSwitch(CH5, false); // Canal 5 es el switch 5
   ch6Value = flySky.readSwitch(CH6, false);
-
- 
-  servo0Value = map(ch1Value,min_limit_c1,max_limit_c1,pos0, pos180);
-  servo1Value = map(ch2Value,min_limit_c2,max_limit_c2,pos0, pos180);
-  servo2Value = map(ch3Value,min_limit_c3,max_limit_c3,pos0, pos180);
-  servo3Value = map(ch4Value,min_limit_c4,max_limit_c4,pos0, pos180);
-
-   /*
   servo0Value = pulseWidth(ch1Value);
   servo1Value = pulseWidth(ch2Value);
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
-  */
+
 
 }
 
@@ -953,7 +946,7 @@ void loop() {
   readMPU6050Data();
   Bno();
   beepOnGpsDetection();
-  show_sensors2();
+  //show_sensors2();
   //compass_degrees=getCompassHeading() ;
   //Control();
   

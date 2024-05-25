@@ -20,7 +20,7 @@ FlySky::FlySky(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6) {
 int FlySky::readChannel(int channelInput, int minLimit, int maxLimit, int defaultValue) {
   int ch = pulseIn(channelInput, HIGH, 30000);
   if (ch < 100) return defaultValue;
-  return map(ch, 1000, 2000, minLimit, maxLimit);
+  return map(ch, 1007, 1999, minLimit, maxLimit);
 }
 
 bool FlySky::readSwitch(byte channelInput, bool defaultValue) {
