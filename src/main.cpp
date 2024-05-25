@@ -231,7 +231,7 @@ int ch6Value = 0;
 
 // values_default_chanels
 int min_limit_c1 = 0;
-int max_limit_c1 = 100;
+int max_limit_c1 = 180;
 int default_value_c1 = 90;
 
 int min_limit_c2 = 0;
@@ -345,7 +345,7 @@ void beepOnGpsDetection() {
 
 void print_channels(){
 
-
+  Serial.println("Valores leidos de los canales:");
   Serial.print("Ch1: ");
   Serial.print(ch1Value);
   Serial.print(" | Ch2: ");
@@ -359,7 +359,7 @@ void print_channels(){
   Serial.print(" | Ch6: ");
   Serial.println(ch6Value);
 
-
+  Serial.println("Valores PWM enviados");
   Serial.print("s1: ");
   Serial.print(servo0Value);
   Serial.print(" | s2: ");
@@ -367,8 +367,8 @@ void print_channels(){
   Serial.print(" | s3: ");
   Serial.print(servo2Value);
   Serial.print(" | s4: ");
-  Serial.print(servo3Value);
-  Serial.println(" | s5: ");
+  Serial.println(servo3Value);
+ 
 
 
 }
@@ -402,10 +402,10 @@ void updateChannels(){
   ch6Value = flySky.readSwitch(CH6, false);
 
  
-  servo0Value = map(ch1Value,0,180,pos0, pos180);
-  servo1Value = map(ch2Value,0,180,pos0, pos180);
-  servo2Value = map(ch3Value,20,160,pos0, pos180);
-  servo3Value = map(ch4Value,0,180,pos0, pos180);
+  servo0Value = map(ch1Value,min_limit_c1,max_limit_c1,pos0, pos180);
+  servo1Value = map(ch2Value,min_limit_c2,max_limit_c2,pos0, pos180);
+  servo2Value = map(ch3Value,min_limit_c3,max_limit_c3,pos0, pos180);
+  servo3Value = map(ch4Value,min_limit_c4,max_limit_c4,pos0, pos180);
 
    /*
   servo0Value = pulseWidth(ch1Value);
@@ -967,7 +967,7 @@ void loop() {
     //Serial.println(tiempo);
     //Controlador.ImprimirDatos();
     //show_sensors();
-   //print_channels();
+    //print_channels();
     //show_sensors2();
     //printBNO055Values();
     
