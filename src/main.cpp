@@ -34,17 +34,17 @@ String fileName;
 
 //========================================================================================
 
-float kpYaw = 2;
-float kdYaw = 0.1;
-float kiYaw =0.01;
+float kpYaw = 1;
+float kdYaw = 1;
+float kiYaw = 1;
 
-float kpPitch = 0;
-float kdPitch = 0;
-float kiPitch =0;
+float kpPitch = 1;
+float kdPitch = 1;
+float kiPitch = 1;
 
-float kpRoll = 0;
-float kdRoll = 0;
-float kiRoll =0;
+float kpRoll = 1;
+float kdRoll = 1;
+float kiRoll = 1;
 
 float toErrorYaw=0;
 float priErrorYaw=0;
@@ -53,22 +53,20 @@ float priErrorPitch=0;
 float toErrorRoll=0;
 float priErrorRoll=0;
 
-float PosicionDeseadaYaw = 90;
-float PosicionDeseadaPitch = 90;
-float PosicionDeseadaRoll = 80;
+float PosicionDeseadaYaw = 0;
+float PosicionDeseadaPitch = 0;
+float PosicionDeseadaRoll = 0;
 
 //====================================
 
 
 
-
+float kp = 0.1;
+float kd = 0.1;
 
 
 float VelocidadActual = 0;
 float distanciaAuxiliar = 100;
-float kp = 2;
-float kd = 0.1;
-float ki =0.01;
 float cte_saturacion = 10;
 float condicionActualizacion = 0;
 float toError=0;
@@ -436,53 +434,53 @@ int pulseWidth(int angle) {
 }
 
 
-double CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max ) {
+double CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max, double kp, double ki, double kd) {
     double error = PosicionDeseada - actual;
     double Pvalue = error * kp;
     double Ivalue = toError * ki;
     double Dvalue = (error - priError) * kd;
     double PIDVal = Pvalue + Ivalue + Dvalue;
-    double valToretrun = map(PIDVal, -180, 180, 360, 0);
+    double valToretrun = map(PIDVal, -90, 90, min,max);
     
     priError = error;
     toError += error;
     
-    return valToretrun;
-}
-
-
-void updateChannels(){
-
-    // Obtiene los valores dos canais dentro da faixa de -100 a 100
-
-  // ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
-  ch2Value = flySky.getChannel2Value(min_limit_c2, max_limit_c2, default_value_c2);
-  ch3Value = flySky.getChannel3Value(min_limit_c3, max_limit_c3, default_value_c3);
-  ch4Value = flySky.getChannel4Value(min_limit_c4, max_limit_c4, default_value_c4);
-  ch5Value = flySky.readSwitch(CH5, false); // Canal 5 es el switch 5
-  ch6Value = flySky.readSwitch(CH6, false);
-  // servo0Value = pulseWidth(ch1Value);
-  servo1Value = pulseWidth(ch2Value);
-  servo2Value = pulseWidth(ch3Value);
-  servo3Value = pulseWidth(ch4Value);
-
-  servo0Value = map(roll, -360, 360, min_limit_c1, max_limit_c1);
-
+    return valToretrun;
 }
 
 void updateChannelsAuto(){
 
     // Obtiene los valores dos canais dentro da faixa de -100 a 100
-  float pidYaw = CalcularPid(yaw, PosicionDeseadaYaw, priErrorYaw, toErrorYaw, min_limit_c4, max_limit_c4);
+  float pidYaw = CalcularPid(yaw, PosicionDeseadaYaw, priErrorYaw, toErrorYaw, min_limit_c4, max_limit_c4, kpYaw, kiYaw, kdYaw);
   servo3Value = pulseWidth(pidYaw);
 
-  float pidPitch = CalcularPid(pitch, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2);
-  servo0Value = pulseWidth(pidPitch);
+  float pidPitch = CalcularPid(pitch, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch);
+  servo1Value = pulseWidth(pidPitch);
 
-  float pidRoll = CalcularPid(roll, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c4, max_limit_c4);
-  servo1Value = pulseWidth(pidRoll);
+  float pidRoll = CalcularPid(roll, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll);
+  servo0Value = pulseWidth(pidRoll);
+  //servo0Value = pidRoll;
 
 }
+void updateChannels(){
+
+    // Obtiene los valores dos canais dentro da faixa de -100 a 100
+
+  ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
+  ch2Value = flySky.getChannel2Value(min_limit_c2, max_limit_c2, default_value_c2);
+  ch3Value = flySky.getChannel3Value(min_limit_c3, max_limit_c3, default_value_c3);
+  ch4Value = flySky.getChannel4Value(min_limit_c4, max_limit_c4, default_value_c4);
+
+
+  servo0Value = pulseWidth(ch1Value);
+  servo1Value = pulseWidth(ch2Value);
+  servo2Value = pulseWidth(ch3Value);
+  servo3Value = pulseWidth(ch4Value);
+
+
+}
+
+
 
 float calculateHeading(float mx, float my) {
     // Calcular el ángulo en radianes
@@ -499,6 +497,18 @@ float calculateHeading(float mx, float my) {
     return heading_deg;
 }
 
+
+void managePlaneMode(){
+  ch5Value = flySky.readSwitch(CH5, false); // Canal 5 es el switch 5
+  ch6Value = flySky.readSwitch(CH6, false);
+
+  if (ch5Value)
+    updateChannelsAuto();
+  else{
+    updateChannels();
+  }
+  print_channels();
+}
 
 void Bno() {
   if (millis() - lastTime >= BNO055_SAMPLERATE_DELAY_MS) {
@@ -1031,14 +1041,16 @@ void setup() {
 void loop() {
   unsigned long currentMillis = millis();
   tiempo=currentMillis;
-  updateChannels();
+  //updateChannels();
+  //updateChannelsAuto();
+  managePlaneMode();
   setServos();
   data_gps();
   readBMP280Data(); 
   readMPU6050Data();
   Bno();
   beepOnGpsDetection();
-  show_sensors2();
+  //show_sensors2();
   //compass_degrees=getCompassHeading() ;
   //Control();
   
