@@ -127,6 +127,10 @@ float temperature = 0.0;
 float pressure = 0.0;
 float altitude = 0.0;
 
+float rawTemperature = 0.0;
+float rawPressure = 0.0;
+float rawAltitude = 0.0;
+
 
 
 float gyroX = 0.0;
@@ -186,6 +190,9 @@ unsigned char gyroCalibStatus = 0;
 unsigned char sysCalibStatus = 0;
 unsigned long lastTime = 0;
 
+// EMA
+
+const float alpha = 0.1; // Factor de suavizado
 
 
 #define BNO055_SAMPLERATE_DELAY_MS (100)
@@ -508,11 +515,22 @@ void initSensors() {
   bno055_set_operation_mode(OPERATION_MODE_NDOF);
   //initializeCompass();
 }
-
+float calculateEMA(float currentReading, float previousEMA, float alpha) {
+  return (alpha * currentReading) + ((1 - alpha) * previousEMA);
+}
 void readBMP280Data() {
-  //temperature = bmp.readTemperature();
-  pressure = bmp.readPressure() / 100.0F;
-  altitude = bmp.readAltitude(1028); //  La presión del aire al nivel del mar es 1028 hPa (QNH).
+  float currentTemperature = bmp.readTemperature();
+  float currentPressure = bmp.readPressure() / 100.0F;
+  float currentAltitude = bmp.readAltitude(1028); //  La presión del aire al nivel del mar es 1028 hPa (QNH).
+
+  pressure = calculateEMA(currentPressure, pressure, alpha);
+  temperature = calculateEMA(currentTemperature, temperature, alpha);
+  altitude = calculateEMA(currentAltitude, altitude, alpha);
+
+  float rawTemperature = currentTemperature;
+  float rawPressure = currentPressure;
+  float rawAltitude = currentAltitude;
+
 }
 
 void KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2]) {
@@ -543,7 +561,7 @@ void readMPU6050Data() {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
-  temperature=temp.temperature;
+  //temperature=temp.temperature;
 
   aX = a.acceleration.x;
   aY = a.acceleration.y;
@@ -785,10 +803,16 @@ void saveData() {
 void show_sensors2() {
   Serial.print("{temperatura:");
   Serial.print(temperature); // valor sensor temperatura MPU-6050 acelerometro y giroscopio no tan preciso
+  Serial.print(", rawTemperatura:");
+  Serial.print(rawTemperature); // valor sensor temperatura Bmp280 sin filtrar
   Serial.print(", presion:");
   Serial.print(pressure); // presion del BMP180 sensor presion barometrica
+  Serial.print(", rawPresion:");
+  Serial.print(rawPressure); // presion del BMP180 sensor presion barometrica sin filtrar
   Serial.print(", altitud:");
   Serial.print(altitude); // altitude sensor presion barometrica
+  Serial.print(", rawAltitud:");
+  Serial.print(rawAltitude); // altitude sensor presion barometrica sin filtrar
   Serial.print(", yaw1:");
   Serial.print(yaw); // yaw del MPU-6050
   Serial.print(", pitch1:");
@@ -968,7 +992,7 @@ void loop() {
   readMPU6050Data();
   Bno();
   beepOnGpsDetection();
-  //show_sensors2();
+  show_sensors2();
   //compass_degrees=getCompassHeading() ;
   //Control();
   
