@@ -26,9 +26,41 @@
 #define MISO_PIN 37
 #define CS_PIN 38
 
+
 File myFile;
 bool fileCreated = false;
 String fileName;
+
+
+//========================================================================================
+
+float kpYaw = 2;
+float kdYaw = 0.1;
+float kiYaw =0.01;
+
+float kpPitch = 0;
+float kdPitch = 0;
+float kiPitch =0;
+
+float kpRoll = 0;
+float kdRoll = 0;
+float kiRoll =0;
+
+float toErrorYaw=0;
+float priErrorYaw=0;
+float toErrorPitch=0;
+float priErrorPitch=0;
+float toErrorRoll=0;
+float priErrorRoll=0;
+
+float PosicionDeseadaYaw = 90;
+float PosicionDeseadaPitch = 90;
+float PosicionDeseadaRoll = 80;
+
+//====================================
+
+
+
 
 
 
@@ -404,18 +436,18 @@ int pulseWidth(int angle) {
 }
 
 
-double CalcularPid(double actual) {
-    double error = PosicionDeseadaGrados - actual;
+double CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max ) {
+    double error = PosicionDeseada - actual;
     double Pvalue = error * kp;
     double Ivalue = toError * ki;
     double Dvalue = (error - priError) * kd;
     double PIDVal = Pvalue + Ivalue + Dvalue;
-    double valToretrun = map(PIDVal, -180, 10, 360, 0);
+    double valToretrun = map(PIDVal, -180, 180, 360, 0);
     
     priError = error;
     toError += error;
     
-    return valToretrun;
+    return valToretrun;
 }
 
 
@@ -434,11 +466,21 @@ void updateChannels(){
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
 
-<<<<<<< HEAD
-  servo0Value = pulseWidth(map(roll, -180, 180, min_limit_c1, max_limit_c1));
-=======
-  servo0Value = map(roll, -360, 360, min_limit_c1, max_limit_c1)
->>>>>>> 52194647e5e63c142858370d7a435d23ec58c898
+  servo0Value = map(roll, -360, 360, min_limit_c1, max_limit_c1);
+
+}
+
+void updateChannelsAuto(){
+
+    // Obtiene los valores dos canais dentro da faixa de -100 a 100
+  float pidYaw = CalcularPid(yaw, PosicionDeseadaYaw, priErrorYaw, toErrorYaw, min_limit_c4, max_limit_c4);
+  servo3Value = pulseWidth(pidYaw);
+
+  float pidPitch = CalcularPid(pitch, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2);
+  servo0Value = pulseWidth(pidPitch);
+
+  float pidRoll = CalcularPid(roll, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c4, max_limit_c4);
+  servo1Value = pulseWidth(pidRoll);
 
 }
 
