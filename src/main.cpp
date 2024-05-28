@@ -36,12 +36,17 @@ float VelocidadActual = 0;
 float distanciaAuxiliar = 100;
 float kp = 2;
 float kd = 0.1;
+float ki =0.01;
 float cte_saturacion = 10;
 float condicionActualizacion = 0;
+float toError=0;
+float priError=0;
+
 float tiempo=0;
 float compass_value=0;
 Control Controlador(distanciaAuxiliar, kp, kd, cte_saturacion, condicionActualizacion);
 
+float PosicionDeseadaGrados=80;
 
 float inputCoords[Control::MAX_COORDINATES][2] = {{4.653453, -74.093492}, 
                           {4.691751, -74.124330}, 
@@ -422,7 +427,7 @@ void updateChannels(){
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
 
-  servo0Value = map(roll, -180, 180, min_limit_c1, max_limit_c1)
+  servo0Value = pulseWidth(map(roll, -180, 180, min_limit_c1, max_limit_c1));
 
 }
 
