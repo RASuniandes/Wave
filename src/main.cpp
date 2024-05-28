@@ -232,19 +232,19 @@ int ch6Value = 0;
 // values_default_chanels
 int min_limit_c1 = 20;
 int max_limit_c1 = 140;
-int default_value_c1 = 80;
+int default_value_c1 = 80; // alas (roll)
 
 int min_limit_c2 = 50;
 int max_limit_c2 = 130;
-int default_value_c2 = 90;
+int default_value_c2 = 90; // Cola del avion (pitch)
 
 int min_limit_c3 = 30;
 int max_limit_c3 = 150;
-int default_value_c3 = 30;
+int default_value_c3 = 30; // Acelerador
 
 int min_limit_c4 = 30;
 int max_limit_c4 = 150;
-int default_value_c4 = 90;
+int default_value_c4 = 90; // Lateral (yaw)
 
 
 int servo0Value = 0;
@@ -391,21 +391,38 @@ int pulseWidth(int angle) {
   return analog_value;
 }
 
+
+double CalcularPid(double actual) {
+    double error = PosicionDeseadaGrados - actual;
+    double Pvalue = error * kp;
+    double Ivalue = toError * ki;
+    double Dvalue = (error - priError) * kd;
+    double PIDVal = Pvalue + Ivalue + Dvalue;
+    double valToretrun = map(PIDVal, -180, 180, 360, 0);
+    
+    priError = error;
+    toError += error;
+    
+    return valToretrun;
+}
+
+
 void updateChannels(){
 
     // Obtiene los valores dos canais dentro da faixa de -100 a 100
 
-  ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
+  // ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
   ch2Value = flySky.getChannel2Value(min_limit_c2, max_limit_c2, default_value_c2);
   ch3Value = flySky.getChannel3Value(min_limit_c3, max_limit_c3, default_value_c3);
   ch4Value = flySky.getChannel4Value(min_limit_c4, max_limit_c4, default_value_c4);
   ch5Value = flySky.readSwitch(CH5, false); // Canal 5 es el switch 5
   ch6Value = flySky.readSwitch(CH6, false);
-  servo0Value = pulseWidth(ch1Value);
+  // servo0Value = pulseWidth(ch1Value);
   servo1Value = pulseWidth(ch2Value);
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
 
+  servo0Value = map(roll, -180, 180, min_limit_c1, max_limit_c1)
 
 }
 
