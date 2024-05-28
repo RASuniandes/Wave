@@ -410,7 +410,7 @@ double CalcularPid(double actual) {
     double Ivalue = toError * ki;
     double Dvalue = (error - priError) * kd;
     double PIDVal = Pvalue + Ivalue + Dvalue;
-    double valToretrun = map(PIDVal, -180, 180, 360, 0);
+    double valToretrun = map(PIDVal, -180, 10, 360, 0);
     
     priError = error;
     toError += error;
@@ -434,7 +434,11 @@ void updateChannels(){
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
 
+<<<<<<< HEAD
   servo0Value = pulseWidth(map(roll, -180, 180, min_limit_c1, max_limit_c1));
+=======
+  servo0Value = map(roll, -360, 360, min_limit_c1, max_limit_c1)
+>>>>>>> 52194647e5e63c142858370d7a435d23ec58c898
 
 }
 
