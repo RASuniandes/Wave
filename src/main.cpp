@@ -436,14 +436,13 @@ int pulseWidth(int angle) {
 
 double CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max, double kp, double ki, double kd) {
     double error = PosicionDeseada - actual;
+    priError = error;
+    toError += error;
     double Pvalue = error * kp;
     double Ivalue = toError * ki;
     double Dvalue = (error - priError) * kd;
     double PIDVal = Pvalue + Ivalue + Dvalue;
-    double valToretrun = map(PIDVal, -90, 90, min,max);
-    
-    priError = error;
-    toError += error;
+    double valToretrun = map(PIDVal, -180, 180, min,max);
     
     return valToretrun;
 }
