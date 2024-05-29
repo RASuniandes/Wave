@@ -456,7 +456,7 @@ double CalcularPid(double actual, double PosicionDeseada, double priError, doubl
     if (valToreturn > max) valToreturn = max;
     if (valToreturn < min) valToreturn = min;
 
-    /*
+
     Serial.print("Error: ");
     Serial.print(error);
     Serial.print(" | P: ");
@@ -469,8 +469,6 @@ double CalcularPid(double actual, double PosicionDeseada, double priError, doubl
     Serial.print(PIDVal);
     Serial.print(" | valToretrun: ");
     Serial.println(valToreturn);
-
-    */
     return valToreturn;
 }
 
