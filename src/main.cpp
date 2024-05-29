@@ -35,16 +35,16 @@ String fileName;
 //========================================================================================
 
 float kpYaw = 1;
-float kdYaw = 1;
-float kiYaw = 1;
+float kdYaw = 0.1;
+float kiYaw = 0.01;
 
 float kpPitch = 1;
-float kdPitch = 1;
-float kiPitch = 1;
+float kdPitch = 0.1;
+float kiPitch = 0.01;
 
-float kpRoll = 1;
-float kdRoll = 1;
-float kiRoll = 1;
+float kpRoll = 8;
+float kdRoll = 0.5;
+float kiRoll = 0.01;
 
 float toErrorYaw=0;
 float priErrorYaw=0;
@@ -246,8 +246,9 @@ const int chipSelect = 38;
 FlySky flySky(CH1, CH2, CH3, CH4, CH5,CH6);
 Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 
-#define SER0_ELEVADORES  0   //Servo Motor 0 on connector 0
-#define SER1_ALERONES 1  //Servo Motor 1 on connector 12
+#define SER0_ALERONES 0 
+#define SER1_ELEVADORES  1   //Servo Motor 0 on connector 0
+ //Servo Motor 1 on connector 12
 
 #define SER2_MOTOR  2   //Servo Motor 0 on connector 0
 #define SER3_TIMON  3
@@ -419,8 +420,8 @@ void setServos() {
 
 
   // Verifica si los nuevos valores son diferentes de los actuales
-    pca9685.setPWM(SER0_ELEVADORES, 0, servo0Value);
-    pca9685.setPWM(SER1_ALERONES, 0, servo1Value);
+    pca9685.setPWM(SER0_ALERONES, 0, servo0Value);
+    pca9685.setPWM(SER1_ELEVADORES, 0, servo1Value);
     pca9685.setPWM(SER2_MOTOR, 0, servo2Value);
     pca9685.setPWM(SER3_TIMON, 0, servo3Value);
   
@@ -441,22 +442,54 @@ double CalcularPid(double actual, double PosicionDeseada, double priError, doubl
     double Ivalue = toError * ki;
     double Dvalue = (error - priError) * kd;
     double PIDVal = Pvalue + Ivalue + Dvalue;
-    double valToretrun = map(PIDVal, -180, 180, min,max);
+    
     priError = error;
-    return valToretrun;
+
+     // Limitar el valor de PIDVal dentro del rango de -90 a 90
+    if (PIDVal > 90) PIDVal = 90;
+    if (PIDVal < -90) PIDVal = -90;
+
+    // Mapear PIDVal de -90 a 90 al rango del servo (min a max)
+    double valToreturn = map(PIDVal, -90, 90, min, max);
+
+    // Limitar el valor de retorno dentro de los límites del servo (min a max)
+    if (valToreturn > max) valToreturn = max;
+    if (valToreturn < min) valToreturn = min;
+
+
+    Serial.print("Error: ");
+    Serial.print(error);
+    Serial.print(" | P: ");
+    Serial.print(Pvalue);
+    Serial.print(" | I: ");
+    Serial.print(Ivalue);
+    Serial.print(" | D: ");
+    Serial.print(Dvalue);
+    Serial.print(" | PID: ");
+    Serial.print(PIDVal);
+    Serial.print(" | valToretrun: ");
+    Serial.println(valToreturn);
+    return valToreturn;
 }
 
 void updateChannelsAuto(){
 
     // Obtiene los valores dos canais dentro da faixa de -100 a 100
-  float pidYaw = CalcularPid(yaw, PosicionDeseadaYaw, priErrorYaw, toErrorYaw, min_limit_c4, max_limit_c4, kpYaw, kiYaw, kdYaw);
-  servo3Value = pulseWidth(pidYaw);
+  float pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll);
+  ch1Value  = pidRoll;
+  servo0Value =pulseWidth(pidRoll);
 
-  float pidPitch = CalcularPid(pitch, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch);
+  float pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch);
   servo1Value = pulseWidth(pidPitch);
+  ch2Value  = pidPitch;
+  /*
+  float pidYaw = CalcularPid(yawValue, PosicionDeseadaYaw, priErrorYaw, toErrorYaw, min_limit_c4, max_limit_c4, kpYaw, kiYaw, kdYaw);
+  servo3Value = pulseWidth(pidYaw);
+  ch4Value  = pidYaw;
 
-  float pidRoll = CalcularPid(roll, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll);
-  servo0Value = pulseWidth(pidRoll);
+
+  */
+
   //servo0Value = pidRoll;
 
 }
@@ -505,7 +538,7 @@ void managePlaneMode(){
   else{
     updateChannels();
   }
-  print_channels();
+  //print_channels();
 }
 
 void Bno() {
