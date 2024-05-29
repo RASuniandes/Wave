@@ -277,9 +277,9 @@ int min_limit_c1 = 20;
 int max_limit_c1 = 140;
 int default_value_c1 = 80; // alas (roll)
 
-int min_limit_c2 = 50;
-int max_limit_c2 = 130;
-int default_value_c2 = 90; // Cola del avion (pitch)
+int min_limit_c2 = 10;
+int max_limit_c2 = 160;
+int default_value_c2 = 85; // Cola del avion (pitch)
 
 int min_limit_c3 = 30;
 int max_limit_c3 = 150;
@@ -435,7 +435,7 @@ int pulseWidth(int angle) {
 }
 
 
-double CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max, double kp, double ki, double kd) {
+double CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max, double kp, double ki, double kd,double minMaxPid, float signo) {
     double error = PosicionDeseada - actual;
     toError += error;
     double Pvalue = error * kp;
@@ -446,16 +446,18 @@ double CalcularPid(double actual, double PosicionDeseada, double priError, doubl
     priError = error;
 
      // Limitar el valor de PIDVal dentro del rango de -90 a 90
-    if (PIDVal > 90) PIDVal = 90;
-    if (PIDVal < -90) PIDVal = -90;
+    if (PIDVal >  minMaxPid) PIDVal =  minMaxPid;
+    if (PIDVal < - minMaxPid) PIDVal = - minMaxPid;
 
     // Mapear PIDVal de -90 a 90 al rango del servo (min a max)
-    double valToreturn = map(PIDVal, -90, 90, min, max);
+    double valToreturn = 0;
+
+    if (signo) valToreturn = map(PIDVal, -minMaxPid, minMaxPid, min, max);
+    else valToreturn = map(PIDVal, -minMaxPid, minMaxPid, max, min);
 
     // Limitar el valor de retorno dentro de los límites del servo (min a max)
     if (valToreturn > max) valToreturn = max;
     if (valToreturn < min) valToreturn = min;
-
 
     Serial.print("Error: ");
     Serial.print(error);
@@ -475,13 +477,11 @@ double CalcularPid(double actual, double PosicionDeseada, double priError, doubl
 void updateChannelsAuto(){
 
     // Obtiene los valores dos canais dentro da faixa de -100 a 100
-  float pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll);
-  ch1Value  = pidRoll;
+  float pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
   servo0Value =pulseWidth(pidRoll);
 
-  float pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch);
+  float pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch,30, 0);
   servo1Value = pulseWidth(pidPitch);
-  ch2Value  = pidPitch;
   /*
   float pidYaw = CalcularPid(yawValue, PosicionDeseadaYaw, priErrorYaw, toErrorYaw, min_limit_c4, max_limit_c4, kpYaw, kiYaw, kdYaw);
   servo3Value = pulseWidth(pidYaw);
@@ -497,18 +497,19 @@ void updateChannels(){
 
     // Obtiene los valores dos canais dentro da faixa de -100 a 100
 
-  ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
-  ch2Value = flySky.getChannel2Value(min_limit_c2, max_limit_c2, default_value_c2);
+  ch1Value = flySky.getChannel1Value(60, -60, default_value_c1);
+  ch2Value = flySky.getChannel2Value(30, -30, default_value_c2);
   ch3Value = flySky.getChannel3Value(min_limit_c3, max_limit_c3, default_value_c3);
   ch4Value = flySky.getChannel4Value(min_limit_c4, max_limit_c4, default_value_c4);
 
+  double pidRoll = CalcularPid(rollValue, ch1Value, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
+  servo0Value = pulseWidth(pidRoll);
 
-  servo0Value = pulseWidth(ch1Value);
-  servo1Value = pulseWidth(ch2Value);
+  double pidPitch = CalcularPid(pitchValue, ch2Value, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch,30, 0);
+  servo1Value = pulseWidth(pidPitch);
+
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
-
-
 }
 
 
