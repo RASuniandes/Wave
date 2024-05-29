@@ -1064,6 +1064,8 @@ void setup() {
   
 
   playBuzzer();
+
+  xTaskCreatePinnedToCore(loop0, "Tarea_0", 1000, NULL, 1, &Tarea0, 0)
 }
 
  
@@ -1075,7 +1077,6 @@ void loop() {
   tiempo=currentMillis;
   //updateChannels();
   //updateChannelsAuto();
-  managePlaneMode();
   setServos();
   data_gps();
   readBMP280Data(); 
@@ -1114,4 +1115,11 @@ void loop() {
   }
 
   }
+void loop0(void*parameter){
+  while(1==1){
+    managePlaneMode();
+
+  }
+}
   //delay(1000); // Pausa de 1 segundo entre lecturas
+
