@@ -1003,6 +1003,9 @@ void  Control(){
   Controlador.UAV_Search();
 
 }
+
+TaskHandle_t Tarea0;
+void loop0(void* parameter);
 void setup() {
   Serial.begin(115200);
   Wire.begin(8, 9);  
@@ -1065,7 +1068,7 @@ void setup() {
 
   playBuzzer();
 
-  xTaskCreatePinnedToCore(loop0, "Tarea_0", 1000, NULL, 1, &Tarea0, 0)
+  xTaskCreatePinnedToCore(loop0, "Tarea_0", 2048, NULL, 1, &Tarea0, 0);
 }
 
  
@@ -1115,11 +1118,12 @@ void loop() {
   }
 
   }
+
+  //delay(1000); // Pausa de 1 segundo entre lecturas
+
 void loop0(void*parameter){
   while(1==1){
     managePlaneMode();
 
   }
 }
-  //delay(1000); // Pausa de 1 segundo entre lecturas
-
