@@ -459,18 +459,18 @@ double CalcularPid(double actual, double PosicionDeseada, double priError, doubl
     if (valToreturn > max) valToreturn = max;
     if (valToreturn < min) valToreturn = min;
 
-    Serial.print("Error: ");
-    Serial.print(error);
-    Serial.print(" | P: ");
-    Serial.print(Pvalue);
-    Serial.print(" | I: ");
-    Serial.print(Ivalue);
-    Serial.print(" | D: ");
-    Serial.print(Dvalue);
-    Serial.print(" | PID: ");
-    Serial.print(PIDVal);
-    Serial.print(" | valToretrun: ");
-    Serial.println(valToreturn);
+    // Serial.print("Error: ");
+    // Serial.print(error);
+    // Serial.print(" | P: ");
+    // Serial.print(Pvalue);
+    // Serial.print(" | I: ");
+    // Serial.print(Ivalue);
+    // Serial.print(" | D: ");
+    // Serial.print(Dvalue);
+    // Serial.print(" | PID: ");
+    // Serial.print(PIDVal);
+    // Serial.print(" | valToretrun: ");
+    // Serial.println(valToreturn);
     return valToreturn;
 }
 
@@ -478,7 +478,7 @@ void updateChannelsAuto(){
 
     // Obtiene los valores dos canais dentro da faixa de -100 a 100
   float pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
-  servo0Value =pulseWidth(pidRoll);
+  servo0Value = pulseWidth(pidRoll);
 
   float pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch,30, 0);
   servo1Value = pulseWidth(pidPitch);
@@ -489,8 +489,6 @@ void updateChannelsAuto(){
 
 
   */
-
-  //servo0Value = pidRoll;
 
 }
 void updateChannels(){
@@ -1080,13 +1078,13 @@ void loop() {
   tiempo=currentMillis;
   //updateChannels();
   //updateChannelsAuto();
-  setServos();
+  
   data_gps();
   readBMP280Data(); 
   readMPU6050Data();
   Bno();
   beepOnGpsDetection();
-  //show_sensors2();
+  show_sensors2();
   //compass_degrees=getCompassHeading() ;
   //Control();
   
@@ -1124,6 +1122,6 @@ void loop() {
 void loop0(void*parameter){
   while(1==1){
     managePlaneMode();
-
+    setServos();
   }
 }
