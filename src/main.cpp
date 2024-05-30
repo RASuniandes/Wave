@@ -17,6 +17,7 @@
 #include <vector>
 #include <iostream>
 #include "HMC5883L.h"
+#include "sensorica\PressureSensor.h"
 #include <SPI.h>
 #include <SD.h>
 
@@ -31,6 +32,16 @@ File myFile;
 bool fileCreated = false;
 String fileName;
 
+
+//-----------Pressure Sensor------------------------------
+// Pin del sensor de presión (ADC1 CH0 en ESP32-S3)
+int sensorPin = 15;
+// Constantes de conversión del sensor de presión
+float V_S = 5.0; // Voltaje de suministro
+float sensitivity = 0.09; // Sensibilidad del sensor (0.09 V/kPa)
+float offset = 0.04; // Offset del sensor (0.04 V)
+ float RHO_AIR=1.225;
+PressureSensor pressureSensor( sensorPin, V_S, sensitivity, offset);
 
 //========================================================================================
 
@@ -76,6 +87,7 @@ float tiempo=0;
 float compass_value=0;
 Control Controlador(distanciaAuxiliar, kp, kd, cte_saturacion, condicionActualizacion);
 
+
 float PosicionDeseadaGrados=80;
 
 float inputCoords[Control::MAX_COORDINATES][2] = {{4.653453, -74.093492}, 
@@ -107,8 +119,7 @@ float compass_degrees = 0.0;
 
 // GPS declaracion
 TinyGPSPlus gps;
-
-const int sensorPin = 15;  // Pin digital del MPS20N0040D (D15)
+ // Pin digital del MPS20N0040D (D15)
 const float seaLevelPressure = 101.325;  // Presión atmosférica al nivel del mar en kPa
 
 
@@ -617,6 +628,8 @@ void readBMP280Data() {
   float rawPressure = currentPressure;
   float rawAltitude = currentAltitude;
 
+  pressureSensor.updateEnvironmentalData(temperature, pressure);
+
 }
 
 void KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2]) {
@@ -1045,7 +1058,7 @@ void setup() {
   radio.openWritingPipe(address);
   radio.setPALevel(RF24_PA_LOW);
   // 13 0X0d DIRECCIÓN i2c
-
+  pressureSensor.begin();
   Controlador.waitPoints_coordenadas_a_rectangulares(inputCoords, numCoords);
 
     for (int i = 0; i < numCoords; ++i) {
@@ -1084,7 +1097,7 @@ void loop() {
   readMPU6050Data();
   Bno();
   beepOnGpsDetection();
-  show_sensors2();
+  //show_sensors2();
   //compass_degrees=getCompassHeading() ;
   //Control();
   
@@ -1094,6 +1107,7 @@ void loop() {
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
     saveData();
+    pressureSensor.printVelocity();
     //Serial.print("tiempo: "); 
     //Serial.println(tiempo);
     //Controlador.ImprimirDatos();
