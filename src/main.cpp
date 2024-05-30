@@ -401,20 +401,43 @@ int pulseWidth(int angle) {
   return analog_value;
 }
 
-float CalcularPid(float actual, float deseada, float& priError, float& toError, float min, float max, float kp, float ki, float kd, float minMaxPid, int signo) {
-  float error = deseada - actual;
-  toError += error;
-  float Pvalue = error * kp;
-  float Ivalue = toError * ki;
-  float Dvalue = (error - priError) * kd;
-  float PIDVal = Pvalue + Ivalue + Dvalue;
+double CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max, double kp, double ki, double kd,double minMaxPid, float signo) {
+    double error = PosicionDeseada - actual;
+    toError += error;
+    double Pvalue = error * kp;
+    double Ivalue = toError * ki;
+    double Dvalue = (error - priError) * kd;
+    double PIDVal = Pvalue + Ivalue + Dvalue;
+    
+    priError = error;
 
-  priError = error;
+     // Limitar el valor de PIDVal dentro del rango de -90 a 90
+    if (PIDVal >  minMaxPid) PIDVal =  minMaxPid;
+    if (PIDVal < - minMaxPid) PIDVal = - minMaxPid;
 
-  PIDVal = constrain(PIDVal, -minMaxPid, minMaxPid);
-  float valToreturn = signo ? map(PIDVal, -minMaxPid, minMaxPid, min, max) : map(PIDVal, -minMaxPid, minMaxPid, max, min);
+    // Mapear PIDVal de -90 a 90 al rango del servo (min a max)
+    double valToreturn = 0;
 
-  return constrain(valToreturn, min, max);
+    if (signo) valToreturn = map(PIDVal, -minMaxPid, minMaxPid, min, max);
+    else valToreturn = map(PIDVal, -minMaxPid, minMaxPid, max, min);
+
+    // Limitar el valor de retorno dentro de los límites del servo (min a max)
+    if (valToreturn > max) valToreturn = max;
+    if (valToreturn < min) valToreturn = min;
+
+    // Serial.print("Error: ");
+    // Serial.print(error);
+    // Serial.print(" | P: ");
+    // Serial.print(Pvalue);
+    // Serial.print(" | I: ");
+    // Serial.print(Ivalue);
+    // Serial.print(" | D: ");
+    // Serial.print(Dvalue);
+    // Serial.print(" | PID: ");
+    // Serial.print(PIDVal);
+    // Serial.print(" | valToretrun: ");
+    // Serial.println(valToreturn);
+    return valToreturn;
 }
 
 void updateChannelsAuto() {
