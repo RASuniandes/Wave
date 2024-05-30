@@ -19,7 +19,7 @@ float PressureSensor::getPressure() {
     adc_avg += analogRead(sensorPin);
   }
   //adc_avg /= veloc_mean_size;
-  adc_avg=analogRead(sensorPin);
+  adc_avg = analogRead(sensorPin);
 
   float adjusted_adc = adc_avg - offset_value;
   float voltage = adjusted_adc * (3.3 / 4095.0);
@@ -32,6 +32,11 @@ float PressureSensor::getPressure() {
   return pressure;
 }
 
+float PressureSensor::getPressurePSI() {
+  float pressure_kPa = getPressure();
+  return pressure_kPa * 0.1450377377; // Convertir kPa a PSI
+}
+
 float PressureSensor::getVelocity() {
   float pressure = getPressure();
   if (pressure > 0) {
@@ -41,13 +46,28 @@ float PressureSensor::getVelocity() {
   }
 }
 
+float PressureSensor::getFlowRate() {
+  float velocity = getVelocity();
+  float flowRate = velocity * AREA * 60; // Convertir a litros por minuto
+  return flowRate;
+}
+
 void PressureSensor::printVelocity() {
   float velocity = getVelocity();
   float pressure = getPressure();
   Serial.print("Velocidad del aire (m/s): ");
   Serial.print(velocity);
-  Serial.print(" Presión (kpa): ");
+  Serial.print(" Presión (kPa): ");
   Serial.println(pressure);
+}
+
+void PressureSensor::printFlowRate() {
+  float flowRate = getFlowRate();
+  float pressure = getPressurePSI();
+  Serial.print("Flujo (L/min): ");
+  Serial.print(flowRate,6);
+  Serial.print(" Presión (PSI): ");
+  Serial.println(pressure,6);
 }
 
 void PressureSensor::updateEnvironmentalData(float temp, float pressure) {
@@ -60,4 +80,3 @@ void PressureSensor::calculateAirDensity() {
   float T = temperature + 273.15; // Convertir a Kelvin
   RHO_AIR = pressure_atmospheric * 100 / (287.05 * T); // Convertir presión a Pascales
 }
-  

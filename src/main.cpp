@@ -989,7 +989,7 @@ void loop() {
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
     saveData();
-    pressureSensor.printVelocity();
+    pressureSensor.printFlowRate();
   }
   if (currentMillis - previousMillis >= interval1) {
     previousMillis = currentMillis;
