@@ -43,6 +43,9 @@ float offset = 0.04; // Offset del sensor (0.04 V)
  float RHO_AIR=1.225;
 PressureSensor pressureSensor( sensorPin, V_S, sensitivity, offset);
 
+float pressureAir=0.0;
+float velocityAir=0.0;
+
 //========================================================================================
 
 float kpYaw = 1;
@@ -274,7 +277,7 @@ unsigned int pos180=565; // ancho de pulso en cuentas para la pocicion 180°
 
 #define MIN_PULSE_WIDTH 600
 #define MAX_PULSE_WIDTH 2600
-#define FREQUENCY 50
+#define FREQUENCY 60
 
 int ch1Value = 0;
 int ch2Value = 0;
@@ -629,6 +632,9 @@ void readBMP280Data() {
   float rawAltitude = currentAltitude;
 
   pressureSensor.updateEnvironmentalData(temperature, pressure);
+  pressureAir=pressureSensor.getPressure();
+  velocityAir=pressureSensor.getVelocity();
+
 
 }
 

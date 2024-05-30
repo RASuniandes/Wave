@@ -1,204 +1,223 @@
 #include "Sensors.h"
 
-Sensors::Sensors() : bmp280(), mpu6050() {
-  bmpWorking = false; // Inicialmente, el sensor BMP280 no está funcionando
-  mpuWorking = false; // Inicialmente, el sensor MPU6050 no está funcionando
+Sensors::Sensors()
+  : display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire),
+    temperature(0), pressure(0), altitude(0), yaw(0), pitch(0), roll(0), compass_value(0), Latitud(0), Longitud(0) {
 }
 
-bool Sensors::initialize() {
-  // Inicializar el sensor BMP280
-  if (bmp280.begin(0x76)) { // Dirección I2C BMP280
-    bmpWorking = true;
-  } else {
-    // Si no se puede inicializar el BMP280, desactivamos sus métodos
-    disableBMP();
-  }
+void Sensors::begin() {
+    bmp.begin(0x76);
+    mpu.begin(0x68);
+    BNO_Init(&myBNO);
+    bno055_set_operation_mode(OPERATION_MODE_NDOF);
 
-  // Inicializar el sensor MPU6050
-  if (mpu6050.begin()) {
-    // Configurar la escala de aceleración y rango del giroscopio para el MPU6050
-    mpu6050.setAccelerometerRange(MPU6050_RANGE_8_G);
-    mpu6050.setGyroRange(MPU6050_RANGE_500_DEG);
+    if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+        Serial.println(F("SSD1306 allocation failed"));
+        for (;;) {}
+    }
 
-    // Configurar la banda de filtro del MPU6050
-    mpu6050.setFilterBandwidth(MPU6050_BAND_21_HZ);
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println("UAV Variables");
+    display.display();
 
-    // Inicializar variables previas
-    tiempo_prev = millis();
-
-    // Obtener la temperatura inicial
-    temperature = bmp280.readTemperature();
-
-    mpu6050.setSampleRateDivisor(100);
-
-    mpuWorking = true;
-
-    //calibrateMPU();
-  } else {
-    // Si no se puede inicializar el MPU6050, desactivamos sus métodos
-    disableMPU();
-  }
-
-  // Devolver true solo si al menos uno de los sensores está funcionando
-  return bmpWorking || mpuWorking;
+    Serial2.begin(9600, SERIAL_8N1, RX2, TX2);
 }
 
+void Sensors::readData() {
+    readBMP280Data();
+    readMPU6050Data();
+    Bno();
+    updateGPS();
+}
 
-void Sensors::calibrateMPU() {
-  Serial.println("Calibrating MPU6050...");
-  int numReadings = 100; // Número de lecturas para promediar
-  int ax_sum = 0, ay_sum = 0, az_sum = 0;
-  int gx_sum = 0, gy_sum = 0, gz_sum = 0;
+void Sensors::readBMP280Data() {
+    float currentTemperature = bmp.readTemperature();
+    float currentPressure = bmp.readPressure() / 100.0F;
+    float currentAltitude = bmp.readAltitude(1028);
 
-  // Realizar lecturas y sumarlas
-  for (int i = 0; i < numReadings; i++) {
+    temperature = calculateEMA(currentTemperature, temperature, alpha);
+    pressure = calculateEMA(currentPressure, pressure, alpha);
+    altitude = calculateEMA(currentAltitude, altitude, alpha);
+
+    rawTemperature = currentTemperature;
+    rawPressure = currentPressure;
+    rawAltitude = currentAltitude;
+}
+
+void Sensors::readMPU6050Data() {
     sensors_event_t a, g, temp;
-    mpu6050.getEvent(&a, &g, &temp);
-    ax_sum += a.acceleration.x;
-    ay_sum += a.acceleration.y;
-    az_sum += a.acceleration.z;
-    gx_sum += g.gyro.x;
-    gy_sum += g.gyro.y;
-    gz_sum += g.gyro.z;
-    delay(10); // Añadir un pequeño retraso para evitar lecturas muy rápidas
-  }
+    mpu.getEvent(&a, &g, &temp);
 
-  // Calcular los promedios
-  ax_offset = ax_sum / numReadings;
-  ay_offset = ay_sum / numReadings;
-  az_offset = az_sum / numReadings;
-  gx_offset = gx_sum / numReadings;
-  gy_offset = gy_sum / numReadings;
-  gz_offset = gz_sum / numReadings;
+    aX = a.acceleration.x;
+    aY = a.acceleration.y;
+    aZ = a.acceleration.z;
+    accelX = aX * 9.81;
+    accelY = aY * 9.81;
+    accelZ = aZ * 9.81;
 
-  // Aplicar offsets manualmente a las lecturas
+    gyroX = g.gyro.x;
+    gyroY = g.gyro.y;
+    gyroZ = g.gyro.z;
 
-    Serial.print(" ax_offset: ");
-    Serial.println(ax_offset);
-    Serial.print(" ay_offset: ");
-    Serial.println(ay_offset);
-    Serial.print(" az_offset: ");
-    Serial.println(az_offset);
-    Serial.print(" gx_offset: ");
-    Serial.println(gx_offset);
-    Serial.print(" gy_offset: ");
-    Serial.println(gy_offset);
-    Serial.print(" gz_offset: ");
+    float angleAccelZ = atan2(aY, aZ) * 180 / PI;
+    yaw_raw_mpu = angleAccelZ;
+    KalmanFilter(angleAccelZ, gyroZ, &angle_y, &bias_y, P_y);
+    yaw = angle_y;
 
-    delay(100);
+    float angleAccelY = atan2(-aX, sqrt(aY * aY + aZ * aZ)) * 180 / PI;
+    pitch_raw_mpu = angleAccelZ;
+    KalmanFilter(angleAccelY, gyroY, &angle_x, &bias_x, P_x);
+    pitch = -angle_x;
 
-  Serial.println("MPU6050 calibration completed.");
-}
+    float angleAccelX = atan2(aY, aZ) * 180 / PI;
+    float rate_roll = gyroX - bias_roll;
+    angle_roll += (millis() - tiempo_prev) / 1000.0 * rate_roll;
+    P_roll[0][0] += (millis() - tiempo_prev) / 1000.0 * (P_roll[1][1] - P_roll[0][1] - P_roll[1][0] + Q_angle);
+    P_roll[0][1] -= (millis() - tiempo_prev) / 1000.0 * P_roll[1][1];
+    P_roll[1][0] -= (millis() - tiempo_prev) / 1000.0 * P_roll[1][1];
+    P_roll[1][1] += Q_bias * (millis() - tiempo_prev) / 1000.0;
 
+    float y_roll = angleAccelX - angle_roll;
+    float S_roll = P_roll[0][0] + R_measure;
+    float K_roll[2] = {P_roll[0][0] / S_roll, P_roll[1][0] / S_roll};
+    angle_roll += K_roll[0] * y_roll;
+    bias_roll += K_roll[1] * y_roll;
+    P_roll[0][0] -= K_roll[0] * P_roll[0][0];
+    P_roll[0][1] -= K_roll[0] * P_roll[0][1];
+    P_roll[1][0] -= K_roll[1] * P_roll[0][0];
+    P_roll[1][1] -= K_roll[1] * P_roll[0][1];
+    roll = angle_roll;
 
-
-
-
-
-float Sensors::getTemperature() {
-  if (bmpWorking) {
-    return bmp280.readTemperature();
-  }
-  return temperature;
-}
-
-float Sensors::getPressure() {
-  if (bmpWorking) {
-    return bmp280.readPressure();
-  }
-  return 0.0; // Devuelve 0 si el BMP280 no está funcionando
-}
-
-float Sensors::getAltitude() {
-  if (bmpWorking) {
-    return bmp280.readAltitude(1013.25); // Presión estándar al nivel del mar
-  }
-  return 0.0; // Devuelve 0 si el BMP280 no está funcionando
-}
-
-void Sensors::getOrientation(float &yaw, float &pitch, float &roll) {
-  if (mpuWorking) {
-    mpu6050.getEvent(&accelEvent, &gyroEvent, &tempEvent);
-  
-    // Cálculos para obtener yaw, pitch y roll
-
-    float ax=accelEvent.acceleration.x-ax_offset;
-    float ay=accelEvent.acceleration.y-ay_offset;
-    float az=accelEvent.acceleration.z-az_offset;
-
-
-
-    float gx=gyroEvent.gyro.x-gx_offset;
-    float gy=gyroEvent.gyro.y-gy_offset;
-    float gz=gyroEvent.gyro.z-gz_offset;
-
-    yaw = atan2(gx, gz);
-    pitch = atan2(-gx, sqrt(ay * ay + az * az));
-    roll = atan2(ay, az);
-  }
-}
-
-void Sensors::getAcceleration(float &accelX, float &accelY, float &accelZ) {
-  if (mpuWorking) {
-    mpu6050.getEvent(&accelEvent, &gyroEvent, &tempEvent);
-  
-    accelX = (accelEvent.acceleration.x -ax_offset)* 9.81; // Convertir de m/s^2 a g
-    accelY = (accelEvent.acceleration.y -ay_offset)* 9.81; // Convertir de m/s
-    accelZ = (accelEvent.acceleration.z-az_offset)* 9.81; // Convertir de m/s* 9.81
-  }
-}
-
-void Sensors::getRotation(float &gyroX, float &gyroY, float &gyroZ) {
-  if (mpuWorking) {
-    mpu6050.getEvent(&accelEvent, &gyroEvent, &tempEvent);
-
-    dt = (millis() - tiempo_prev) / 1000.0;
     tiempo_prev = millis();
-
-
-    float ax=accelEvent.acceleration.x-ax_offset;
-    float ay=accelEvent.acceleration.y-ay_offset;
-    float az=accelEvent.acceleration.z-az_offset;
-
-
-
-    float gx=gyroEvent.gyro.x-gx_offset;
-    float gy=gyroEvent.gyro.y-gy_offset;
-    float gz=gyroEvent.gyro.z-gz_offset;
-
-    //Calcular los ángulos con acelerometro
-    float accel_ang_x=atan(ay/sqrt(pow(ax,2) + pow(az,2)))*(180.0/3.14);
-    float accel_ang_y=atan(-ax/sqrt(pow(ay,2) + pow(az,2)))*(180.0/3.14);
-    
-    //Calcular angulo de rotación con giroscopio y filtro complemento  
-    float ang_x = 0.98*(ang_x_prev+(gx/131)*dt) + 0.02*accel_ang_x;
-    float ang_y = 0.98*(ang_y_prev+(gy/131)*dt) + 0.02*accel_ang_y;
-  
-
-    // Calcular ángulo de rotación en el eje Z utilizando el giroscopio (gyroZ)
-    float ang_z = ang_z_prev + (gyroEvent.gyro.z * dt);
-
-    gyroX = ang_x;
-    gyroY = ang_y;
-    gyroZ = ang_z;
-
-    ang_x_prev = ang_x;
-    ang_y_prev = ang_y;
-    ang_z_prev = ang_z;
-  }
 }
 
-void Sensors::disableBMP() {
-  // Desactivar el BMP280 estableciendo bmpWorking a false
-  bmpWorking = false;
+void Sensors::Bno() {
+    bno055_read_euler_hrp(&myEulerData);
+    yaw = 360 - float(myEulerData.h) / 16.00;
+    pitch = float(myEulerData.r) / 16.00;
+    roll = -float(myEulerData.p) / 16.00;
+
+    bno055_read_mag_xyz(&magData);
+    compass_value = calculateHeading(magData.x, magData.y);
 }
 
-void Sensors::disableMPU() {
-  // Desactivar el MPU6050 estableciendo mpuWorking a false
-  mpuWorking = false;
+void Sensors::KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2]) {
+    float S, K[2], y;
+    float dt = (millis() - tiempo_prev) / 1000.0;
+
+    *angle += dt * (newRate - *bias);
+    P[0][0] += dt * (dt * P[1][1] - P[0][1] - P[1][0] + Q_angle);
+    P[0][1] -= dt * P[1][1];
+    P[1][0] -= dt * P[1][1];
+    P[1][1] += Q_bias * dt;
+
+    y = newAngle - *angle;
+    S = P[0][0] + R_measure;
+    K[0] = P[0][0] / S;
+    K[1] = P[1][0] / S;
+
+    *angle += K[0] * y;
+    *bias += K[1] * y;
+    P[0][0] -= K[0] * P[0][0];
+    P[0][1] -= K[0] * P[0][1];
+    P[1][0] -= K[1] * P[0][0];
+    P[1][1] -= K[1] * P[0][1];
 }
 
+void Sensors::updateGPS() {
+    while (Serial2.available() > 0) {
+        if (gps.encode(Serial2.read())) {
+            if (gps.location.isValid()) {
+                Latitud = gps.location.lat();
+                Longitud = gps.location.lng();
+            } else {
+                Latitud = 0;
+                Longitud = 0;
+            }
+        }
+    }
+}
 
+float Sensors::calculateEMA(float currentReading, float previousEMA, float alpha) {
+    return (alpha * currentReading) + ((1 - alpha) * previousEMA);
+}
 
+float Sensors::calculateHeading(float mx, float my) {
+    float heading_rad = atan2(my, mx);
+    float heading_deg = heading_rad * 180.0 / M_PI;
+    if (heading_deg < 0) {
+        heading_deg += 360;
+    }
+    return heading_deg;
+}
 
+void Sensors::updateDisplay() {
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.print("Compas: "); display.print(compass_value); display.println(" °");
+    display.print("Yaw: "); display.print(yaw); display.println();
+    display.print("Pitch: "); display.print(pitch); display.println();
+    display.print("Roll: "); display.print(roll); display.println();
+    display.print("Temp: "); display.print(temperature); display.println(" C");
+    display.print("Alt: "); display.print(altitude); display.println(" m");
+    display.print("Lat: "); display.print(Latitud, 6); display.println();
+    display.print("Long: "); display.print(Longitud, 6); display.println();
+    display.display();
+}
 
+void Sensors::printValues() {
+    Serial.print("Temperatura (C): ");
+    Serial.println(temperature);
+    Serial.print("Presión (hPa): ");
+    Serial.println(pressure);
+    Serial.print("Altitud (mSA) ");
+    Serial.println(altitude);
+
+    Serial.print("Acelerómetro (X, Y, Z): ");
+    Serial.print(aX);
+    Serial.print(", ");
+    Serial.print(aY);
+    Serial.print(", ");
+    Serial.println(aZ);
+    Serial.print("Yaw: ");
+    Serial.print(yaw);
+    Serial.print(", Pitch: ");
+    Serial.print(pitch);
+    Serial.print(", Roll: ");
+    Serial.println(roll);
+
+    Serial.print(F("Orientation (Yaw, Pitch, Roll): "));
+    Serial.print(yaw);
+    Serial.print(F(", "));
+    Serial.print(pitch);
+    Serial.print(F(", "));
+    Serial.println(roll);
+
+    Serial.print("GPS (Lat, Long): ");
+    Serial.print(Latitud, 6);
+    Serial.print(", ");
+    Serial.println(Longitud, 6);
+}
+
+void Sensors::displayInfo() {
+    if (gps.location.isValid()) {
+        Latitud = gps.location.lat();
+        Longitud = gps.location.lng();
+        Serial.print(", ");
+        Serial.print(Latitud, 6);
+        Serial.print(", ");
+        Serial.println(Longitud, 6);
+    } else {
+        Latitud = 0;
+        Longitud = 0;
+        Serial.print(", ");
+        Serial.print(Latitud, 6);
+        Serial.print(", ");
+        Serial.println(Longitud, 6);
+    }
+}
