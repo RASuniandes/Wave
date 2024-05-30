@@ -18,7 +18,8 @@ float PressureSensor::getPressure() {
   for (int ii = 0; ii < veloc_mean_size; ii++) {
     adc_avg += analogRead(sensorPin);
   }
-  adc_avg /= veloc_mean_size;
+  //adc_avg /= veloc_mean_size;
+  adc_avg=analogRead(sensorPin);
 
   float adjusted_adc = adc_avg - offset_value;
   float voltage = adjusted_adc * (3.3 / 4095.0);
