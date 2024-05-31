@@ -7,8 +7,13 @@ Sensors::Sensors()
 
 void Sensors::begin() {
     bmp.begin(0x76);
+    if (bmp.begin()) {
+        initialAltitude = bmp.readAltitude(hpaZone);
+    }
+
     mpu.begin(0x68);
     BNO_Init(&myBNO);
+    bno055_set_powermode(POWER_MODE_NORMAL );
     bno055_set_operation_mode(OPERATION_MODE_NDOF);
 
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -24,19 +29,64 @@ void Sensors::begin() {
     display.display();
 
     Serial2.begin(9600, SERIAL_8N1, RX2, TX2);
+
+
+    //Pitot configuration
+
+    pitot.Config(&Wire, 0x28, 1.0f, -1.0f);
+    /* Starting communication with the pressure transducer */
+     if (!pitot.Begin()) {
+    Serial.println("Error communicating with pitot");}
+  
 }
 
 void Sensors::readData() {
     readBMP280Data();
     readMPU6050Data();
-    Bno();
+    readPitotData();
+    readBnoData();
     updateGPS();
+    
 }
+
+void Sensors::readPitotData(){
+    airPressure=pitot.pres_pa();
+    airTemperature=pitot.die_temp_c();
+    updateRho();
+    updateAirSpeed();
+
+}
+void Sensors::updateRho(){
+    float T = airTemperature + 273.15; // Convertir a Kelvin
+    RHO_AIR = (pressure * 100)/ ((8.31446261815324 )* T);
+
+
+}
+
+void Sensors::updateAirSpeed(){
+    float pressure = pitot.pres_pa();
+    if (pressure > 0) {
+        airSpeed = sqrt((2 * pressure)/ (RHO_AIR));
+    } else {
+        airSpeed = 0;
+    }
+    PressurePSI();
+
+}
+
+void Sensors::PressurePSI() {
+  airPressurePsi=airPressure * 0.1450377377; // Convertir kPa a PSI
+}
+void Sensors::showPressure(){
+
+
+}
+
 
 void Sensors::readBMP280Data() {
     float currentTemperature = bmp.readTemperature();
     float currentPressure = bmp.readPressure() / 100.0F;
-    float currentAltitude = bmp.readAltitude(1028);
+    float currentAltitude = bmp.readAltitude(hpaZone);
 
     temperature = calculateEMA(currentTemperature, temperature, alpha);
     pressure = calculateEMA(currentPressure, pressure, alpha);
@@ -45,6 +95,7 @@ void Sensors::readBMP280Data() {
     rawTemperature = currentTemperature;
     rawPressure = currentPressure;
     rawAltitude = currentAltitude;
+    alture=altitude-initialAltitude;
 }
 
 void Sensors::readMPU6050Data() {
@@ -65,12 +116,12 @@ void Sensors::readMPU6050Data() {
     float angleAccelZ = atan2(aY, aZ) * 180 / PI;
     yaw_raw_mpu = angleAccelZ;
     KalmanFilter(angleAccelZ, gyroZ, &angle_y, &bias_y, P_y);
-    yaw = angle_y;
+    yawMpu = angle_y;
 
     float angleAccelY = atan2(-aX, sqrt(aY * aY + aZ * aZ)) * 180 / PI;
     pitch_raw_mpu = angleAccelZ;
     KalmanFilter(angleAccelY, gyroY, &angle_x, &bias_x, P_x);
-    pitch = -angle_x;
+    pitchMpu = -angle_x;
 
     float angleAccelX = atan2(aY, aZ) * 180 / PI;
     float rate_roll = gyroX - bias_roll;
@@ -89,12 +140,12 @@ void Sensors::readMPU6050Data() {
     P_roll[0][1] -= K_roll[0] * P_roll[0][1];
     P_roll[1][0] -= K_roll[1] * P_roll[0][0];
     P_roll[1][1] -= K_roll[1] * P_roll[0][1];
-    roll = angle_roll;
+    rollMpu = angle_roll;
 
     tiempo_prev = millis();
 }
 
-void Sensors::Bno() {
+void Sensors::readBnoData() {
     bno055_read_euler_hrp(&myEulerData);
     yaw = 360 - float(myEulerData.h) / 16.00;
     pitch = float(myEulerData.r) / 16.00;
@@ -102,6 +153,11 @@ void Sensors::Bno() {
 
     bno055_read_mag_xyz(&magData);
     compass_value = calculateHeading(magData.x, magData.y);
+
+    bno055_get_accelcalib_status(&accelCalibStatus);
+    bno055_get_gyrocalib_status(&gyroCalibStatus);
+    bno055_get_syscalib_status(&sysCalibStatus);
+    bno055_get_magcalib_status(&magCalibStatus);
 }
 
 void Sensors::KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2]) {
@@ -221,3 +277,40 @@ void Sensors::displayInfo() {
         Serial.println(Longitud, 6);
     }
 }
+
+void Sensors::showSensors() {
+  Serial.print("{temperatura:");
+  Serial.print(temperature);
+  Serial.print(", rawTemperatura:");
+  Serial.print(rawTemperature);
+  Serial.print(", presion:");
+  Serial.print(pressure);
+  Serial.print(", rawPresion:");
+  Serial.print(rawPressure);
+  Serial.print(", altitud:");
+  Serial.print(altitude);
+  Serial.print(", rawAltitud:");
+  Serial.print(rawAltitude);
+  Serial.print(", yaw1:");
+  Serial.print(yawMpu);
+  Serial.print(", pitch1:");
+  Serial.print(pitchMpu);
+  Serial.print(", roll1:");
+  Serial.print(rollMpu);
+  Serial.print(", yaw:");
+  Serial.print(yaw);
+  Serial.print(", pitch:");
+  Serial.print(pitch);
+  Serial.print(", roll:");
+  Serial.print(roll);
+  Serial.print(", compass:");
+  Serial.print(compass_value);
+  Serial.print(", latitud:");
+  Serial.print(Latitud, 6);
+  Serial.print(", longitud:");
+  Serial.print(Longitud, 6);
+  Serial.print("}");
+  Serial.println();
+}
+
+

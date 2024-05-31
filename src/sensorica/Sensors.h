@@ -30,6 +30,10 @@ public:
     float getCompass() const { return compass_value; }
     float getLatitude() const { return Latitud; }
     float getLongitude() const { return Longitud; }
+    float getAirSpeed() const { return airSpeed; }
+    float getAirTemperature() const { return airTemperature; }
+    float getAirPressure() const { return airPressure; }
+    float getAirPressurePsi() const { return airPressurePsi; }
 
 private:
     Adafruit_BMP280 bmp;
@@ -52,8 +56,14 @@ private:
     float pitch;
     float roll;
     float compass_value;
+    unsigned char accelCalibStatus = 0;
+    unsigned char magCalibStatus = 0;
+    unsigned char gyroCalibStatus = 0;
+    unsigned char sysCalibStatus = 0;
+    unsigned long lastTime = 0;
 
     //----------MPU6050----------------------
+    float yawMpu, pitchMpu, rollMpu;
     float yaw_raw_mpu;
     float pitch_raw_mpu;
     float roll_raw_mpu;
@@ -63,12 +73,22 @@ private:
     float angle_y, bias_y, P_y[2][2];
     float angle_x, bias_x, P_x[2][2];
     float angle_roll, bias_roll, P_roll[2][2];
+    const float alpha = 0.1; // Factor de suavizado
+    const int TX2 = 11;
+    const int RX2 = 10;
+    const float Q_angle = 0.001;
+    const float Q_bias = 0.003;
+    const float R_measure = 0.03;
+    long tiempo_prev;
+
     //----------GPS----------------------
     float Latitud;
     float Longitud;
 
     //----------BMP280----------------------
-    
+    float hpaZone=1028;//hPa Bogotá
+    float initialAltitude;
+    float alture;
     float rawTemperature;
     float rawPressure;
     float rawAltitude;
@@ -78,25 +98,31 @@ private:
     float altitude;
 
     //------------PITOT-----------------
-    
+    float airTemperature;
+    float airPressure;
+    float airPressurePsi;
+    float airSpeed;
+    float RHO_AIR;
 
 
-    const float alpha = 0.1; // Factor de suavizado
-    const int TX2 = 11;
-    const int RX2 = 10;
-    const float Q_angle = 0.001;
-    const float Q_bias = 0.003;
-    const float R_measure = 0.03;
-    long tiempo_prev;
 
     void initializeCompass();
     void readBMP280Data();
     void readMPU6050Data();
-    void Bno();
+    void readPitotData();
+    void updateRho();
+    void updateAirSpeed();
+    void PressurePSI();
+
     void KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2]);
-    void displayInfo();
     float calculateEMA(float currentReading, float previousEMA, float alpha);
     float calculateHeading(float mx, float my);
+
+    //------------Datalog-------------
+    void displayInfo();
+    void showSensors();
+    void readBnoData();
+    void showPressure();
 };
 
 #endif // SENSORS_H

@@ -97,5 +97,5 @@ void PressureSensor::updateEnvironmentalData(float temp, float pressure) {
 
 void PressureSensor::calculateAirDensity() {
   float T = temperature + 273.15; // Convertir a Kelvin
-  RHO_AIR = pressure_atmospheric * 100 / (8.31446261815324 *(287.05 * T)); // Convertir presión a Pascales
+  RHO_AIR = (pressure_atmospheric * 100) / (8.31446261815324 *(287.05 * T)); // Convertir presión a Pascales
 }
