@@ -410,7 +410,6 @@ double CalcularPid(double actual, double PosicionDeseada, double priError, doubl
     double PIDVal = Pvalue + Ivalue + Dvalue;
     
     priError = error;
-
      // Limitar el valor de PIDVal dentro del rango de -90 a 90
     if (PIDVal >  minMaxPid) PIDVal =  minMaxPid;
     if (PIDVal < - minMaxPid) PIDVal = - minMaxPid;
@@ -424,19 +423,6 @@ double CalcularPid(double actual, double PosicionDeseada, double priError, doubl
     // Limitar el valor de retorno dentro de los límites del servo (min a max)
     if (valToreturn > max) valToreturn = max;
     if (valToreturn < min) valToreturn = min;
-
-    // Serial.print("Error: ");
-    // Serial.print(error);
-    // Serial.print(" | P: ");
-    // Serial.print(Pvalue);
-    // Serial.print(" | I: ");
-    // Serial.print(Ivalue);
-    // Serial.print(" | D: ");
-    // Serial.print(Dvalue);
-    // Serial.print(" | PID: ");
-    // Serial.print(PIDVal);
-    // Serial.print(" | valToretrun: ");
-    // Serial.println(valToreturn);
     return valToreturn;
 }
 
@@ -464,19 +450,19 @@ void updateChannels() {
   servo3Value = pulseWidth(ch4Value);
 }
 
-float calculateHeading(float mx, float my) {
-  float heading_rad = atan2(my, mx);
-  float heading_deg = heading_rad * 180.0 / M_PI;
-  if (heading_deg < 0) heading_deg += 360;
-  return heading_deg;
-}
-
 void managePlaneMode() {
   ch5Value = flySky.readSwitch(CH5, false);
   ch6Value = flySky.readSwitch(CH6, false);
 
   if (ch5Value) updateChannelsAuto();
   else updateChannels();
+}
+
+float calculateHeading(float mx, float my) {
+  float heading_rad = atan2(my, mx);
+  float heading_deg = heading_rad * 180.0 / M_PI;
+  if (heading_deg < 0) heading_deg += 360;
+  return heading_deg;
 }
 
 void Bno() {
@@ -985,6 +971,11 @@ void loop() {
   readMPU6050Data();
   Bno();
   beepOnGpsDetection();
+  //show_sensors2();
+  //compass_degrees=getCompassHeading() ;
+  //Control();
+  
+  //imprimirCoordenadas(CoordenadasRectangulares);
   
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
