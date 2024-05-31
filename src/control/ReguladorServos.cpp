@@ -126,10 +126,10 @@ int ReguladorServos::pulseWidth(int angle)
 
 void ReguladorServos::updateChannelsAuto(int servo0Value, int servo1Value, float rollValue, float pitchValue)
 {
-  double pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, TRUE);
+  double pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, true);
   servo0Value = pulseWidth(pidRoll);
 
-  double pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, 0);
+  double pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, false);
   servo1Value = pulseWidth(pidPitch);
 }
 
