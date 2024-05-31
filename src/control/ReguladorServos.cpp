@@ -1,12 +1,68 @@
 #include "ReguladorServos.h"
-// #include "telemetria/FlySky.h"
+#include "telemetria/FlySky.h"
+#include <Adafruit_PWMServoDriver.h>
 
-// ReguladorServos::ReguladorServos()
-// {
-//   // Inicializa los servos
-// }
+#define MIN_PULSE_WIDTH 600
+#define MAX_PULSE_WIDTH 2600
+#define FREQUENCY 60
 
-double ReguladorServos::CalcularPID(double actual, double PosicionDeseada, double priError, double toError, double min, double max, double kp, double ki, double kd, double minMaxPid, bool signo)
+#define CH1 7
+#define CH2 6
+#define CH3 5
+#define CH4 4
+#define CH5 3
+#define CH6 2
+
+FlySky flySky(CH1, CH2, CH3, CH4, CH5, CH6);
+// Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
+
+int ch1Value = 0;
+int ch2Value = 0;
+int ch3Value = 0;
+int ch4Value = 0;
+int ch5Value = 0;
+int ch6Value = 0;
+
+float toErrorYaw = 0;
+float priErrorYaw = 0;
+float toErrorPitch = 0;
+float priErrorPitch = 0;
+float toErrorRoll = 0;
+float priErrorRoll = 0;
+
+float PosicionDeseadaYaw = 0;
+float PosicionDeseadaPitch = 0;
+float PosicionDeseadaRoll = 0;
+
+float kpYaw = 1;
+float kdYaw = 0.1;
+float kiYaw = 0.01;
+
+float kpPitch = 1;
+float kdPitch = 0.1;
+float kiPitch = 0.01;
+
+float kpRoll = 8;
+float kdRoll = 0.5;
+float kiRoll = 0.01;
+
+int min_limit_c1 = 20;
+int max_limit_c1 = 140;
+int default_value_c1 = 80;
+
+int min_limit_c2 = 10;
+int max_limit_c2 = 160;
+int default_value_c2 = 85;
+
+int min_limit_c3 = 30;
+int max_limit_c3 = 150;
+int default_value_c3 = 30;
+
+int min_limit_c4 = 30;
+int max_limit_c4 = 150;
+int default_value_c4 = 90;
+
+double ReguladorServos::CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max, double kp, double ki, double kd, int minMaxPid, bool signo)
 {
 
   // Funcion que genera el angulo que debe tener los servos para regular la posicion (yaw, pitch, roll) mediante el PID
@@ -68,11 +124,66 @@ int ReguladorServos::pulseWidth(int angle)
   return analog_value;
 }
 
-// void ReguladorServos::updateChannelsAuto()
-// {
-//   float pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
-//   servo0Value = pulseWidth(pidRoll);
+void ReguladorServos::updateChannelsAuto(int servo0Value, int servo1Value, float rollValue, float pitchValue)
+{
+  double pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, TRUE);
+  servo0Value = pulseWidth(pidRoll);
 
-//   float pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, 0);
-//   servo1Value = pulseWidth(pidPitch);
-// }
+  double pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, 0);
+  servo1Value = pulseWidth(pidPitch);
+}
+
+void ReguladorServos::updateChannels(int servo0Value, int servo1Value, int servo2Value, int servo3Value, float rollValue, float pitchValue)
+{
+  ch1Value = flySky.getChannel1Value(60, -60, default_value_c1);
+  ch2Value = flySky.getChannel2Value(30, -30, default_value_c2);
+  ch3Value = flySky.getChannel3Value(min_limit_c3, max_limit_c3, default_value_c3);
+  ch4Value = flySky.getChannel4Value(min_limit_c4, max_limit_c4, default_value_c4);
+
+  double pidRoll = CalcularPid(rollValue, ch1Value, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
+  servo0Value = pulseWidth(pidRoll);
+
+  double pidPitch = CalcularPid(pitchValue, ch2Value, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, 0);
+  servo1Value = pulseWidth(pidPitch);
+
+  servo2Value = pulseWidth(ch3Value);
+  servo3Value = pulseWidth(ch4Value);
+}
+
+void ReguladorServos::managePlaneMode(int servo0Value, int servo1Value, int servo2Value, int servo3Value, float rollValue, float pitchValue)
+{
+  ch5Value = flySky.readSwitch(CH5, false);
+  ch6Value = flySky.readSwitch(CH6, false);
+
+  if (ch5Value)
+    updateChannelsAuto(servo0Value, servo1Value, rollValue, pitchValue);
+  else
+    updateChannels(servo0Value, servo1Value, servo2Value, servo3Value, rollValue, pitchValue);
+}
+
+void ReguladorServos::print_channels(int servo0Value, int servo1Value, int servo2Value, int servo3Value)
+{
+  Serial.println("Valores leidos de los canales:");
+  Serial.print("Ch1: ");
+  Serial.print(ch1Value);
+  Serial.print(" | Ch2: ");
+  Serial.print(ch2Value);
+  Serial.print(" | Ch3: ");
+  Serial.print(ch3Value);
+  Serial.print(" | Ch4: ");
+  Serial.print(ch4Value);
+  Serial.print(" | Ch5: ");
+  Serial.print(ch5Value);
+  Serial.print(" | Ch6: ");
+  Serial.println(ch6Value);
+
+  Serial.println("Valores PWM enviados");
+  Serial.print("s1: ");
+  Serial.print(servo0Value);
+  Serial.print(" | s2: ");
+  Serial.print(servo1Value);
+  Serial.print(" | s3: ");
+  Serial.print(servo2Value);
+  Serial.print(" | s4: ");
+  Serial.println(servo3Value);
+}
