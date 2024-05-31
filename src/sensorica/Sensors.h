@@ -12,7 +12,8 @@
 #include "HMC5883L.h"
 #include "ms4525do.h"
 
-class Sensors {
+class Sensors
+{
 public:
     Sensors();
     void begin();
@@ -34,6 +35,9 @@ public:
     float getAirTemperature() const { return airTemperature; }
     float getAirPressure() const { return airPressure; }
     float getAirPressurePsi() const { return airPressurePsi; }
+    void showSensors();
+    void showPressure();
+    void displayInfo();
 
 private:
     Adafruit_BMP280 bmp;
@@ -45,11 +49,8 @@ private:
     struct bno055_t myBNO;
     struct bno055_euler myEulerData;
     struct bno055_mag magData;
-    #define SCREEN_WIDTH 128 // OLED display width, in pixels
-    #define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-    
- 
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
     //---------BNO055-------------------------
     float yaw;
@@ -86,7 +87,7 @@ private:
     float Longitud;
 
     //----------BMP280----------------------
-    float hpaZone=1028;//hPa Bogotá
+    float hpaZone = 1028; // hPa Bogotá
     float initialAltitude;
     float alture;
     float rawTemperature;
@@ -104,8 +105,6 @@ private:
     float airSpeed;
     float RHO_AIR;
 
-
-
     void initializeCompass();
     void readBMP280Data();
     void readMPU6050Data();
@@ -119,10 +118,7 @@ private:
     float calculateHeading(float mx, float my);
 
     //------------Datalog-------------
-    void displayInfo();
-    void showSensors();
     void readBnoData();
-    void showPressure();
 };
 
 #endif // SENSORS_H

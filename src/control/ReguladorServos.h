@@ -20,11 +20,14 @@ public:
   int getservo4Value() const { return servo4Value; }
 
 private:
+  float PosicionDeseadaYaw = 0;
+  float PosicionDeseadaPitch = 0;
+  float PosicionDeseadaRoll = 0;
   int servo0Value;
   int servo1Value;
-  int servo2Value ;
+  int servo2Value;
   int servo3Value;
-  int servo4Value ;
+  int servo4Value;
 };
 
 #endif

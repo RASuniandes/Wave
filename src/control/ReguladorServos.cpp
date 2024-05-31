@@ -30,10 +30,6 @@ float priErrorPitch = 0;
 float toErrorRoll = 0;
 float priErrorRoll = 0;
 
-float PosicionDeseadaYaw = 0;
-float PosicionDeseadaPitch = 0;
-float PosicionDeseadaRoll = 0;
-
 float kpYaw = 1;
 float kdYaw = 0.1;
 float kiYaw = 0.01;
