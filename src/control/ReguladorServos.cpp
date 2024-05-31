@@ -62,6 +62,10 @@ int min_limit_c4 = 30;
 int max_limit_c4 = 150;
 int default_value_c4 = 90;
 
+void ReguladorServos::BeginServos()
+{
+}
+
 double ReguladorServos::CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max, double kp, double ki, double kd, int minMaxPid, bool signo)
 {
 
@@ -124,7 +128,7 @@ int ReguladorServos::pulseWidth(int angle)
   return analog_value;
 }
 
-void ReguladorServos::updateChannelsAuto(int servo0Value, int servo1Value, float rollValue, float pitchValue)
+void ReguladorServos::updateChannelsAuto(float rollValue, float pitchValue)
 {
   double pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, true);
   servo0Value = pulseWidth(pidRoll);
@@ -133,7 +137,7 @@ void ReguladorServos::updateChannelsAuto(int servo0Value, int servo1Value, float
   servo1Value = pulseWidth(pidPitch);
 }
 
-void ReguladorServos::updateChannels(int servo0Value, int servo1Value, int servo2Value, int servo3Value, float rollValue, float pitchValue)
+void ReguladorServos::updateChannels(float rollValue, float pitchValue)
 {
   ch1Value = flySky.getChannel1Value(60, -60, default_value_c1);
   ch2Value = flySky.getChannel2Value(30, -30, default_value_c2);
@@ -150,18 +154,18 @@ void ReguladorServos::updateChannels(int servo0Value, int servo1Value, int servo
   servo3Value = pulseWidth(ch4Value);
 }
 
-void ReguladorServos::managePlaneMode(int servo0Value, int servo1Value, int servo2Value, int servo3Value, float rollValue, float pitchValue)
+void ReguladorServos::managePlaneMode(float rollValue, float pitchValue)
 {
   ch5Value = flySky.readSwitch(CH5, false);
   ch6Value = flySky.readSwitch(CH6, false);
 
   if (ch5Value)
-    updateChannelsAuto(servo0Value, servo1Value, rollValue, pitchValue);
+    updateChannelsAuto(rollValue, pitchValue);
   else
-    updateChannels(servo0Value, servo1Value, servo2Value, servo3Value, rollValue, pitchValue);
+    updateChannels(rollValue, pitchValue);
 }
 
-void ReguladorServos::print_channels(int servo0Value, int servo1Value, int servo2Value, int servo3Value)
+void ReguladorServos::print_channels()
 {
   Serial.println("Valores leidos de los canales:");
   Serial.print("Ch1: ");

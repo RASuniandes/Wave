@@ -10,7 +10,6 @@
 #include "SPI.h"
 #include <TinyGPSPlus.h>
 #include <Adafruit_PWMServoDriver.h>
-// #include "telemetria/FlySky.h"
 #include <SPI.h>
 #include <RF24.h>
 #include "NAVEGACION/control.h"
@@ -59,29 +58,6 @@ PressureSensor pressureSensor(sensorPin, V_S, sensitivity, offset);
 
 float pressureAir=0.0;
 float velocityAir=0.0;
-
-// float kpYaw = 1;
-// float kdYaw = 0.1;
-// float kiYaw = 0.01;
-
-// float kpPitch = 1;
-// float kdPitch = 0.1;
-// float kiPitch = 0.01;
-
-// float kpRoll = 8;
-// float kdRoll = 0.5;
-// float kiRoll = 0.01;
-
-// float toErrorYaw=0;
-// float priErrorYaw=0;
-// float toErrorPitch=0;
-// float priErrorPitch=0;
-// float toErrorRoll=0;
-// float priErrorRoll=0;
-
-// float PosicionDeseadaYaw = 0;
-// float PosicionDeseadaPitch = 0;
-// float PosicionDeseadaRoll = 0;
 
 float kp = 0.1;
 float kd = 0.1;
@@ -224,14 +200,6 @@ const float alpha = 0.1;
 
 const int chipSelect = 38;
 
-// #define CH1 7
-// #define CH2 6
-// #define CH3 5
-// #define CH4 4
-// #define CH5 3
-// #define CH6 2
-
-// FlySky flySky(CH1, CH2, CH3, CH4, CH5, CH6);
 Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 
 #define SER0_ALERONES 0
@@ -247,36 +215,7 @@ unsigned int pos180=565;
 
 // #define MIN_PULSE_WIDTH 600
 // #define MAX_PULSE_WIDTH 2600
-// #define FREQUENCY 60
-
-// int ch1Value = 0;
-// int ch2Value = 0;
-// int ch3Value = 0;
-// int ch4Value = 0;
-// int ch5Value = 0;
-// int ch6Value = 0;
-
-// int min_limit_c1 = 20;
-// int max_limit_c1 = 140;
-// int default_value_c1 = 80;
-
-// int min_limit_c2 = 10;
-// int max_limit_c2 = 160;
-// int default_value_c2 = 85;
-
-// int min_limit_c3 = 30;
-// int max_limit_c3 = 150;
-// int default_value_c3 = 30;
-
-// int min_limit_c4 = 30;
-// int max_limit_c4 = 150;
-// int default_value_c4 = 90;
-
-int servo0Value = 0;
-int servo1Value = 0;
-int servo2Value = 0;
-int servo3Value = 0;
-int servo4Value = 0;
+#define FREQUENCY 60
 
 int numberError=0;
 bool beepCount = true;
@@ -364,102 +303,13 @@ void beepOnGpsDetection() {
   }
 }
 
-// void print_channels() {
-//   Serial.println("Valores leidos de los canales:");
-//   Serial.print("Ch1: ");
-//   Serial.print(ch1Value);
-//   Serial.print(" | Ch2: ");
-//   Serial.print(ch2Value);
-//   Serial.print(" | Ch3: ");
-//   Serial.print(ch3Value);
-//   Serial.print(" | Ch4: ");
-//   Serial.print(ch4Value);
-//   Serial.print(" | Ch5: ");
-//   Serial.print(ch5Value);
-//   Serial.print(" | Ch6: ");
-//   Serial.println(ch6Value);
-
-//   Serial.println("Valores PWM enviados");
-//   Serial.print("s1: ");
-//   Serial.print(servo0Value);
-//   Serial.print(" | s2: ");
-//   Serial.print(servo1Value);
-//   Serial.print(" | s3: ");
-//   Serial.print(servo2Value);
-//   Serial.print(" | s4: ");
-//   Serial.println(servo3Value);
-// }
 
 void setServos() {
-  pca9685.setPWM(SER0_ALERONES, 0, servo0Value);
-  pca9685.setPWM(SER1_ELEVADORES, 0, servo1Value);
-  pca9685.setPWM(SER2_MOTOR, 0, servo2Value);
-  pca9685.setPWM(SER3_TIMON, 0, servo3Value);
+  pca9685.setPWM(SER0_ALERONES, 0, reguladorServos.getservo0Value());
+  pca9685.setPWM(SER1_ELEVADORES, 0, reguladorServos.getservo1Value());
+  pca9685.setPWM(SER2_MOTOR, 0, reguladorServos.getservo2Value());
+  pca9685.setPWM(SER3_TIMON, 0, reguladorServos.getservo3Value());
 }
-
-// int pulseWidth(int angle) {
-//   int pulse_wide, analog_value;
-//   pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
-//   analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
-//   return analog_value;
-// }
-
-// double CalcularPid(double actual, double PosicionDeseada, double priError, double toError, double min, double max, double kp, double ki, double kd,double minMaxPid, float signo) {
-//     double error = PosicionDeseada - actual;
-//     toError += error;
-//     double Pvalue = error * kp;
-//     double Ivalue = toError * ki;
-//     double Dvalue = (error - priError) * kd;
-//     double PIDVal = Pvalue + Ivalue + Dvalue;
-    
-//     priError = error;
-//      // Limitar el valor de PIDVal dentro del rango de -90 a 90
-//     if (PIDVal >  minMaxPid) PIDVal =  minMaxPid;
-//     if (PIDVal < - minMaxPid) PIDVal = - minMaxPid;
-
-//     // Mapear PIDVal de -90 a 90 al rango del servo (min a max)
-//     double valToreturn = 0;
-
-//     if (signo) valToreturn = map(PIDVal, -minMaxPid, minMaxPid, min, max);
-//     else valToreturn = map(PIDVal, -minMaxPid, minMaxPid, max, min);
-
-//     // Limitar el valor de retorno dentro de los límites del servo (min a max)
-//     if (valToreturn > max) valToreturn = max;
-//     if (valToreturn < min) valToreturn = min;
-//     return valToreturn;
-// }
-
-// void updateChannelsAuto() {
-//   float pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
-//   servo0Value = pulseWidth(pidRoll);
-
-//   float pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, 0);
-//   servo1Value = pulseWidth(pidPitch);
-// }
-
-// void updateChannels() {
-//   ch1Value = flySky.getChannel1Value(60, -60, default_value_c1);
-//   ch2Value = flySky.getChannel2Value(30, -30, default_value_c2);
-//   ch3Value = flySky.getChannel3Value(min_limit_c3, max_limit_c3, default_value_c3);
-//   ch4Value = flySky.getChannel4Value(min_limit_c4, max_limit_c4, default_value_c4);
-
-//   double pidRoll = CalcularPid(rollValue, ch1Value, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
-//   servo0Value = pulseWidth(pidRoll);
-
-//   double pidPitch = CalcularPid(pitchValue, ch2Value, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, 0);
-//   servo1Value = pulseWidth(pidPitch);
-
-//   servo2Value = pulseWidth(ch3Value);
-//   servo3Value = pulseWidth(ch4Value);
-// }
-
-// void managePlaneMode() {
-//   ch5Value = flySky.readSwitch(CH5, false);
-//   ch6Value = flySky.readSwitch(CH6, false);
-
-//   if (ch5Value) updateChannelsAuto();
-//   else updateChannels();
-// }
 
 float calculateHeading(float mx, float my) {
   float heading_rad = atan2(my, mx);
@@ -974,6 +824,7 @@ void loop() {
   readMPU6050Data();
   Bno();
   beepOnGpsDetection();
+  reguladorServos.print_channels();
   //show_sensors2();
   //compass_degrees=getCompassHeading() ;
   //Control();
@@ -983,7 +834,7 @@ void loop() {
   if (currentMillis - previousMillis2 >= interval2) {
     previousMillis2 = currentMillis;
     saveData();
-    pressureSensor.printFlowRate();
+    //pressureSensor.printFlowRate();
   }
   if (currentMillis - previousMillis >= interval1) {
     previousMillis = currentMillis;
@@ -993,7 +844,7 @@ void loop() {
 
 void loop0(void* parameter) {
   while (1 == 1) {
-    reguladorServos.managePlaneMode(servo0Value, servo1Value, servo2Value, servo3Value, rollValue, pitchValue);
+    reguladorServos.managePlaneMode(rollValue, pitchValue);
     setServos();
   }
 }
