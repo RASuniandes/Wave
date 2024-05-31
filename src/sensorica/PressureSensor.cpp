@@ -18,12 +18,12 @@ float PressureSensor::getPressure() {
   for (int ii = 0; ii < veloc_mean_size; ii++) {
     adc_avg += analogRead(sensorPin);
   }
-  //adc_avg /= veloc_mean_size;
-  adc_avg = analogRead(sensorPin);
+  adc_avg /= veloc_mean_size;
+  //adc_avg = analogRead(sensorPin);
 
   float adjusted_adc = adc_avg - offset_value;
   float voltage = adjusted_adc * (3.3 / 4095.0);
-  float pressure = (voltage - (offset * V_S)) / (sensitivity * V_S);
+  float pressure = (((voltage - offset) / V_S) -0.04)*(1 / (0.09));
 
   if (pressure < 0) {
     pressure = 0;
@@ -40,7 +40,7 @@ float PressureSensor::getPressurePSI() {
 float PressureSensor::getVelocity() {
   float pressure = getPressure();
   if (pressure > 0) {
-    return sqrt(2 * pressure * 1000 / RHO_AIR);
+    return sqrt((2 * pressure)/ (RHO_AIR));
   } else {
     return 0;
   }
@@ -64,12 +64,31 @@ void PressureSensor::printVelocity() {
 void PressureSensor::printFlowRate() {
   float flowRate = getFlowRate();
   float pressure = getPressurePSI();
+  float pressureKpa=getPressure();
   Serial.print("Flujo (L/min): ");
   Serial.print(flowRate,6);
   Serial.print(" Presión (PSI): ");
   Serial.println(pressure,6);
 }
+void  PressureSensor::printAdcValue() {
+    float adc = analogRead(sensorPin);  
+    float voltage = adc  * (3.3 / 4095.0);  
+    float pressurePsi=getPressurePSI();
+    float pressureKpa=getPressure();
+    float velocity = getVelocity();
+    Serial.print(" ADC value: ");
+    Serial.print(adc,6);
+    Serial.print(" Voltage: ");
+    Serial.print(voltage,6);
+    Serial.print(" Pressure Kpa: ");
+    Serial.print(pressureKpa,6);
 
+    Serial.print(" Velocidad del aire (m/s): ");
+    Serial.print(velocity,6);
+    Serial.print(" Air density: ");
+    Serial.println(RHO_AIR,6);
+
+}
 void PressureSensor::updateEnvironmentalData(float temp, float pressure) {
   temperature = temp;
   pressure_atmospheric = pressure;
@@ -78,5 +97,5 @@ void PressureSensor::updateEnvironmentalData(float temp, float pressure) {
 
 void PressureSensor::calculateAirDensity() {
   float T = temperature + 273.15; // Convertir a Kelvin
-  RHO_AIR = pressure_atmospheric * 100 / (287.05 * T); // Convertir presión a Pascales
+  RHO_AIR = pressure_atmospheric * 100 / (8.31446261815324 *(287.05 * T)); // Convertir presión a Pascales
 }

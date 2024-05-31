@@ -10,6 +10,7 @@
 #include <Adafruit_SSD1306.h>
 #include <TinyGPSPlus.h>
 #include "HMC5883L.h"
+#include "ms4525do.h"
 
 class Sensors {
 public:
@@ -36,25 +37,23 @@ private:
     HMC5883L compass;
     Adafruit_SSD1306 display;
     TinyGPSPlus gps;
+    bfs::Ms4525do pitot;
     struct bno055_t myBNO;
     struct bno055_euler myEulerData;
     struct bno055_mag magData;
     #define SCREEN_WIDTH 128 // OLED display width, in pixels
     #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
-    float temperature;
-    float pressure;
-    float altitude;
+    
+ 
+
+    //---------BNO055-------------------------
     float yaw;
     float pitch;
     float roll;
     float compass_value;
-    float Latitud;
-    float Longitud;
 
-    float rawTemperature;
-    float rawPressure;
-    float rawAltitude;
+    //----------MPU6050----------------------
     float yaw_raw_mpu;
     float pitch_raw_mpu;
     float roll_raw_mpu;
@@ -64,6 +63,23 @@ private:
     float angle_y, bias_y, P_y[2][2];
     float angle_x, bias_x, P_x[2][2];
     float angle_roll, bias_roll, P_roll[2][2];
+    //----------GPS----------------------
+    float Latitud;
+    float Longitud;
+
+    //----------BMP280----------------------
+    
+    float rawTemperature;
+    float rawPressure;
+    float rawAltitude;
+
+    float temperature;
+    float pressure;
+    float altitude;
+
+    //------------PITOT-----------------
+    
+
 
     const float alpha = 0.1; // Factor de suavizado
     const int TX2 = 11;

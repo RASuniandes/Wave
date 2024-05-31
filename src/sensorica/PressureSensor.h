@@ -13,6 +13,7 @@ public:
   float getFlowRate();
   void printVelocity();
   void printFlowRate();
+  void printAdcValue();
   void updateEnvironmentalData(float temp, float pressure);
 
 private:
