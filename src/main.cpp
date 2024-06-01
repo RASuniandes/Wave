@@ -61,7 +61,7 @@ const int DOUT_Pin = 15;
 const int SCK_Pin = 34;
 
 unsigned long previousMillis1 = 0;
-const long interval1 = 1000;
+const long interval1 = 100;
 
 float devicesFound = 0.0;
 
@@ -316,6 +316,7 @@ void setup()
 {
   Serial.begin(115200);
   Wire.begin(8, 9);
+  Wire.setClock(400000);
   scanI2C();
   SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, CS_PIN);
 
@@ -342,12 +343,14 @@ void loop()
   unsigned long currentMillis = millis();
   tiempo = currentMillis;
   sensors.readData();
-  sensors.showSensors();
+  //sensors.showSensors();
   // reguladorServos.print_channels();
   if (currentMillis - previousMillis1 >= interval1)
   {
     previousMillis1 = currentMillis;
     saveData();
+    sensors.updateDisplay();
+    sensors.showPressure();
     // updateDisplay();
   }
 }

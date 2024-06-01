@@ -6,7 +6,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MPU6050.h>
-#include "BNO055_support.h"
+#include <Adafruit_BNO055.h>
 #include <Adafruit_SSD1306.h>
 #include <TinyGPSPlus.h>
 #include "HMC5883L.h"
@@ -46,16 +46,17 @@ private:
     Adafruit_SSD1306 display;
     TinyGPSPlus gps;
     bfs::Ms4525do pitot;
-    struct bno055_t myBNO;
-    struct bno055_euler myEulerData;
-    struct bno055_mag magData;
+    Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x29);
+
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
     //---------BNO055-------------------------
-    float yaw;
-    float pitch;
-    float roll;
+
+    float roll = 0.0, yaw = 0.0, pitch = 0.0;
+    float accel_x = 0.0, accel_y = 0.0, accel_z = 0.0;
+    float mag_x = 0.0, mag_y = 0.0, mag_z = 0.0;
+
     float compass_value;
     unsigned char accelCalibStatus = 0;
     unsigned char magCalibStatus = 0;

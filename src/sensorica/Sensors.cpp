@@ -5,17 +5,27 @@ Sensors::Sensors()
     temperature(0), pressure(0), altitude(0), yaw(0), pitch(0), roll(0), compass_value(0), Latitud(0), Longitud(0) {
 }
 
-void Sensors::begin() {
-    bmp.begin(0x76);
-    if (bmp.begin()) {
+ void Sensors::begin() {
+    // Inicialización del BMP280
+    if (!bmp.begin(0x76)) {
+        Serial.println(F("BMP280 initialization failed"));
+    } else {
         initialAltitude = bmp.readAltitude(hpaZone);
     }
 
-    mpu.begin(0x68);
-    BNO_Init(&myBNO);
-    bno055_set_powermode(POWER_MODE_NORMAL );
-    bno055_set_operation_mode(OPERATION_MODE_NDOF);
+    // Inicialización del MPU6050
+    if (!mpu.begin(0x68)) {
+        Serial.println(F("MPU6050 initialization failed"));
+    }
 
+    // Inicialización del BNO055 con dirección 0x29
+    if (!bno.begin()) {
+        /* There was a problem detecting the BNO055 ... check your connections */
+        Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+        
+    }
+
+    // Inicialización del Display
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
         Serial.println(F("SSD1306 allocation failed"));
         for (;;) {}
@@ -30,30 +40,34 @@ void Sensors::begin() {
 
     Serial2.begin(9600, SERIAL_8N1, RX2, TX2);
 
+    
 
-    //Pitot configuration
-
+    // Configuración del Pitot
     pitot.Config(&Wire, 0x28, 1.0f, -1.0f);
-    /* Starting communication with the pressure transducer */
-     if (!pitot.Begin()) {
-    Serial.println("Error communicating with pitot");}
-  
+    if (!pitot.Begin()) {
+        Serial.println("Error communicating with pitot");
+    }
+
+    
 }
 
 void Sensors::readData() {
+    readBnoData();
     readBMP280Data();
     readMPU6050Data();
     readPitotData();
-    readBnoData();
+    
     updateGPS();
     
 }
 
 void Sensors::readPitotData(){
-    airPressure=pitot.pres_pa();
-    airTemperature=pitot.die_temp_c();
-    updateRho();
-    updateAirSpeed();
+     if (pitot.Read()) {
+        airPressure=pitot.pres_pa();
+        airTemperature=pitot.die_temp_c();
+        updateRho();
+        updateAirSpeed();
+     }
 
 }
 void Sensors::updateRho(){
@@ -79,6 +93,16 @@ void Sensors::PressurePSI() {
 }
 void Sensors::showPressure(){
 
+
+    Serial.print(" Pressure Kpa: ");
+    Serial.print(airPressure,6);
+
+    Serial.print(" Velocidad del aire (m/s): ");
+    Serial.print(airSpeed,6);
+    Serial.print(" Air density: ");
+    Serial.print(RHO_AIR,6);
+    Serial.print(" Air Temperature: ");
+    Serial.println(airTemperature);
 
 }
 
@@ -146,19 +170,31 @@ void Sensors::readMPU6050Data() {
 }
 
 void Sensors::readBnoData() {
-    bno055_read_euler_hrp(&myEulerData);
-    yaw = 360 - float(myEulerData.h) / 16.00;
-    pitch = float(myEulerData.r) / 16.00;
-    roll = -float(myEulerData.p) / 16.00;
+    sensors_event_t event;
+    bno.getEvent(&event, Adafruit_BNO055::VECTOR_EULER);
+    yaw = event.orientation.x;
+    pitch = event.orientation.y;
+    roll = event.orientation.z;
 
-    bno055_read_mag_xyz(&magData);
-    compass_value = calculateHeading(magData.x, magData.y);
 
-    bno055_get_accelcalib_status(&accelCalibStatus);
-    bno055_get_gyrocalib_status(&gyroCalibStatus);
-    bno055_get_syscalib_status(&sysCalibStatus);
-    bno055_get_magcalib_status(&magCalibStatus);
+    bno.getEvent(&event, Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    accel_x = event.acceleration.x;
+    accel_y = event.acceleration.y;
+    accel_z = event.acceleration.z;
+
+
+    bno.getEvent(&event, Adafruit_BNO055::VECTOR_MAGNETOMETER);
+    mag_x = event.magnetic.x;
+    mag_y = event.magnetic.y;
+    mag_z = event.magnetic.z;
+
+    compass_value = calculateHeading(mag_x , mag_y );
+
+
 }
+
+
+
 
 void Sensors::KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2]) {
     float S, K[2], y;

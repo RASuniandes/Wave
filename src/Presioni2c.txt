@@ -34,7 +34,7 @@ void setup() {
   Wire.begin(8, 9);
   while(!Serial){}
   Wire.begin();
-  Wire.setClock(400000);
+  Wire.setClock(40000);
   /* 
   * I2C address of 0x28, on bus 0, with a -1 to +1 PSI range
   */
