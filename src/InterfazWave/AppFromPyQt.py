@@ -112,6 +112,37 @@ class WorkerThread(QThread):
                     Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((dictionary['presion']/133.322)/50)*360)))
                     Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw))) #==================================================================================================Toca Cambiarlo
                     
+                    # # Calculate the target position and size for PunteroAltura
+                    # puntero_altura_y = 400 - int(dictionary['altitud'] - altInicial) * 4
+                    # PunteroAltura.setGeometry(QtCore.QRect(90, puntero_altura_y, 70, 20))
+
+                    # # Calculate the target position for HorizonteArt
+                    # horizonte_art_y = -int(pitch)
+                    # HorizonteArt.setGeometry(QtCore.QRect(15, horizonte_art_y, 175, 175))
+
+                    # # Rotate the HorizonteArt image without changing its size
+                    # transform = QtGui.QTransform().rotate(roll)
+                    # horizonte_pixmap = QtGui.QPixmap(".\\img/Untitled-8.png")
+                    # rotated_horizonte_pixmap = horizonte_pixmap.transformed(transform, QtCore.Qt.SmoothTransformation)
+                    # HorizonteArt.setPixmap(rotated_horizonte_pixmap.scaled(horizonte_pixmap.size(), QtCore.Qt.KeepAspectRatio))
+
+                    # # Rotate the Brujula image without changing its size
+                    # transform = QtGui.QTransform().rotate(-yaw)
+                    # brujula_pixmap = QtGui.QPixmap(".\\img/Untitled-7.png")
+                    # rotated_brujula_pixmap = brujula_pixmap.transformed(transform, QtCore.Qt.SmoothTransformation)
+                    # Brujula.setPixmap(rotated_brujula_pixmap.scaled(brujula_pixmap.size(), QtCore.Qt.KeepAspectRatio))
+
+                    # # Rotate the Presion image without changing its size
+                    # transform = QtGui.QTransform().rotate(((dictionary['presion'] / 133.322) / 50) * 360)
+                    # presion_pixmap = QtGui.QPixmap(".\\img/Untitled-11.png")
+                    # rotated_presion_pixmap = presion_pixmap.transformed(transform, QtCore.Qt.SmoothTransformation)
+                    # Presion.setPixmap(rotated_presion_pixmap.scaled(presion_pixmap.size(), QtCore.Qt.KeepAspectRatio))
+
+                    # # Rotate the Velocidad image without changing its size
+                    # transform = QtGui.QTransform().rotate(yaw)
+                    # velocidad_pixmap = QtGui.QPixmap(".\\img/Untitled-10.png")
+                    # rotated_velocidad_pixmap = velocidad_pixmap.transformed(transform, QtCore.Qt.SmoothTransformation)
+                    # Velocidad.setPixmap(rotated_velocidad_pixmap.scaled(velocidad_pixmap.size(), QtCore.Qt.KeepAspectRatio))                    
 
 
                     metri3_2.setText(f"Presion manifold ({round(dictionary['presion'],2)})")
