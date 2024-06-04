@@ -1,34 +1,44 @@
 #include "Sensors.h"
+#include <thread>
 
 Sensors::Sensors()
-  : display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire),
-    temperature(0), pressure(0), altitude(0), yaw(0), pitch(0), roll(0), compass_value(0), Latitud(0), Longitud(0) {
+    : display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire),
+      temperature(0), pressure(0), altitude(0), yaw(0), pitch(0), roll(0), compass_value(0), Latitud(0), Longitud(0)
+{
 }
 
- void Sensors::begin() {
+void Sensors::begin()
+{
     // Inicialización del BMP280
-    if (!bmp.begin(0x76)) {
+    if (!bmp.begin(0x76))
+    {
         Serial.println(F("BMP280 initialization failed"));
-    } else {
+    }
+    else
+    {
         initialAltitude = bmp.readAltitude(hpaZone);
     }
 
     // Inicialización del MPU6050
-    if (!mpu.begin(0x68)) {
+    if (!mpu.begin(0x68))
+    {
         Serial.println(F("MPU6050 initialization failed"));
     }
 
     // Inicialización del BNO055 con dirección 0x29
-    if (!bno.begin()) {
+    if (!bno.begin())
+    {
         /* There was a problem detecting the BNO055 ... check your connections */
         Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
-        
     }
 
     // Inicialización del Display
-    if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+    {
         Serial.println(F("SSD1306 allocation failed"));
-        for (;;) {}
+        for (;;)
+        {
+        }
     }
 
     display.clearDisplay();
@@ -40,74 +50,80 @@ Sensors::Sensors()
 
     Serial2.begin(9600, SERIAL_8N1, RX2, TX2);
 
-    
-
     // Configuración del Pitot
     pitot.Config(&Wire, 0x28, 1.0f, -1.0f);
-    if (!pitot.Begin()) {
+    if (!pitot.Begin())
+    {
         Serial.println("Error communicating with pitot");
     }
-
-    
 }
 
-void Sensors::readData() {
-    readBnoData();
-    readBMP280Data();
-    readMPU6050Data();
-    readPitotData();
+void Sensors::readData()
+{
+    // readBnoData();
+    // readBMP280Data();
+    // readMPU6050Data();
+    // readPitotData();
+
+    // updateGPS();
     
-    updateGPS();
-    
+    std::thread thread_obj(readBnoData);
+    std::thread thread_obj(readBMP280Data);
+    std::thread thread_obj(readMPU6050Data);
+    std::thread thread_obj(readPitotData);
+    std::thread thread_obj(updateGPS);
 }
 
-void Sensors::readPitotData(){
-     if (pitot.Read()) {
-        airPressure=pitot.pres_pa();
-        airTemperature=pitot.die_temp_c();
+void Sensors::readPitotData()
+{
+    if (pitot.Read())
+    {
+        airPressure = pitot.pres_pa();
+        airTemperature = pitot.die_temp_c();
         updateRho();
         updateAirSpeed();
-     }
-
+    }
 }
-void Sensors::updateRho(){
+void Sensors::updateRho()
+{
     float T = airTemperature + 273.15; // Convertir a Kelvin
-    RHO_AIR = (pressure * 100)/ ((8.31446261815324 )* T);
-
-
+    RHO_AIR = (pressure * 100) / ((8.31446261815324) * T);
 }
 
-void Sensors::updateAirSpeed(){
+void Sensors::updateAirSpeed()
+{
     float pressure = pitot.pres_pa();
-    if (pressure > 0) {
-        airSpeed = sqrt((2 * pressure)/ (RHO_AIR));
-    } else {
+    if (pressure > 0)
+    {
+        airSpeed = sqrt((2 * pressure) / (RHO_AIR));
+    }
+    else
+    {
         airSpeed = 0;
     }
     PressurePSI();
-
 }
 
-void Sensors::PressurePSI() {
-  airPressurePsi=airPressure * 0.1450377377; // Convertir kPa a PSI
+void Sensors::PressurePSI()
+{
+    airPressurePsi = airPressure * 0.1450377377; // Convertir kPa a PSI
 }
-void Sensors::showPressure(){
-
+void Sensors::showPressure()
+{
 
     Serial.print(" Pressure Kpa: ");
-    Serial.print(airPressure,6);
+    Serial.print(airPressure, 6);
 
     Serial.print(" Velocidad del aire (m/s): ");
-    Serial.print(airSpeed,6);
+    Serial.print(airSpeed, 6);
     Serial.print(" Air density: ");
-    Serial.print(RHO_AIR,6);
+    Serial.print(RHO_AIR, 6);
     Serial.print(" Air Temperature: ");
     Serial.println(airTemperature);
-
 }
 
-
-void Sensors::readBMP280Data() {
+void Sensors::readBMP280Data()
+{
     float currentTemperature = bmp.readTemperature();
     float currentPressure = bmp.readPressure() / 100.0F;
     float currentAltitude = bmp.readAltitude(hpaZone);
@@ -119,10 +135,11 @@ void Sensors::readBMP280Data() {
     rawTemperature = currentTemperature;
     rawPressure = currentPressure;
     rawAltitude = currentAltitude;
-    alture=altitude-initialAltitude;
+    alture = altitude - initialAltitude;
 }
 
-void Sensors::readMPU6050Data() {
+void Sensors::readMPU6050Data()
+{
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
 
@@ -169,34 +186,29 @@ void Sensors::readMPU6050Data() {
     tiempo_prev = millis();
 }
 
-void Sensors::readBnoData() {
+void Sensors::readBnoData()
+{
     sensors_event_t event;
     bno.getEvent(&event, Adafruit_BNO055::VECTOR_EULER);
     yaw = event.orientation.x;
     pitch = event.orientation.y;
     roll = event.orientation.z;
 
-
     bno.getEvent(&event, Adafruit_BNO055::VECTOR_ACCELEROMETER);
     accel_x = event.acceleration.x;
     accel_y = event.acceleration.y;
     accel_z = event.acceleration.z;
-
 
     bno.getEvent(&event, Adafruit_BNO055::VECTOR_MAGNETOMETER);
     mag_x = event.magnetic.x;
     mag_y = event.magnetic.y;
     mag_z = event.magnetic.z;
 
-    compass_value = calculateHeading(mag_x , mag_y );
-
-
+    compass_value = calculateHeading(mag_x, mag_y);
 }
 
-
-
-
-void Sensors::KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2]) {
+void Sensors::KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2])
+{
     float S, K[2], y;
     float dt = (millis() - tiempo_prev) / 1000.0;
 
@@ -219,13 +231,19 @@ void Sensors::KalmanFilter(float newAngle, float newRate, float *angle, float *b
     P[1][1] -= K[1] * P[0][1];
 }
 
-void Sensors::updateGPS() {
-    while (Serial2.available() > 0) {
-        if (gps.encode(Serial2.read())) {
-            if (gps.location.isValid()) {
+void Sensors::updateGPS()
+{
+    while (Serial2.available() > 0)
+    {
+        if (gps.encode(Serial2.read()))
+        {
+            if (gps.location.isValid())
+            {
                 Latitud = gps.location.lat();
                 Longitud = gps.location.lng();
-            } else {
+            }
+            else
+            {
                 Latitud = 0;
                 Longitud = 0;
             }
@@ -233,36 +251,57 @@ void Sensors::updateGPS() {
     }
 }
 
-float Sensors::calculateEMA(float currentReading, float previousEMA, float alpha) {
+float Sensors::calculateEMA(float currentReading, float previousEMA, float alpha)
+{
     return (alpha * currentReading) + ((1 - alpha) * previousEMA);
 }
 
-float Sensors::calculateHeading(float mx, float my) {
+float Sensors::calculateHeading(float mx, float my)
+{
     float heading_rad = atan2(my, mx);
     float heading_deg = heading_rad * 180.0 / M_PI;
-    if (heading_deg < 0) {
+    if (heading_deg < 0)
+    {
         heading_deg += 360;
     }
     return heading_deg;
 }
 
-void Sensors::updateDisplay() {
+void Sensors::updateDisplay()
+{
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(0, 0);
-    display.print("Compas: "); display.print(compass_value); display.println(" °");
-    display.print("Yaw: "); display.print(yaw); display.println();
-    display.print("Pitch: "); display.print(pitch); display.println();
-    display.print("Roll: "); display.print(roll); display.println();
-    display.print("Temp: "); display.print(temperature); display.println(" C");
-    display.print("Alt: "); display.print(altitude); display.println(" m");
-    display.print("Lat: "); display.print(Latitud, 6); display.println();
-    display.print("Long: "); display.print(Longitud, 6); display.println();
+    display.print("Compas: ");
+    display.print(compass_value);
+    display.println(" °");
+    display.print("Yaw: ");
+    display.print(yaw);
+    display.println();
+    display.print("Pitch: ");
+    display.print(pitch);
+    display.println();
+    display.print("Roll: ");
+    display.print(roll);
+    display.println();
+    display.print("Temp: ");
+    display.print(temperature);
+    display.println(" C");
+    display.print("Alt: ");
+    display.print(altitude);
+    display.println(" m");
+    display.print("Lat: ");
+    display.print(Latitud, 6);
+    display.println();
+    display.print("Long: ");
+    display.print(Longitud, 6);
+    display.println();
     display.display();
 }
 
-void Sensors::printValues() {
+void Sensors::printValues()
+{
     Serial.print("Temperatura (C): ");
     Serial.println(temperature);
     Serial.print("Presión (hPa): ");
@@ -296,15 +335,19 @@ void Sensors::printValues() {
     Serial.println(Longitud, 6);
 }
 
-void Sensors::displayInfo() {
-    if (gps.location.isValid()) {
+void Sensors::displayInfo()
+{
+    if (gps.location.isValid())
+    {
         Latitud = gps.location.lat();
         Longitud = gps.location.lng();
         Serial.print(", ");
         Serial.print(Latitud, 6);
         Serial.print(", ");
         Serial.println(Longitud, 6);
-    } else {
+    }
+    else
+    {
         Latitud = 0;
         Longitud = 0;
         Serial.print(", ");
@@ -314,39 +357,38 @@ void Sensors::displayInfo() {
     }
 }
 
-void Sensors::showSensors() {
-  Serial.print("{temperatura:");
-  Serial.print(temperature);
-  Serial.print(", rawTemperatura:");
-  Serial.print(rawTemperature);
-  Serial.print(", presion:");
-  Serial.print(pressure);
-  Serial.print(", rawPresion:");
-  Serial.print(rawPressure);
-  Serial.print(", altitud:");
-  Serial.print(altitude);
-  Serial.print(", rawAltitud:");
-  Serial.print(rawAltitude);
-  Serial.print(", yaw1:");
-  Serial.print(yawMpu);
-  Serial.print(", pitch1:");
-  Serial.print(pitchMpu);
-  Serial.print(", roll1:");
-  Serial.print(rollMpu);
-  Serial.print(", yaw:");
-  Serial.print(yaw);
-  Serial.print(", pitch:");
-  Serial.print(pitch);
-  Serial.print(", roll:");
-  Serial.print(roll);
-  Serial.print(", compass:");
-  Serial.print(compass_value);
-  Serial.print(", latitud:");
-  Serial.print(Latitud, 6);
-  Serial.print(", longitud:");
-  Serial.print(Longitud, 6);
-  Serial.print("}");
-  Serial.println();
+void Sensors::showSensors()
+{
+    Serial.print("{temperatura:");
+    Serial.print(temperature);
+    Serial.print(", rawTemperatura:");
+    Serial.print(rawTemperature);
+    Serial.print(", presion:");
+    Serial.print(pressure);
+    Serial.print(", rawPresion:");
+    Serial.print(rawPressure);
+    Serial.print(", altitud:");
+    Serial.print(altitude);
+    Serial.print(", rawAltitud:");
+    Serial.print(rawAltitude);
+    Serial.print(", yaw1:");
+    Serial.print(yawMpu);
+    Serial.print(", pitch1:");
+    Serial.print(pitchMpu);
+    Serial.print(", roll1:");
+    Serial.print(rollMpu);
+    Serial.print(", yaw:");
+    Serial.print(yaw);
+    Serial.print(", pitch:");
+    Serial.print(pitch);
+    Serial.print(", roll:");
+    Serial.print(roll);
+    Serial.print(", compass:");
+    Serial.print(compass_value);
+    Serial.print(", latitud:");
+    Serial.print(Latitud, 6);
+    Serial.print(", longitud:");
+    Serial.print(Longitud, 6);
+    Serial.print("}");
+    Serial.println();
 }
-
-
