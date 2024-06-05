@@ -2,18 +2,27 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>862</width>
-    <height>540</height>
+    <height>560</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>0</width>
-    <height>540</height>
+    <width>862</width>
+    <height>500</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>862</width>
+    <height>560</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -122,6 +131,30 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="Graficas">
+           <property name="minimumSize">
+            <size>
+             <width>40</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>img/chart-line-up (1).png</normaloff>
+             <normalon>img/chart-line-up.png</normalon>img/chart-line-up (1).png</iconset>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -136,6 +169,36 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="Retorno">
+         <property name="minimumSize">
+          <size>
+           <width>40</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>img/triangle-warning (1).png</normaloff>
+           <normalon>img/triangle-warning.png</normalon>img/triangle-warning (1).png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="autoExclusive">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -253,6 +316,30 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="Graficas2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="text">
+            <string> Graficas</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>img/chart-line-up (1).png</normaloff>
+             <normalon>img/chart-line-up.png</normalon>img/chart-line-up (1).png</iconset>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -269,12 +356,35 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>RAS-WAVE</string>
+        <widget class="QPushButton" name="Retorno2">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
          </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string> Retorno</string>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>img/triangle-warning (1).png</normaloff>
+           <normalon>img/triangle-warning.png</normalon>img/triangle-warning (1).png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -526,7 +636,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="label_14">
+              <widget class="QLabel" name="metri4">
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
@@ -534,7 +644,7 @@
                 </size>
                </property>
                <property name="text">
-                <string>Altura</string>
+                <string>Altura ()</string>
                </property>
               </widget>
              </item>
@@ -549,10 +659,10 @@
                  <widget class="QLabel" name="label_4">
                   <property name="geometry">
                    <rect>
-                    <x>-15</x>
-                    <y>-30</y>
-                    <width>235</width>
-                    <height>235</height>
+                    <x>5</x>
+                    <y>0</y>
+                    <width>190</width>
+                    <height>190</height>
                    </rect>
                   </property>
                   <property name="mouseTracking">
@@ -574,10 +684,10 @@
                  <widget class="QLabel" name="Brujula">
                   <property name="geometry">
                    <rect>
-                    <x>-15</x>
-                    <y>-26</y>
-                    <width>235</width>
-                    <height>235</height>
+                    <x>5</x>
+                    <y>4</y>
+                    <width>190</width>
+                    <height>190</height>
                    </rect>
                   </property>
                   <property name="text">
@@ -593,7 +703,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_15">
+                <widget class="QLabel" name="metri7">
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
@@ -601,7 +711,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Brujula</string>
+                  <string>Brujula ()</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
@@ -617,10 +727,10 @@
                  <widget class="QLabel" name="label_8">
                   <property name="geometry">
                    <rect>
-                    <x>15</x>
+                    <x>5</x>
                     <y>0</y>
-                    <width>175</width>
-                    <height>175</height>
+                    <width>190</width>
+                    <height>190</height>
                    </rect>
                   </property>
                   <property name="text">
@@ -636,10 +746,10 @@
                  <widget class="QLabel" name="HorizonteArt">
                   <property name="geometry">
                    <rect>
-                    <x>15</x>
-                    <y>40</y>
-                    <width>175</width>
-                    <height>175</height>
+                    <x>5</x>
+                    <y>0</y>
+                    <width>190</width>
+                    <height>190</height>
                    </rect>
                   </property>
                   <property name="text">
@@ -655,10 +765,10 @@
                  <widget class="QLabel" name="label_10">
                   <property name="geometry">
                    <rect>
-                    <x>15</x>
-                    <y>0</y>
-                    <width>175</width>
-                    <height>175</height>
+                    <x>5</x>
+                    <y>6</y>
+                    <width>190</width>
+                    <height>190</height>
                    </rect>
                   </property>
                   <property name="text">
@@ -674,7 +784,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_16">
+                <widget class="QLabel" name="metri5">
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
@@ -682,7 +792,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Horizonte artificial</string>
+                  <string>Horizonte artificial (,)</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
@@ -702,10 +812,10 @@
                  <widget class="QLabel" name="label_11">
                   <property name="geometry">
                    <rect>
-                    <x>15</x>
+                    <x>5</x>
                     <y>0</y>
-                    <width>175</width>
-                    <height>175</height>
+                    <width>190</width>
+                    <height>190</height>
                    </rect>
                   </property>
                   <property name="mouseTracking">
@@ -724,29 +834,13 @@
                    <bool>true</bool>
                   </property>
                  </widget>
-                 <widget class="QLabel" name="label_13">
-                  <property name="geometry">
-                   <rect>
-                    <x>15</x>
-                    <y>8</y>
-                    <width>175</width>
-                    <height>175</height>
-                   </rect>
-                  </property>
-                  <property name="text">
-                   <string>0.0</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
                  <widget class="QLabel" name="Velocidad">
                   <property name="geometry">
                    <rect>
-                    <x>15</x>
+                    <x>5</x>
                     <y>0</y>
-                    <width>175</width>
-                    <height>175</height>
+                    <width>190</width>
+                    <height>190</height>
                    </rect>
                   </property>
                   <property name="text">
@@ -762,8 +856,8 @@
                  <widget class="QLabel" name="Temperatura">
                   <property name="geometry">
                    <rect>
-                    <x>80</x>
-                    <y>10</y>
+                    <x>76</x>
+                    <y>12</y>
                     <width>47</width>
                     <height>13</height>
                    </rect>
@@ -778,7 +872,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_17">
+                <widget class="QLabel" name="metri8">
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
@@ -786,7 +880,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Anometro</string>
+                  <string>Anometro ()</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
@@ -802,10 +896,10 @@
                  <widget class="QLabel" name="label_21">
                   <property name="geometry">
                    <rect>
-                    <x>15</x>
+                    <x>5</x>
                     <y>0</y>
-                    <width>175</width>
-                    <height>175</height>
+                    <width>190</width>
+                    <height>190</height>
                    </rect>
                   </property>
                   <property name="mouseTracking">
@@ -827,10 +921,10 @@
                  <widget class="QLabel" name="Presion">
                   <property name="geometry">
                    <rect>
-                    <x>15</x>
+                    <x>5</x>
                     <y>0</y>
-                    <width>175</width>
-                    <height>175</height>
+                    <width>190</width>
+                    <height>190</height>
                    </rect>
                   </property>
                   <property name="text">
@@ -846,7 +940,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_22">
+                <widget class="QLabel" name="metri3_2">
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
@@ -854,7 +948,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Presion manifold</string>
+                  <string>Presion manifold ()</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
@@ -862,6 +956,59 @@
                 </widget>
                </item>
               </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="pageGraficas">
+          <layout class="QVBoxLayout" name="verticalLayout_18">
+           <item>
+            <widget class="QGraphicsView" name="graphicsView"/>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QPushButton" name="pushButton_6">
+               <property name="text">
+                <string>Yaw</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton">
+               <property name="text">
+                <string>Pitch y Roll</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_2">
+               <property name="text">
+                <string>Altitud</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_3">
+               <property name="text">
+                <string>Temperatura</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_4">
+               <property name="text">
+                <string>Presión</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_5">
+               <property name="text">
+                <string>Velocidad</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -987,8 +1134,8 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>211</x>
-     <y>16</y>
+     <x>227</x>
+     <y>34</y>
     </hint>
     <hint type="destinationlabel">
      <x>38</x>
@@ -1003,12 +1150,76 @@
    <slot>setHidden(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>211</x>
-     <y>12</y>
+     <x>227</x>
+     <y>30</y>
     </hint>
     <hint type="destinationlabel">
      <x>159</x>
      <y>150</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Graficas</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>Graficas2</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>35</x>
+     <y>183</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>139</x>
+     <y>185</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Graficas2</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>Graficas</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>109</x>
+     <y>167</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>34</x>
+     <y>167</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Retorno2</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>Retorno</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>118</x>
+     <y>524</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>53</x>
+     <y>523</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Retorno</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>Retorno2</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>42</x>
+     <y>514</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>102</x>
+     <y>519</y>
     </hint>
    </hints>
   </connection>

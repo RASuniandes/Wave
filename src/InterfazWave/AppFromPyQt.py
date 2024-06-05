@@ -9,11 +9,27 @@ import json
 from folium import plugins
 from stl import mesh
 from pyqtgraph.opengl import GLViewWidget, MeshData, GLMeshItem
+import pyqtgraph as pg
 import numpy as np
 import serial_comm as my_serial
 import sys
-
 import time
+
+
+global gra
+gra = {
+    'tiempo': [],
+    'yaw': [],
+    'pitch': [],
+    'roll': [],
+    'altitud': [],
+    'temperatura': [],
+    'presion': [],
+    'velocidad': []
+}
+
+global currentPlot
+currentPlot = ['yaw']
 
 yaw, roll, pitch = 0, 0, 0
 lat, lon = 0, 0
@@ -53,47 +69,108 @@ class WorkerThread(QThread):
         first = True
         global altInicial
         altInicial = 0
+        global tiempInicial
+        tiempInicial = time.time()
+        
         while True: 
 
            if serial_connector.is_connect():
             
                 try:
                     data_string = serial_connector.get_data().decode('utf-8').replace('\r\n','')
-                    data_array = data_string.split(',')
-                    print(data_array)
-                    yaw=float(data_array[6])
-                    pitch=float(data_array[7])
-                    roll=float(data_array[8])
+                    s = data_string.replace("{" ,"")
+                    finalstring = s.replace("}" , "")
+
+                    #Splitting the string based on , we get key value pairs
+                    list = finalstring.split(",")
+
+                    dictionary ={}
+                    for i in list:
+                        #Get Key Value pairs separately to store in dictionary
+                        keyvalue = i.split(":")
+
+                        #Replacing the single quotes in the leading.
+                        m= keyvalue[0].strip('\'').replace(' ', '')
+                        m = m.replace("\'", "")
+                        dictionary[m] = float(keyvalue[1].strip('"\''))
+
+                    yaw= dictionary['yaw']
+                    pitch= dictionary['pitch']
+                    roll= dictionary['roll']
                     global lat, lon
-                    #lat = (data_array[9])
-                    #lon = (data_array[10])
-                    temp = data_array[0]
-                    presu = float(data_array[1])
-                    alt = float(data_array[2])
+                    lat = (dictionary['latitud'])
+                    lon = (dictionary['longitud'])
+                    # temp = data_array[0]
+                    # presu = float(data_array[1])
+                    # alt = float(data_array[2])
+                    Temperatura.setText(str(dictionary['temperatura']))
 
-                    Temperatura.setText(str(temp))
-
-                    PunteroAltura.setGeometry(QtCore.QRect(90, 400 - int(alt - altInicial)*4, 70, 20))
+                    PunteroAltura.setGeometry(QtCore.QRect(90, 400 - int(dictionary['altitud'] - altInicial)*4, 70, 20))
                     HorizonteArt.setGeometry(QtCore.QRect(15, -int(pitch), 175, 175))
                     HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)))
                     Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png").transformed(QtGui.QTransform().rotate(-yaw)))
-                    Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((presu/133.322)/50)*360)))
-                    Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw)))
+                    Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((dictionary['presion']/133.322)/50)*360)))
+                    Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw))) #==================================================================================================Toca Cambiarlo
                     
-                    # metri1.setText(f"Coordenadas (Longitud y latitud): {coords}")
-                    # metri6.setText(f"Yaw (Grados): {yaw}")
-                    # metri5.setText(f"Pitch (Grados): {pitch}")
-                    # metri7.setText(f"Roll (Grados): {roll}")
-                    # metri4.setText(f"Altitud: {alt}")
-                    # metri3.setText(f"Presión (hPa): {presu}")
-                    # metri2.setText(f"Temperatura: {temp}")
+                    # # Calculate the target position and size for PunteroAltura
+                    # puntero_altura_y = 400 - int(dictionary['altitud'] - altInicial) * 4
+                    # PunteroAltura.setGeometry(QtCore.QRect(90, puntero_altura_y, 70, 20))
+
+                    # # Calculate the target position for HorizonteArt
+                    # horizonte_art_y = -int(pitch)
+                    # HorizonteArt.setGeometry(QtCore.QRect(15, horizonte_art_y, 175, 175))
+
+                    # # Rotate the HorizonteArt image without changing its size
+                    # transform = QtGui.QTransform().rotate(roll)
+                    # horizonte_pixmap = QtGui.QPixmap(".\\img/Untitled-8.png")
+                    # rotated_horizonte_pixmap = horizonte_pixmap.transformed(transform, QtCore.Qt.SmoothTransformation)
+                    # HorizonteArt.setPixmap(rotated_horizonte_pixmap.scaled(horizonte_pixmap.size(), QtCore.Qt.KeepAspectRatio))
+
+                    # # Rotate the Brujula image without changing its size
+                    # transform = QtGui.QTransform().rotate(-yaw)
+                    # brujula_pixmap = QtGui.QPixmap(".\\img/Untitled-7.png")
+                    # rotated_brujula_pixmap = brujula_pixmap.transformed(transform, QtCore.Qt.SmoothTransformation)
+                    # Brujula.setPixmap(rotated_brujula_pixmap.scaled(brujula_pixmap.size(), QtCore.Qt.KeepAspectRatio))
+
+                    # # Rotate the Presion image without changing its size
+                    # transform = QtGui.QTransform().rotate(((dictionary['presion'] / 133.322) / 50) * 360)
+                    # presion_pixmap = QtGui.QPixmap(".\\img/Untitled-11.png")
+                    # rotated_presion_pixmap = presion_pixmap.transformed(transform, QtCore.Qt.SmoothTransformation)
+                    # Presion.setPixmap(rotated_presion_pixmap.scaled(presion_pixmap.size(), QtCore.Qt.KeepAspectRatio))
+
+                    # # Rotate the Velocidad image without changing its size
+                    # transform = QtGui.QTransform().rotate(yaw)
+                    # velocidad_pixmap = QtGui.QPixmap(".\\img/Untitled-10.png")
+                    # rotated_velocidad_pixmap = velocidad_pixmap.transformed(transform, QtCore.Qt.SmoothTransformation)
+                    # Velocidad.setPixmap(rotated_velocidad_pixmap.scaled(velocidad_pixmap.size(), QtCore.Qt.KeepAspectRatio))                    
+
+
+                    metri3_2.setText(f"Presion manifold ({round(dictionary['presion'],2)})")
+                    metri5.setText(f"Horizonte artificial ({round(pitch, 2)}, {round(roll,2)})")
+                    metri7.setText(f"Norte (Roll) ({round(roll, 2)})")
+                    metri4.setText(f"Altitud ({dictionary['altitud']})")
+                    metri8.setText(f"Anometro ({dictionary['velocidad']})")
+
+                    gra['tiempo'].append(time.time() - tiempInicial)
+                    gra['yaw'].append(yaw)
+                    gra['pitch'].append(pitch)
+                    gra['roll'].append(roll)
+                    gra['altitud'].append(dictionary['altitud'])
+                    gra["presion"].append(dictionary['presion'])
+                    gra['temperatura'].append(dictionary['temperatura'])
+                    gra['velocidad'].append(dictionary['velocidad']) 
+                    
+                    # ========================================================================================================Auto Graph
+                    # pen = pg.mkPen(color=(255, 0, 0), width=1)
+                    # plot_graph.clear()
+                    # plot_graph.setData(gra['tiempo'], gra[currentPlot[0]])
+
                     update_pitch(pitch)
                     update_roll(roll)
                     update_yaw(yaw)
                     if first:
-                        altInicial = alt
+                        altInicial = dictionary["altitud"]
                         first = False
-                    
 
                 except:
                     pass
@@ -107,10 +184,10 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         #=============================================================
         try:
-            myjsonFile = open('currentData.json', 'r')
+            myjsonFile = open('./datosGuardados/currentData.json', 'r')
         except:
             open("currentData.json", "x")
-            myjsonFile = open('currentData.json', 'r')
+            myjsonFile = open('./datosGuardados/currentData.json', 'r')
 
         df = myjsonFile.read()
         if(df != ''):
@@ -184,11 +261,13 @@ class Ui_MainWindow(object):
         self.webView.setHtml(data.getvalue().decode())
     
         #=============================================================
+
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(862, 540)
-        MainWindow.setMinimumSize(QtCore.QSize(0, 540))
+        MainWindow.setEnabled(True)
+        MainWindow.resize(862, 560)
+        MainWindow.setMinimumSize(QtCore.QSize(862, 560))
+        MainWindow.setMaximumSize(QtCore.QSize(862, 560))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
-        # self.centralwidget.setStyleSheet("background-color: #fff")
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
@@ -196,7 +275,6 @@ class Ui_MainWindow(object):
         self.iconOnly.setMaximumSize(QtCore.QSize(81, 16777215))
         self.iconOnly.setObjectName("iconOnly")
         self.iconOnly.setStyleSheet("background-color: #161B22")
-
 
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.iconOnly)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
@@ -244,9 +322,36 @@ class Ui_MainWindow(object):
         self.Metricas1.setStyleSheet("color: #fff; border : none")
 
         self.verticalLayout.addWidget(self.Metricas1)
+        self.Graficas = QtWidgets.QPushButton(self.iconOnly)
+        self.Graficas.setMinimumSize(QtCore.QSize(40, 40))
+        self.Graficas.setText("")
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(".\\img/chart-line-up (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(".\\img/chart-line-up.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        self.Graficas.setIcon(icon3)
+        self.Graficas.setCheckable(True)
+        self.Graficas.setAutoExclusive(True)
+        self.Graficas.setObjectName("Graficas")
+        self.Graficas.setStyleSheet("color: #fff; border : none")
+
+        self.verticalLayout.addWidget(self.Graficas)
         self.verticalLayout_3.addLayout(self.verticalLayout)
         spacerItem = QtWidgets.QSpacerItem(20, 331, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_3.addItem(spacerItem)
+        self.Retorno = QtWidgets.QPushButton(self.iconOnly)
+        self.Retorno.setMinimumSize(QtCore.QSize(40, 40))
+        self.Retorno.setText("")
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap(".\\img/triangle-warning (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon4.addPixmap(QtGui.QPixmap(".\\img/triangle-warning.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        self.Retorno.setIcon(icon4)
+        self.Retorno.setIconSize(QtCore.QSize(20, 20))
+        self.Retorno.setCheckable(True)
+        self.Retorno.setAutoExclusive(False)
+        self.Retorno.setObjectName("Retorno")
+        self.Retorno.setStyleSheet("color: #fff; border : none")
+
+        self.verticalLayout_3.addWidget(self.Retorno)
         self.horizontalLayout_5.addWidget(self.iconOnly)
         self.fullMenu = QtWidgets.QWidget(self.centralwidget)
         self.fullMenu.setMinimumSize(QtCore.QSize(100, 0))
@@ -290,15 +395,29 @@ class Ui_MainWindow(object):
         self.Metricas2.setStyleSheet("color: #fff; border : none")
 
         self.verticalLayout_2.addWidget(self.Metricas2)
+        self.Graficas2 = QtWidgets.QPushButton(self.fullMenu)
+        self.Graficas2.setMinimumSize(QtCore.QSize(0, 40))
+        self.Graficas2.setIcon(icon3)
+        self.Graficas2.setCheckable(True)
+        self.Graficas2.setAutoExclusive(True)
+        self.Graficas2.setObjectName("Graficas2")
+        self.Graficas2.setStyleSheet("color: #fff; border : none")
+
+        self.verticalLayout_2.addWidget(self.Graficas2)
         self.verticalLayout_4.addLayout(self.verticalLayout_2)
         spacerItem1 = QtWidgets.QSpacerItem(20, 331, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem1)
-        self.label_5 = QtWidgets.QLabel(self.fullMenu)
-        self.label_5.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_5.setObjectName("label_5")
-        self.label_5.setStyleSheet("color: #fff; background-color: #DB5D4F; padding : 10px")
+        self.Retorno2 = QtWidgets.QPushButton(self.fullMenu)
+        self.Retorno2.setMinimumSize(QtCore.QSize(0, 40))
+        self.Retorno2.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.Retorno2.setIcon(icon4)
+        self.Retorno2.setIconSize(QtCore.QSize(20, 20))
+        self.Retorno2.setCheckable(True)
+        self.Retorno2.setObjectName("Retorno2")
+        self.Retorno2.setStyleSheet("color: #fff; border : none")
 
-        self.verticalLayout_4.addWidget(self.label_5)
+
+        self.verticalLayout_4.addWidget(self.Retorno2)
         self.horizontalLayout_5.addWidget(self.fullMenu)
         self.verticalLayout_11 = QtWidgets.QVBoxLayout()
         self.verticalLayout_11.setObjectName("verticalLayout_11")
@@ -311,14 +430,14 @@ class Ui_MainWindow(object):
         self.Menu.setMinimumSize(QtCore.QSize(30, 30))
         self.Menu.setMaximumSize(QtCore.QSize(30, 30))
         self.Menu.setText("")
-        self.Menu.setStyleSheet("border: none")
-
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(".\\img/apps.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.Menu.setIcon(icon3)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(".\\img/apps.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.Menu.setIcon(icon5)
         self.Menu.setIconSize(QtCore.QSize(20, 20))
         self.Menu.setCheckable(True)
         self.Menu.setObjectName("Menu")
+        self.Menu.setStyleSheet("border: none")
+
         self.verticalLayout_5.addWidget(self.Menu)
         self.stackedWidget = QtWidgets.QStackedWidget(self.Content)
         self.stackedWidget.setMinimumSize(QtCore.QSize(0, 420))
@@ -421,17 +540,22 @@ class Ui_MainWindow(object):
         self.metri3.setText("")
         self.metri3.setPixmap(QtGui.QPixmap(".\\img/Untitled-3.png"))
         self.metri3.setObjectName("metri3")
+
         global PunteroAltura
         PunteroAltura = QtWidgets.QLabel(self.widget_2)
         PunteroAltura.setGeometry(QtCore.QRect(90, 400, 70, 20))
         PunteroAltura.setText("")
         PunteroAltura.setPixmap(QtGui.QPixmap(".\\img/Untitled-4.png"))
         PunteroAltura.setObjectName("PunteroAltura")
+
         self.verticalLayout_13.addWidget(self.widget_2)
-        self.label_14 = QtWidgets.QLabel(self.pageMetricas)
-        self.label_14.setMaximumSize(QtCore.QSize(16777215, 20))
-        self.label_14.setObjectName("label_14")
-        self.verticalLayout_13.addWidget(self.label_14)
+
+        global metri4
+        metri4 = QtWidgets.QLabel(self.pageMetricas)
+        metri4.setMaximumSize(QtCore.QSize(16777215, 20))
+        metri4.setObjectName("metri4")
+        self.verticalLayout_13.addWidget(metri4)
+
         self.horizontalLayout_4.addLayout(self.verticalLayout_13)
         self.verticalLayout_17 = QtWidgets.QVBoxLayout()
         self.verticalLayout_17.setObjectName("verticalLayout_17")
@@ -440,7 +564,7 @@ class Ui_MainWindow(object):
         self.widget_3 = QtWidgets.QWidget(self.pageMetricas)
         self.widget_3.setObjectName("widget_3")
         self.label_4 = QtWidgets.QLabel(self.widget_3)
-        self.label_4.setGeometry(QtCore.QRect(-15, -30, 235, 235))
+        self.label_4.setGeometry(QtCore.QRect(5, 0, 190, 190))
         self.label_4.setMouseTracking(False)
         self.label_4.setStyleSheet("")
         self.label_4.setText("")
@@ -449,54 +573,57 @@ class Ui_MainWindow(object):
         self.label_4.setObjectName("label_4")
 
         global Brujula
-
         Brujula = QtWidgets.QLabel(self.widget_3)
-        Brujula.setGeometry(QtCore.QRect(-15, -26, 235, 235))
+        Brujula.setGeometry(QtCore.QRect(5, 4, 190, 190))
         Brujula.setText("")
         Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png"))
         Brujula.setScaledContents(True)
         Brujula.setObjectName("Brujula")
 
-
         self.verticalLayout_14.addWidget(self.widget_3)
-        self.label_15 = QtWidgets.QLabel(self.pageMetricas)
-        self.label_15.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.label_15.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_15.setObjectName("label_15")
-        self.verticalLayout_14.addWidget(self.label_15)
+
+        global metri7
+        metri7 = QtWidgets.QLabel(self.pageMetricas)
+        metri7.setMaximumSize(QtCore.QSize(16777215, 30))
+        metri7.setAlignment(QtCore.Qt.AlignCenter)
+        metri7.setObjectName("metri7")
+        self.verticalLayout_14.addWidget(metri7)
+
         self.verticalLayout_17.addLayout(self.verticalLayout_14)
         self.verticalLayout_15 = QtWidgets.QVBoxLayout()
         self.verticalLayout_15.setObjectName("verticalLayout_15")
         self.widget_4 = QtWidgets.QWidget(self.pageMetricas)
         self.widget_4.setObjectName("widget_4")
         self.label_8 = QtWidgets.QLabel(self.widget_4)
-        self.label_8.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.label_8.setGeometry(QtCore.QRect(5, 0, 190, 190))
         self.label_8.setText("")
         self.label_8.setPixmap(QtGui.QPixmap(".\\img/Untitled-9.png"))
         self.label_8.setScaledContents(True)
         self.label_8.setObjectName("label_8")
+
         global HorizonteArt
-        
         HorizonteArt = QtWidgets.QLabel(self.widget_4)
-        HorizonteArt.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        HorizonteArt.setGeometry(QtCore.QRect(5, 0, 190, 190))
         HorizonteArt.setText("")
         HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png"))
         HorizonteArt.setScaledContents(True)
         HorizonteArt.setObjectName("HorizonteArt")
 
-
         self.label_10 = QtWidgets.QLabel(self.widget_4)
-        self.label_10.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.label_10.setGeometry(QtCore.QRect(5, 6, 190, 190))
         self.label_10.setText("")
         self.label_10.setPixmap(QtGui.QPixmap(".\\img/Attitude_indicator_level_flight.png"))
         self.label_10.setScaledContents(True)
         self.label_10.setObjectName("label_10")
         self.verticalLayout_15.addWidget(self.widget_4)
-        self.label_16 = QtWidgets.QLabel(self.pageMetricas)
-        self.label_16.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.label_16.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_16.setObjectName("label_16")
-        self.verticalLayout_15.addWidget(self.label_16)
+
+        global metri5
+        metri5 = QtWidgets.QLabel(self.pageMetricas)
+        metri5.setMaximumSize(QtCore.QSize(16777215, 30))
+        metri5.setAlignment(QtCore.Qt.AlignCenter)
+        metri5.setObjectName("metri5")
+        self.verticalLayout_15.addWidget(metri5)
+
         self.verticalLayout_17.addLayout(self.verticalLayout_15)
         self.horizontalLayout_4.addLayout(self.verticalLayout_17)
         self.verticalLayout_16 = QtWidgets.QVBoxLayout()
@@ -506,22 +633,17 @@ class Ui_MainWindow(object):
         self.widget_5 = QtWidgets.QWidget(self.pageMetricas)
         self.widget_5.setObjectName("widget_5")
         self.label_11 = QtWidgets.QLabel(self.widget_5)
-        self.label_11.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.label_11.setGeometry(QtCore.QRect(5, 0, 190, 190))
         self.label_11.setMouseTracking(False)
         self.label_11.setStyleSheet("")
         self.label_11.setText("")
         self.label_11.setPixmap(QtGui.QPixmap(".\\img/aircraft-36298.png"))
         self.label_11.setScaledContents(True)
         self.label_11.setObjectName("label_11")
-        global label_13
-        label_13 = QtWidgets.QLabel(self.widget_5)
-        label_13.setGeometry(QtCore.QRect(15, 8, 175, 175))
-        label_13.setAlignment(QtCore.Qt.AlignCenter)
-        label_13.setObjectName("label_13")
 
         global Velocidad
         Velocidad = QtWidgets.QLabel(self.widget_5)
-        Velocidad.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        Velocidad.setGeometry(QtCore.QRect(5, 0, 190, 190))
         Velocidad.setText("")
         Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png"))
         Velocidad.setScaledContents(True)
@@ -529,58 +651,143 @@ class Ui_MainWindow(object):
 
         global Temperatura
         Temperatura = QtWidgets.QLabel(self.widget_5)
-        Temperatura.setGeometry(QtCore.QRect(80, 10, 47, 13))
+        Temperatura.setGeometry(QtCore.QRect(76, 12, 47, 13))
         Temperatura.setAlignment(QtCore.Qt.AlignCenter)
         Temperatura.setObjectName("Temperatura")
+
         self.verticalLayout_12.addWidget(self.widget_5)
-        self.label_17 = QtWidgets.QLabel(self.pageMetricas)
-        self.label_17.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.label_17.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_17.setObjectName("label_17")
-        self.verticalLayout_12.addWidget(self.label_17)
+
+        global metri8
+        metri8 = QtWidgets.QLabel(self.pageMetricas)
+        metri8.setMaximumSize(QtCore.QSize(16777215, 30))
+        metri8.setAlignment(QtCore.Qt.AlignCenter)
+        metri8.setObjectName("metri8")
+        self.verticalLayout_12.addWidget(metri8)
+
         self.verticalLayout_16.addLayout(self.verticalLayout_12)
         self.verticalLayout_10 = QtWidgets.QVBoxLayout()
         self.verticalLayout_10.setObjectName("verticalLayout_10")
         self.widget_6 = QtWidgets.QWidget(self.pageMetricas)
         self.widget_6.setObjectName("widget_6")
         self.label_21 = QtWidgets.QLabel(self.widget_6)
-        self.label_21.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        self.label_21.setGeometry(QtCore.QRect(5, 0, 190, 190))
         self.label_21.setMouseTracking(False)
         self.label_21.setStyleSheet("")
         self.label_21.setText("")
         self.label_21.setPixmap(QtGui.QPixmap(".\\img/istockphoto-546787274-612x612.png"))
         self.label_21.setScaledContents(True)
         self.label_21.setObjectName("label_21")
+
         global Presion
         Presion = QtWidgets.QLabel(self.widget_6)
-        Presion.setGeometry(QtCore.QRect(15, 0, 175, 175))
+        Presion.setGeometry(QtCore.QRect(5, 0, 190, 190))
         Presion.setText("")
         Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png"))
         Presion.setScaledContents(True)
         Presion.setObjectName("Presion")
 
-        # Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(300)))
-
         self.verticalLayout_10.addWidget(self.widget_6)
-        self.label_22 = QtWidgets.QLabel(self.pageMetricas)
-        self.label_22.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.label_22.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_22.setObjectName("label_22")
-        self.verticalLayout_10.addWidget(self.label_22)
+
+        global metri3_2
+        metri3_2 = QtWidgets.QLabel(self.pageMetricas)
+        metri3_2.setMaximumSize(QtCore.QSize(16777215, 30))
+        metri3_2.setAlignment(QtCore.Qt.AlignCenter)
+        metri3_2.setObjectName("metri3_2")
+        self.verticalLayout_10.addWidget(metri3_2)
+
         self.verticalLayout_16.addLayout(self.verticalLayout_10)
         self.horizontalLayout_4.addLayout(self.verticalLayout_16)
         self.stackedWidget.addWidget(self.pageMetricas)
+        self.pageGraficas = QtWidgets.QWidget()
+        self.pageGraficas.setObjectName("pageGraficas")
+        self.verticalLayout_18 = QtWidgets.QVBoxLayout(self.pageGraficas)
+        self.verticalLayout_18.setObjectName("verticalLayout_18")
+
+        # global plot_graph
+        self.plot_graph = pg.PlotWidget()
+        self.plot_graph.setBackground("#F0F0F0")
+        self.plot_graph.setLabel(
+            "bottom",
+            '<span style="font-size: 12px">Tiempo (s)</span>'
+        )
+        self.plot_graph.setLabel(
+        "left",
+        '<span style="font-size: 12px">Yaw °</span>'
+        )      
+        self.plot_graph.showGrid(x=True, y=True)
+
+        self.verticalLayout_18.addWidget(self.plot_graph)
+
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(50)  # Update every 50 ms
+        self.timer.timeout.connect(self.update_plot)
+        self.timer.start()
+
+        self.pushButton_21 = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton_21.setObjectName("pushButton_19")
+        self.pushButton_21.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.pushButton_6 = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton_6.setObjectName("pushButton_6")
+        self.pushButton_6.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+        self.horizontalLayout_6.addWidget(self.pushButton_21)
+
+        self.horizontalLayout_6.addWidget(self.pushButton_6)
+        self.pushButton = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton.setObjectName("pushButton")
+        self.pushButton.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
+        self.horizontalLayout_6.addWidget(self.pushButton)
+        self.pushButton_19 = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton_19.setObjectName("pushButton")
+        self.pushButton_19.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
+        self.horizontalLayout_6.addWidget(self.pushButton_19)
+        self.pushButton_2 = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_2.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
+        self.horizontalLayout_6.addWidget(self.pushButton_2)
+        self.pushButton_3 = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.pushButton_3.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
+        self.horizontalLayout_6.addWidget(self.pushButton_3)
+        self.pushButton_4 = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.pushButton_4.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
+        self.horizontalLayout_6.addWidget(self.pushButton_4)
+        self.pushButton_5 = QtWidgets.QPushButton(self.pageGraficas)
+        self.pushButton_5.setObjectName("pushButton_5")
+        self.pushButton_5.setStyleSheet('border: 1.5px solid #db5d4f; padding: 5px')
+
+        self.horizontalLayout_6.addWidget(self.pushButton_5)
+        self.verticalLayout_18.addLayout(self.horizontalLayout_6)
+        self.stackedWidget.addWidget(self.pageGraficas)
         self.pageModelo = QtWidgets.QWidget()
         self.pageModelo.setObjectName("pageModelo")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.pageModelo)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+
+
+        self.pushButton_21.clicked.connect(self.SaveData)
+        self.pushButton_6.clicked.connect(self.Grafica1)
+        self.pushButton.clicked.connect(self.Grafica2)
+        self.pushButton_2.clicked.connect(self.Grafica3)
+        self.pushButton_3.clicked.connect(self.Grafica4)
+        self.pushButton_4.clicked.connect(self.Grafica5)
+        self.pushButton_5.clicked.connect(self.Grafica6)
+        self.pushButton_19.clicked.connect(self.Grafica19)
+
         # self.openGLWidget = QtWidgets.QOpenGLWidget(self.pageModelo)
         # self.openGLWidget.setObjectName("openGLWidget")
-
         #===================================================================================
 
         view = GLViewWidget(rotationMethod='quaternion')
-        view.setBackgroundColor(255,255,255, 255)
+        view.setBackgroundColor(240,240,240, 0)
         view.setCameraPosition(distance=500) 
         view.pan(0, 0, 0) 
         view.opts['panning'] = False 
@@ -605,14 +812,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.addWidget(self.Content)
         MainWindow.setCentralWidget(self.centralwidget)
 
-
         for i in self.marker_coord:
             self.LatitudList.insertItem(0,str(i[0]))
             self.LongitudList.insertItem(0,str(i[1]))
             self.IndexList.insertItem(0,str(i[2]))
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(0)
         self.LatitudList.setCurrentRow(-1)
         self.Metricas2.toggled['bool'].connect(self.Metricas1.setChecked) # type: ignore
         self.Modelo2.toggled['bool'].connect(self.Modelo1.setChecked) # type: ignore
@@ -622,15 +828,20 @@ class Ui_MainWindow(object):
         self.Modelo1.toggled['bool'].connect(self.Modelo2.setChecked) # type: ignore
         self.Menu.toggled['bool'].connect(self.iconOnly.setVisible) # type: ignore
         self.Menu.toggled['bool'].connect(self.fullMenu.setHidden) # type: ignore
+        self.Graficas.toggled['bool'].connect(self.Graficas2.setChecked) # type: ignore
+        self.Graficas2.toggled['bool'].connect(self.Graficas.setChecked) # type: ignore
+        self.Retorno2.toggled['bool'].connect(self.Retorno.setChecked) # type: ignore
+        self.Retorno.toggled['bool'].connect(self.Retorno2.setChecked) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Interfaz Wave"))
         self.Ruta2.setText(_translate("MainWindow", "     Ruta"))
         self.Modelo2.setText(_translate("MainWindow", " Metricas"))
         self.Metricas2.setText(_translate("MainWindow", "  Modelo"))
-        self.label_5.setText(_translate("MainWindow", "RAS-WAVE"))
+        self.Graficas2.setText(_translate("MainWindow", " Graficas"))
+        self.Retorno2.setText(_translate("MainWindow", " Retorno"))
         self.AgregarParada.setText(_translate("MainWindow", "Agregar"))
         self.EditarParada.setText(_translate("MainWindow", "Editar"))
         self.EliminarParada.setText(_translate("MainWindow", "Eliminar"))
@@ -641,13 +852,20 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Elemento:"))
         self.label.setText(_translate("MainWindow", "Latitud:"))
         self.label_2.setText(_translate("MainWindow", "Longitud:"))
-        self.label_14.setText(_translate("MainWindow", "Altura"))
-        self.label_15.setText(_translate("MainWindow", "Brujula"))
-        self.label_16.setText(_translate("MainWindow", "Horizonte artificial"))
+        metri4.setText(_translate("MainWindow", "Altura ()"))
+        metri7.setText(_translate("MainWindow", "Brujula ()"))
+        metri5.setText(_translate("MainWindow", "Horizonte artificial (,)"))
         Temperatura.setText(_translate("MainWindow", "0.0"))
-        self.label_17.setText(_translate("MainWindow", "Anometro"))
-        self.label_22.setText(_translate("MainWindow", "Presion manifold"))
-
+        metri8.setText(_translate("MainWindow", "Anometro ()"))
+        metri3_2.setText(_translate("MainWindow", "Presion manifold ()"))
+        self.pushButton_6.setText(_translate("MainWindow", "Yaw"))
+        self.pushButton.setText(_translate("MainWindow", "Roll"))
+        self.pushButton_19.setText(_translate("MainWindow", "Pitch"))
+        self.pushButton_2.setText(_translate("MainWindow", "Altitud"))
+        self.pushButton_3.setText(_translate("MainWindow", "Temperatura"))
+        self.pushButton_4.setText(_translate("MainWindow", "Presión"))
+        self.pushButton_5.setText(_translate("MainWindow", "Velocidad"))
+        self.pushButton_21.setText(_translate("MainWindow", "Guardar Historial"))
     def ActualizarPosicion(self):
         print(lat, lon)
         item1 = self.LatitudList.item(len(self.LatitudList)-1)
@@ -655,4 +873,86 @@ class Ui_MainWindow(object):
         item3 = self.IndexList.item(len(self.IndexList)-1)
         item1.setText(lat)
         item2.setText(lon)
-        item3.setText(item3.text())
+        item3.setText(item3.text())  
+    def update_plot(self):
+
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
+            # Convert lists to numpy arrays
+        x_data = gra['tiempo']
+        y_data = gra[currentPlot[0]]
+        self.plot_graph.plot(x_data, y_data, pen=pen)  # Update the plot data
+        # self.plot_graph.setPen(pen) 
+
+    def SaveData(self):
+        json_object = json.dumps(gra)
+        with open("./datosGuardados/DatosUAV.json", "w") as outfile:
+            outfile.write(json_object)
+        msg = QMessageBox()
+        # msg.setWindowTitle("Tutorial on PyQt5")
+        msg.setText("Los datos fueron guardados.")
+        msg.exec_()
+
+    def Grafica1(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        currentPlot[0] = 'yaw'
+        # self.plot_graph.plot(gra['tiempo'], gra['yaw'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Yaw °</span>'
+        )                
+    def Grafica2(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        currentPlot[0] = 'roll'
+        # self.plot_graph.plot(gra['tiempo'], gra['roll'], pen=pen , symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Roll</span>'
+        )   
+    def Grafica19(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=2)
+        self.plot_graph.clear()
+        currentPlot[0] = 'pitch'
+        # self.plot_graph.plot(gra['tiempo'], gra['pitch'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Pitch</span>'
+        )        
+
+    def Grafica3(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        currentPlot[0] = 'altitud'
+        # self.plot_graph.plot(gra['tiempo'], gra['altitud'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Altitud (m)</span>'
+        )
+    def Grafica4(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=2)
+        self.plot_graph.clear()
+        currentPlot[0] = 'temperatura'
+        # self.plot_graph.plot(gra['tiempo'], gra['temperatura'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Temperatura (C)</span>'
+        )
+    def Grafica5(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        currentPlot[0] = 'presion'
+        # self.plot_graph.plot(gra['tiempo'], gra['presion'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Presion (Kpa)</span>'
+        )
+    def Grafica6(self):
+        # pen = pg.mkPen(color=(255, 0, 0), width=1)
+        self.plot_graph.clear()
+        currentPlot[0] = 'velocidad'
+        # self.plot_graph.plot(gra['tiempo'], gra['velocidad'], pen=pen, symbol="h", symbolSize=0)
+        self.plot_graph.setLabel(
+            "left",
+            '<span style="font-size: 12px">Velociad (km/h)</span>'
+    )  
