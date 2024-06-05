@@ -149,7 +149,7 @@ class WorkerThread(QThread):
                     metri5.setText(f"Horizonte artificial ({round(pitch, 2)}, {round(roll,2)})")
                     metri7.setText(f"Norte (Roll) ({round(roll, 2)})")
                     metri4.setText(f"Altitud ({dictionary['altitud']})")
-                    metri8.setText(f"Anometro ({round(yaw, 2)})") #==================================================================================================Toca Cambiarlo
+                    metri8.setText(f"Anometro ({dictionary['velocidad']})")
 
                     gra['tiempo'].append(time.time() - tiempInicial)
                     gra['yaw'].append(yaw)
@@ -158,7 +158,7 @@ class WorkerThread(QThread):
                     gra['altitud'].append(dictionary['altitud'])
                     gra["presion"].append(dictionary['presion'])
                     gra['temperatura'].append(dictionary['temperatura'])
-                    gra['velocidad'].append(yaw) #==================================================================================================Toca Cambiarlo
+                    gra['velocidad'].append(dictionary['velocidad']) 
                     
                     # ========================================================================================================Auto Graph
                     # pen = pg.mkPen(color=(255, 0, 0), width=1)
@@ -945,7 +945,7 @@ class Ui_MainWindow(object):
         # self.plot_graph.plot(gra['tiempo'], gra['presion'], pen=pen, symbol="h", symbolSize=0)
         self.plot_graph.setLabel(
             "left",
-            '<span style="font-size: 12px">Presion (Pha)</span>'
+            '<span style="font-size: 12px">Presion (Kpa)</span>'
         )
     def Grafica6(self):
         # pen = pg.mkPen(color=(255, 0, 0), width=1)

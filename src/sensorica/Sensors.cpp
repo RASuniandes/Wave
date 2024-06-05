@@ -65,9 +65,17 @@ void Sensors::readPitotData()
     if (pitot.Read())
     {
         airPressure = pitot.pres_pa();
+        airPressurePsi =pitot.pres_psi();
+        if (airPressure < 0)
+        {
+            airPressurePsi =0;
+            airPressure = 0;
+        }
+    
         airTemperature = pitot.die_temp_c();
         updateRho();
         updateAirSpeed();
+        //PressurePSI();
     }
 }
 void Sensors::updateRho()
@@ -84,10 +92,10 @@ void Sensors::updateAirSpeed()
         airSpeed = sqrt((2 * pressure) / (RHO_AIR));
     }
     else
-    {
+    {  
         airSpeed = 0;
     }
-    PressurePSI();
+    
 }
 
 void Sensors::PressurePSI()
@@ -97,8 +105,10 @@ void Sensors::PressurePSI()
 void Sensors::showPressure()
 {
 
-    Serial.print(" Pressure Kpa: ");
+    Serial.print(" Pressure Pa: ");
     Serial.print(airPressure, 6);
+    Serial.print(" Pressure pSI: ");
+    Serial.print(airPressurePsi, 6);
 
     Serial.print(" Velocidad del aire (m/s): ");
     Serial.print(airSpeed, 6);
@@ -350,7 +360,7 @@ void Sensors::showSensors()
     Serial.print(", rawTemperatura:");
     Serial.print(rawTemperature);
     Serial.print(", presion:");
-    Serial.print(pressure);
+    Serial.print(airPressure);
     Serial.print(", rawPresion:");
     Serial.print(rawPressure);
     Serial.print(", altitud:");
@@ -371,6 +381,8 @@ void Sensors::showSensors()
     Serial.print(roll);
     Serial.print(", compass:");
     Serial.print(compass_value);
+    Serial.print(", velocidad:");
+    Serial.print(airSpeed);
     Serial.print(", latitud:");
     Serial.print(Latitud, 6);
     Serial.print(", longitud:");
