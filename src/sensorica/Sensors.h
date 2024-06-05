@@ -11,7 +11,7 @@
 #include <TinyGPSPlus.h>
 #include "HMC5883L.h"
 #include "ms4525do.h"
-
+#include <thread>
 class Sensors
 {
 public:

@@ -58,21 +58,7 @@ void Sensors::begin()
     }
 }
 
-void Sensors::readData()
-{
-    // readBnoData();
-    // readBMP280Data();
-    // readMPU6050Data();
-    // readPitotData();
 
-    // updateGPS();
-    
-    std::thread thread_obj(readBnoData);
-    std::thread thread_obj(readBMP280Data);
-    std::thread thread_obj(readMPU6050Data);
-    std::thread thread_obj(readPitotData);
-    std::thread thread_obj(updateGPS);
-}
 
 void Sensors::readPitotData()
 {
@@ -391,4 +377,24 @@ void Sensors::showSensors()
     Serial.print(Longitud, 6);
     Serial.print("}");
     Serial.println();
+}
+void Sensors::readData()
+{
+    readBnoData();
+    readBMP280Data();
+    readMPU6050Data();
+    readPitotData();
+
+    // updateGPS();
+
+
+    /*
+    
+    std::thread thread_obj(readBnoData());
+    std::thread thread_obj(readBMP280Data());
+    std::thread thread_obj(readMPU6050Data());
+    std::thread thread_obj(readPitotData());
+    std::thread thread_obj(updateGPS());
+
+    */
 }
