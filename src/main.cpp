@@ -11,6 +11,7 @@
 #include <vector>
 #include <iostream>
 #include "control/ReguladorServos.h"
+#include "navegacion/Waypoints.h"
 
 ReguladorServos reguladorServos;
 
@@ -48,6 +49,8 @@ float tiempo = 0;
 #define CSN_PIN 16
 
 RF24 radio(CE_PIN, CSN_PIN);
+
+  
 
 // const byte address[6] = "00001";
 
@@ -336,6 +339,11 @@ void setup()
   init_buzzer();
   playBuzzer();
   xTaskCreatePinnedToCore(loop0, "Tarea_0", 2048, NULL, 1, &Tarea0, 0);
+
+ 
+  // Matrices de prueba
+
+
 }
 
 void loop()
@@ -343,6 +351,8 @@ void loop()
   unsigned long currentMillis = millis();
   tiempo = currentMillis;
   sensors.readData();
+
+  
   //sensors.showSensors();
   // reguladorServos.print_channels();
   if (currentMillis - previousMillis1 >= interval1)
@@ -350,7 +360,7 @@ void loop()
     previousMillis1 = currentMillis;
     saveData();
     sensors.updateDisplay();
-    sensors.showPressure();
+    //sensors.showPressure();
     // updateDisplay();
   }
 }
@@ -359,7 +369,7 @@ void loop0(void *parameter)
 {
   while (1 == 1)
   {
-    reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch());
+    reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch(), sensors.getLatitude(), sensors.getLongitude(), sensors.getAirSpeed(), sensors.getAltitude(), sensors.getCompass(), sensors.getAlture());
     setServos();
   }
 }

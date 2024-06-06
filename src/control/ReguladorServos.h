@@ -11,13 +11,14 @@ public:
   int pulseWidth(int angle);
   void updateChannelsAuto(float rollValue, float pitchValue);
   void updateChannels(float rollValue, float pitchValue);
-  void managePlaneMode(float rollValue, float pitchValue);
+  void managePlaneMode(float rollValue, float pitchValue, float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass,float alture);
   void print_channels();
   int getservo0Value() const { return servo0Value; }
   int getservo1Value() const { return servo1Value; }
   int getservo2Value() const { return servo2Value; }
   int getservo3Value() const { return servo3Value; }
   int getservo4Value() const { return servo4Value; }
+
 
 private:
   float PosicionDeseadaYaw = 0;

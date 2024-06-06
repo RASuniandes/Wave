@@ -229,6 +229,10 @@ void Sensors::KalmanFilter(float newAngle, float newRate, float *angle, float *b
 
 void Sensors::updateGPS()
 {
+    
+    float angle=gps.courseTo(4.67086033306706145, -74.06116161374081,4.706739812511032,-74.15178166325258);
+    Serial.print("Angle: ");
+    Serial.println(angle);
     while (Serial2.available() > 0)
     {
         if (gps.encode(Serial2.read()))
@@ -237,6 +241,7 @@ void Sensors::updateGPS()
             {
                 Latitud = gps.location.lat();
                 Longitud = gps.location.lng();
+
             }
             else
             {
@@ -397,7 +402,7 @@ void Sensors::readData()
     readMPU6050Data();
     readPitotData();
 
-    // updateGPS();
+    updateGPS();
 
 
     /*

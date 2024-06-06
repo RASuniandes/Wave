@@ -1,6 +1,8 @@
 #include "ReguladorServos.h"
 #include "telemetria/FlySky.h"
 #include <Adafruit_PWMServoDriver.h>
+#include "navegacion/Waypoints.h"
+
 
 #define MIN_PULSE_WIDTH 600
 #define MAX_PULSE_WIDTH 2600
@@ -12,6 +14,8 @@
 #define CH4 4
 #define CH5 3
 #define CH6 2
+
+Waypoints waypoints;
 
 FlySky flySky(CH1, CH2, CH3, CH4, CH5, CH6);
 // Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
@@ -126,10 +130,11 @@ int ReguladorServos::pulseWidth(int angle)
 
 void ReguladorServos::updateChannelsAuto(float rollValue, float pitchValue)
 {
-  double pidRoll = CalcularPid(rollValue, PosicionDeseadaRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, true);
+
+  double pidRoll = CalcularPid(rollValue, waypoints.getBankAngle(), priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 25, true);
   servo0Value = pulseWidth(pidRoll);
 
-  double pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, false);
+  double pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 25, false);
   servo1Value = pulseWidth(pidPitch);
 }
 
@@ -150,13 +155,16 @@ void ReguladorServos::updateChannels(float rollValue, float pitchValue)
   servo3Value = pulseWidth(ch4Value);
 }
 
-void ReguladorServos::managePlaneMode(float rollValue, float pitchValue)
+void ReguladorServos::managePlaneMode(float rollValue, float pitchValue, float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass, float alture)
 {
   ch5Value = flySky.readSwitch(CH5, false);
   ch6Value = flySky.readSwitch(CH6, false);
 
   if (ch5Value)
+  {
+    waypoints.updateValues(latitudeUAV, longitudeUAV, airSpeed, altitude, compass, alture);
     updateChannelsAuto(rollValue, pitchValue);
+  }
   else
     updateChannels(rollValue, pitchValue);
 }

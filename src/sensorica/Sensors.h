@@ -25,6 +25,7 @@ public:
     float getTemperature() const { return temperature; }
     float getPressure() const { return pressure; }
     float getAltitude() const { return altitude; }
+    float getAlture() const { return alture; }
     float getYaw() const { return yaw; }
     float getPitch() const { return pitch; }
     float getRoll() const { return roll; }
