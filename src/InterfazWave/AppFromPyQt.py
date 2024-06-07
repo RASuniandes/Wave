@@ -104,14 +104,18 @@ class WorkerThread(QThread):
                     # presu = float(data_array[1])
                     # alt = float(data_array[2])
                     Temperatura.setText(str(dictionary['temperatura']))
-
                     PunteroAltura.setGeometry(QtCore.QRect(90, 400 - int(dictionary['altitud'] - altInicial)*4, 70, 20))
-                    HorizonteArt.setGeometry(QtCore.QRect(15, -int(pitch), 175, 175))
-                    HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)))
                     Brujula.setPixmap(QtGui.QPixmap(".\\img/Untitled-7.png").transformed(QtGui.QTransform().rotate(-yaw)))
                     Presion.setPixmap(QtGui.QPixmap(".\\img/Untitled-11.png").transformed(QtGui.QTransform().rotate(((dictionary['presion']/133.322)/50)*360)))
-                    Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw))) #==================================================================================================Toca Cambiarlo
+                   
+                    HorizonteArt.setGeometry(QtCore.QRect(15, -int(pitch), 175, 175))
+                    HorizonteArt.setPixmap(QtGui.QPixmap(".\\img/Untitled-8.png").transformed(QtGui.QTransform().rotate(roll)))
+                   
                     
+
+                    
+                    Velocidad.setPixmap(QtGui.QPixmap(".\\img/Untitled-10.png").transformed(QtGui.QTransform().rotate(yaw))) #==================================================================================================Toca Cambiarlo
+              
                     # # Calculate the target position and size for PunteroAltura
                     # puntero_altura_y = 400 - int(dictionary['altitud'] - altInicial) * 4
                     # PunteroAltura.setGeometry(QtCore.QRect(90, puntero_altura_y, 70, 20))
@@ -179,6 +183,7 @@ class WorkerThread(QThread):
                     except:
                         pass
                 
+                #time.sleep(0.0001)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

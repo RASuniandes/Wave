@@ -11,6 +11,10 @@ public:
   int pulseWidth(int angle);
   void updateChannelsAuto(float rollValue, float pitchValue);
   void updateChannels(float rollValue, float pitchValue);
+  void manualControl();
+  void asistidoControl();
+  void wayPointControl();
+  
   void managePlaneMode(float rollValue, float pitchValue, float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass,float alture);
   void print_channels();
   int getservo0Value() const { return servo0Value; }
@@ -24,11 +28,17 @@ private:
   float PosicionDeseadaYaw = 0;
   float PosicionDeseadaPitch = 0;
   float PosicionDeseadaRoll = 0;
+  float minMaxRoll = 40;
+  float minMaxPitch = 30;
+  float minMaxYaw = 60;
   int servo0Value;
   int servo1Value;
   int servo2Value;
   int servo3Value;
   int servo4Value;
+  float RollValue;
+  float PitchValue;
+  float YawValue;
 };
 
 #endif

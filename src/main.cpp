@@ -353,7 +353,7 @@ void loop()
   sensors.readData();
 
   
-  //sensors.showSensors();
+  //  sensors.showSensors();
   // reguladorServos.print_channels();
   if (currentMillis - previousMillis1 >= interval1)
   {
@@ -370,6 +370,7 @@ void loop0(void *parameter)
   while (1 == 1)
   {
     reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch(), sensors.getLatitude(), sensors.getLongitude(), sensors.getAirSpeed(), sensors.getAltitude(), sensors.getCompass(), sensors.getAlture());
+    //reguladorServos.print_channels();
     setServos();
   }
 }

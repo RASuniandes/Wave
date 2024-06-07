@@ -3,7 +3,6 @@
 #include <Adafruit_PWMServoDriver.h>
 #include "navegacion/Waypoints.h"
 
-
 #define MIN_PULSE_WIDTH 600
 #define MAX_PULSE_WIDTH 2600
 #define FREQUENCY 60
@@ -42,7 +41,7 @@ float kpPitch = 1;
 float kdPitch = 0.1;
 float kiPitch = 0.01;
 
-float kpRoll = 8;
+float kpRoll = 3;
 float kdRoll = 0.5;
 float kiRoll = 0.01;
 
@@ -127,7 +126,7 @@ int ReguladorServos::pulseWidth(int angle)
   analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
   return analog_value;
 }
-
+/*
 void ReguladorServos::updateChannelsAuto(float rollValue, float pitchValue)
 {
 
@@ -137,36 +136,89 @@ void ReguladorServos::updateChannelsAuto(float rollValue, float pitchValue)
   double pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 25, false);
   servo1Value = pulseWidth(pidPitch);
 }
-
+*/
 void ReguladorServos::updateChannels(float rollValue, float pitchValue)
 {
-  ch1Value = flySky.getChannel1Value(60, -60, default_value_c1);
-  ch2Value = flySky.getChannel2Value(30, -30, default_value_c2);
+  ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
+  ch2Value = flySky.getChannel2Value(min_limit_c2, max_limit_c2, default_value_c2);
   ch3Value = flySky.getChannel3Value(min_limit_c3, max_limit_c3, default_value_c3);
   ch4Value = flySky.getChannel4Value(min_limit_c4, max_limit_c4, default_value_c4);
+  ch5Value = flySky.readSwitch(CH5, false);
+  ch6Value = flySky.readSwitch(CH6, false);
 
-  double pidRoll = CalcularPid(rollValue, ch1Value, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
-  servo0Value = pulseWidth(pidRoll);
+  // double pidRoll = CalcularPid(rollValue, ch1Value, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
+  // servo0Value = pulseWidth(pidRoll);
 
-  double pidPitch = CalcularPid(pitchValue, ch2Value, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, 0);
-  servo1Value = pulseWidth(pidPitch);
+  // double pidPitch = CalcularPid(pitchValue, ch2Value, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 30, 0);
+  // servo1Value = pulseWidth(pidPitch);
+  RollValue = rollValue;
+  PitchValue = pitchValue;
+}
+void ReguladorServos::manualControl()
+{
+
+  if (ch1Value > default_value_c1 - 2 and ch1Value < default_value_c1 + 2)
+  {
+    double pidRoll = CalcularPid(RollValue, 0, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 0);
+    servo0Value = pulseWidth(pidRoll);
+  }
+  else
+  {
+    servo0Value = pulseWidth(ch1Value);
+  }
+  if (ch2Value > default_value_c2 - 2 and ch2Value < default_value_c2 + 2)
+  {
+    double pidPitch = CalcularPid(PitchValue, 0, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 0);
+    servo1Value = pulseWidth(pidPitch);
+  }
+  else
+  {
+    servo1Value = pulseWidth(ch2Value);
+  }
 
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
 }
 
+void ReguladorServos::asistidoControl()
+{
+
+  float mapedRoll = map(ch1Value, min_limit_c1, max_limit_c1, -minMaxRoll, minMaxRoll);
+  double pidRoll = CalcularPid(-RollValue, mapedRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
+  servo0Value = pulseWidth(pidRoll);
+
+  float mapedPitch = map(ch2Value, min_limit_c2, max_limit_c2, -minMaxPitch, minMaxPitch);
+  double pidPitch = CalcularPid(PitchValue, mapedPitch, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
+  servo1Value = pulseWidth(pidPitch);
+}
+
+void ReguladorServos::wayPointControl()
+{
+}
+
 void ReguladorServos::managePlaneMode(float rollValue, float pitchValue, float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass, float alture)
 {
-  ch5Value = flySky.readSwitch(CH5, false);
-  ch6Value = flySky.readSwitch(CH6, false);
+
+  updateChannels(rollValue, pitchValue);
 
   if (ch5Value)
   {
-    waypoints.updateValues(latitudeUAV, longitudeUAV, airSpeed, altitude, compass, alture);
-    updateChannelsAuto(rollValue, pitchValue);
+    // waypoints.updateValues(latitudeUAV, longitudeUAV, airSpeed, altitude, compass, alture);
+    // updateChannelsAuto(rollValue, pitchValue);
+    if (ch6Value)
+    {
+      wayPointControl();
+    }
+    else
+    {
+      asistidoControl();
+    }
   }
   else
-    updateChannels(rollValue, pitchValue);
+  {
+
+    manualControl();
+  }
 }
 
 void ReguladorServos::print_channels()
