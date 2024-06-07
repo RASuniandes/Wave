@@ -1,11 +1,10 @@
 #include "Waypoints.h"
-#include<array> 
+#include <array>
 
 // Constructor para inicializar la matriz de waypoints
 
 void Waypoints::waypoints()
 {
-
 }
 /*
 // Destructor para liberar la memoria
@@ -41,11 +40,12 @@ void Waypoints::updateWaypoints(float latitudes[], float longitudes[], String na
 }
 */
 // Método para imprimir los waypoints almacenados
-//4.613791607210351, -74.07930108839342
+// 4.613791607210351, -74.07930108839342
 double latitudes[] = {4.613791607210351};
 double longitudes[] = {-74.07930108839342};
 String names[] = {"Sisas"};
 int size = 1;
+int alturaDeseada = 60;
 void Waypoints::printWaypoints()
 {
     for (int i = 0; i < size; i++)
@@ -62,19 +62,19 @@ void Waypoints::printWaypoints()
     }
 }
 void Waypoints::updateTarget()
-{   
-    distanceToWaypoint=gps.distanceBetween(latitudeUAV, longitudeUAV, latitudes[currentWaypoint], longitudes[currentWaypoint]);
+{
+    distanceToWaypoint = gps.distanceBetween(latitudeUAV, longitudeUAV, latitudes[currentWaypoint], longitudes[currentWaypoint]);
 
-    if (distanceToWaypoint<=radiusDistance){
+    if (distanceToWaypoint <= radiusDistance)
+    {
         currentWaypoint++;
-        if (currentWaypoint == size-1){
+        if (currentWaypoint == size - 1)
+        {
             currentWaypoint = 0;
         }
-
     }
-    
 }
-void Waypoints::updateValues(float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass,float alture)
+void Waypoints::updateValues(float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass, float alture)
 {
     this->latitudeUAV = latitudeUAV;
     this->longitudeUAV = longitudeUAV;
@@ -83,32 +83,40 @@ void Waypoints::updateValues(float latitudeUAV, float longitudeUAV, float airSpe
     this->compass = compass;
     this->alture = alture;
 }
-void Waypoints::calculateBankAngle(){
-
+float Waypoints::calculateBankAngle()
+{
     float angle_to_target = gps.courseTo(latitudeUAV, longitudeUAV, latitudes[currentWaypoint], longitudes[currentWaypoint]);
-    float alfa=compass;
-    float beta=angle_to_target;
-    if (alfa<=beta){
+    // float angle_to_target = gps.courseTo(4.603086020432502, -74.06496610416175, latitudes[currentWaypoint], longitudes[currentWaypoint]);
+    float alfa = compass;
+    float beta = angle_to_target;
+    float turnAngle = 0;
+    if (alfa <= beta)
+    {
 
-        if (360-beta+alfa<=beta-alfa){
-            float turnAngle=360-beta+alfa;
-            bankAngle= map(turnAngle,0,180,0,maxAngleBank);
+        if (360 - beta + alfa <= beta - alfa)
+        {
+            turnAngle = -(360 - beta + alfa);
         }
-        else{
-            float turnAngle=beta-alfa;
-            bankAngle= map(turnAngle,0,180,0,-maxAngleBank);
+        else
+        {
+            turnAngle = (beta - alfa);
         }
     }
-    else{
-        if (360-alfa+beta<=alfa-beta){
-            float turnAngle=360-alfa+beta;
-            bankAngle= map(turnAngle,0,180,0,-maxAngleBank);
+    else
+    {
+        if (360 - alfa + beta <= alfa - beta)
+        {
+            turnAngle = (360 - alfa + beta);
         }
-        else{
-            float turnAngle=alfa-beta;
-            bankAngle= map(turnAngle,0,180,0,maxAngleBank);
-
+        else
+        {
+            turnAngle = -(alfa - beta);
         }
-
     }
+    return (turnAngle);
+}
+
+float Waypoints::calculateAlture()
+{
+    return alture - alturaDeseada;
 }

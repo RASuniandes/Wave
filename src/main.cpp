@@ -369,7 +369,7 @@ void loop0(void *parameter)
 {
   while (1 == 1)
   {
-    reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch(), sensors.getLatitude(), sensors.getLongitude(), sensors.getAirSpeed(), sensors.getAltitude(), sensors.getCompass(), sensors.getAlture());
+    reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch(), sensors.getLatitude(), sensors.getLongitude(), sensors.getAirSpeed(), sensors.getAltitude(), sensors.getYaw(), sensors.getAlture());
     //reguladorServos.print_channels();
     setServos();
   }

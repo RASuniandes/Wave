@@ -126,17 +126,6 @@ int ReguladorServos::pulseWidth(int angle)
   analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
   return analog_value;
 }
-/*
-void ReguladorServos::updateChannelsAuto(float rollValue, float pitchValue)
-{
-
-  double pidRoll = CalcularPid(rollValue, waypoints.getBankAngle(), priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 25, true);
-  servo0Value = pulseWidth(pidRoll);
-
-  double pidPitch = CalcularPid(pitchValue, PosicionDeseadaPitch, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 25, false);
-  servo1Value = pulseWidth(pidPitch);
-}
-*/
 void ReguladorServos::updateChannels(float rollValue, float pitchValue)
 {
   ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
@@ -194,6 +183,13 @@ void ReguladorServos::asistidoControl()
 
 void ReguladorServos::wayPointControl()
 {
+  float mapedRoll = map(waypoints.calculateBankAngle(), -180, 180, -minMaxRoll, minMaxRoll);
+  double pidRoll = CalcularPid(-RollValue, mapedRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
+  servo0Value = pulseWidth(pidRoll);
+
+  float mapedPitch = map(waypoints.calculateAlture(), -60, 60, -minMaxPitch, minMaxPitch);
+  double pidPitch = CalcularPid(-PitchValue, mapedPitch, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
+  servo1Value = pulseWidth(pidPitch);
 }
 
 void ReguladorServos::managePlaneMode(float rollValue, float pitchValue, float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass, float alture)
@@ -203,10 +199,9 @@ void ReguladorServos::managePlaneMode(float rollValue, float pitchValue, float l
 
   if (ch5Value)
   {
-    // waypoints.updateValues(latitudeUAV, longitudeUAV, airSpeed, altitude, compass, alture);
-    // updateChannelsAuto(rollValue, pitchValue);
     if (ch6Value)
     {
+      waypoints.updateValues(latitudeUAV, longitudeUAV, airSpeed, altitude, compass, alture);
       wayPointControl();
     }
     else
