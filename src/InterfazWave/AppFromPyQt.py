@@ -190,13 +190,14 @@ class Ui_MainWindow(object):
             myjsonFile = open('./datosGuardados/currentData.json', 'r')
 
         df = myjsonFile.read()
+        
         if(df != ''):
             if(json.loads(df)[0][2] != 'Posicion En Tiempo Real'):
                 self.marker_coord = [[lon, lat, 'Posicion En Tiempo Real'] ,*json.loads(df)]
             else:
                 self.marker_coord = [*json.loads(df)]
 
-
+    
         data = io.BytesIO()
 
         if len(self.marker_coord) > 0 :

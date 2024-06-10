@@ -47,8 +47,9 @@ float tiempo = 0;
 #define CE_PIN 21
 #define CSN_PIN 16
 
+byte direccion[5] = {'c','a','n','a','l'};
 RF24 radio(CE_PIN, CSN_PIN);
-
+float datos[9];
 // const byte address[6] = "00001";
 
 // GPS declaracion
@@ -230,20 +231,36 @@ void createNewFile()
   File root = SD.open("/");
   File file = root.openNextFile();
 
+  // Contar el número de archivos en el directorio raíz
   while (file)
   {
     fileCounter++;
     file = root.openNextFile();
   }
 
-  fileName = "/dataSaved_" + String(fileCounter + 1) + ".csv";
+  // Si ya hay 10 archivos, borrar todos
+  if (fileCounter >= 10)
+  {
+    root.rewindDirectory();  // Volver al principio del directorio
+    file = root.openNextFile();
+    while (file)
+    {
+      SD.remove(file.name());  // Borrar el archivo
+      file = root.openNextFile();
+    }
+    fileCounter = 0;  // Reiniciar el contador
+    Serial.println("All files deleted.");
+  }
 
-  myFile = SD.open(fileName, FILE_WRITE);
+  // Crear un nuevo archivo
+  String fileName = "/dataSaved_" + String(fileCounter + 1) + ".csv";
+  File myFile = SD.open(fileName, FILE_WRITE);
+
   if (myFile)
   {
-    myFile.println("temperatura,presion,altitud,yaw1,pitch1,roll1,yaw,pitch,roll,compass,latitud,longitud");
+    myFile.println("temperatura,altitud,presion,yaw,pitch,roll,compass,airSpeed,airTemperature,AirPressurePsi.,latitud,longitud");
     myFile.close();
-    fileCreated = true;
+    bool fileCreated = true;
     Serial.println("File created: " + fileName);
   }
   else
@@ -252,42 +269,38 @@ void createNewFile()
   }
 }
 
+
 void saveData()
 {
-  // myFile = SD.open(fileName, FILE_APPEND);
-  // if (myFile)
-  // {
-  //   myFile.print(temperature);
-  //   myFile.print(",");
-  //   myFile.print(pressure);
-  //   myFile.print(",");
-  //   myFile.print(altitude);
-  //   myFile.print(",");
-  //   myFile.print(yawValue);
-  //   myFile.print(",");
-  //   myFile.print(pitchValue);
-  //   myFile.print(",");
-  //   myFile.print(rollValue);
-  //   myFile.print(",");
-  //   myFile.print(yaw);
-  //   myFile.print(",");
-  //   myFile.print(pitch);
-  //   myFile.print(",");
-  //   myFile.print(roll);
-  //   myFile.print(",");
-  //   myFile.print(compass_value);
-  //   myFile.print(",");
-  //   myFile.print(Latitud);
-  //   myFile.print(",");
-  //   myFile.println(Longitud);
-  //   myFile.close();
-  // }
+  myFile = SD.open(fileName, FILE_APPEND);
+ if (myFile)
+  {
+   myFile.print(sensors.getTemperature());
+   myFile.print(",");
+   myFile.print(sensors.getAltitude());
+   myFile.print(",");
+   myFile.print(sensors.getPressure());
+   myFile.print(",");
+   myFile.print(sensors.getYaw());
+   myFile.print(",");
+   myFile.print(sensors.getPitch());
+   myFile.print(",");
+   myFile.print(sensors.getRoll());
+   myFile.print(",");
+   myFile.print(sensors.getCompass());
+   myFile.print(",");
+   myFile.print(sensors.getAirSpeed());
+   myFile.print(",");
+   myFile.print(sensors.getAirTemperature());
+   myFile.print(",");
+   myFile.print(sensors.getAirPressurePsi());
+   myFile.print(",");
+   myFile.print(sensors.getLatitude());
+   myFile.print(",");
+   myFile.println(sensors.getLongitude());
+   myFile.close();
+  }
 }
-
-// void sendMessage(String message)
-// {
-//   radio.write(&message, sizeof(message));
-// }
 
 // void Control()
 // {
@@ -298,6 +311,32 @@ void saveData()
 //   Controlador.Update_Velocidad(60);
 //   Controlador.UAV_Search();
 // }
+
+void senData()
+{
+  datos[0] = sensors.getTemperature();
+  datos[1] = 1;
+  datos[2] = 0;
+  datos[3] = sensors.getYaw();
+  datos[4] = sensors.getPitch();
+  datos[5] = sensors.getRoll();
+  datos[6] = sensors.getAirSpeed();
+  datos[7] = sensors.getLatitude(); 
+  datos[8] = sensors.getLongitude();
+
+  // Enviar los datos usando RF24
+  bool ok = radio.write(&datos, sizeof(datos));
+  
+  if (ok)
+  {
+    Serial.println("Datos de sensores enviados correctamente");
+  }
+  else
+  {
+    Serial.println("Error al enviar los datos de sensores");
+  }
+}
+
 void SDBegin()
 {
   if (!SD.begin(CS_PIN, SPI))
@@ -326,9 +365,9 @@ void setup()
   pca9685.setPWMFreq(FREQUENCY);
 
   sensors.begin();
-  // radio.begin();
-  // radio.openWritingPipe(address);
-  // radio.setPALevel(RF24_PA_LOW);
+  radio.begin();
+  radio.openWritingPipe(direccion);
+  radio.setPALevel(RF24_PA_LOW);
   // Controlador.waitPoints_coordenadas_a_rectangulares(inputCoords, numCoords);
   // if (gps.location.isValid()) {
 
@@ -343,14 +382,15 @@ void loop()
   unsigned long currentMillis = millis();
   tiempo = currentMillis;
   sensors.readData();
-  //sensors.showSensors();
+  sensors.showSensors();
+  senData();
   // reguladorServos.print_channels();
   if (currentMillis - previousMillis1 >= interval1)
   {
     previousMillis1 = currentMillis;
-    saveData();
+    //saveData();
     sensors.updateDisplay();
-    sensors.showPressure();
+    //sensors.showPressure();
     // updateDisplay();
   }
 }
@@ -362,4 +402,4 @@ void loop0(void *parameter)
     reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch());
     setServos();
   }
-}
+} 

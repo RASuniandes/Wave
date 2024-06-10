@@ -1,0 +1,68 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+#include <Arduino.h>
+#include <Wire.h>
+// Definimos los pines CE y CSN
+#define CE_PIN 21
+#define CSN_PIN 16
+#define MOSI_PIN 35
+#define MISO_PIN 37
+#define SCK_PIN 36
+
+// Variable con la dirección del canal que se va a leer
+byte direccion[5] = {'c', 'a', 'n', 'a', 'l'};
+
+// Creamos el objeto radio (NRF24L01)
+RF24 radio(CE_PIN, CSN_PIN);
+
+// Vector para los datos recibidos
+float datos[9];
+
+void setup() {
+  // Inicializamos los pines del SPI
+  SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, CSN_PIN);
+  
+  // Inicializamos el NRF24L01 
+  radio.begin();
+  
+  // Inicializamos el puerto serie
+  Serial.begin(115200);
+  
+  // Abrimos el canal de lectura
+  radio.openReadingPipe(1, direccion);
+  
+  // Empezamos a escuchar por el canal
+  radio.startListening();
+}
+
+void loop() {
+  // Verificamos si hay datos disponibles
+  if (radio.available()) {
+    // Leemos los datos y los guardamos en el vector de datos
+    radio.read(&datos, sizeof(datos));
+
+    // Mostramos los datos recibidos según la estructura de showSensors()
+    Serial.print("{temperatura:");
+    Serial.print(datos[0]);
+    Serial.print(", presion:");
+    Serial.print(datos[1]);
+    Serial.print(", altitud:");
+    Serial.print(datos[2]);
+    Serial.print(", yaw:");
+    Serial.print(datos[3]);
+    Serial.print(", pitch:");
+    Serial.print(datos[4]);
+    Serial.print(", roll:");
+    Serial.print(datos[5]);
+    Serial.print(", velocidad:");
+    Serial.print(datos[6]);
+    Serial.print(", latitud:");
+    Serial.print(datos[7], 6);
+    Serial.print(", longitud:");
+    Serial.print(datos[8], 6);
+    Serial.print("}");
+    Serial.println();
+  }
+
+}
