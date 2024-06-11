@@ -70,6 +70,8 @@ long tiempo_prev = 0;
 
 const int chipSelect = 38;
 
+int fileCounter = 0; // cuenta el numero de archivos en la SD
+
 Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 
 #define SER0_ALERONES 0
@@ -227,7 +229,6 @@ void scanI2C()
 
 void createNewFile()
 {
-  int fileCounter = 0;
   File root = SD.open("/");
   File file = root.openNextFile();
 
@@ -239,16 +240,16 @@ void createNewFile()
   }
 
   // Si ya hay 10 archivos, borrar todos
-  if (fileCounter >= 10)
+  if (fileCounter >= 3)
   {
     root.rewindDirectory();  // Volver al principio del directorio
     file = root.openNextFile();
     while (file)
     {
-      SD.remove(file.name());  // Borrar el archivo
+      SD.remove();  // Borrar el archivo
       file = root.openNextFile();
     }
-    fileCounter = 0;  // Reiniciar el contador
+    //fileCounter = 0;  // Reiniciar el contador
     Serial.println("All files deleted.");
   }
 
@@ -358,13 +359,13 @@ void setup()
   Wire.setClock(400000);
   scanI2C();
   SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, CS_PIN);
-
+  sensors.begin();
   SDBegin();
-
+  sensors.fileCounterDisplay(fileCounter);
   pca9685.begin();
   pca9685.setPWMFreq(FREQUENCY);
 
-  sensors.begin();
+  
   radio.begin();
   radio.openWritingPipe(direccion);
   radio.setPALevel(RF24_PA_LOW);
@@ -375,6 +376,7 @@ void setup()
   init_buzzer();
   playBuzzer();
   xTaskCreatePinnedToCore(loop0, "Tarea_0", 2048, NULL, 1, &Tarea0, 0);
+  delay(100);
 }
 
 void loop()
@@ -382,8 +384,8 @@ void loop()
   unsigned long currentMillis = millis();
   tiempo = currentMillis;
   sensors.readData();
-  sensors.showSensors();
-  senData();
+  //sensors.showSensors();
+  //senData();
   // reguladorServos.print_channels();
   if (currentMillis - previousMillis1 >= interval1)
   {

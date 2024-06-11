@@ -262,7 +262,16 @@ float Sensors::calculateHeading(float mx, float my)
     }
     return heading_deg;
 }
+void Sensors::fileCounterDisplay(float fileCounter){
 
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.print("Num archivos: ");
+    display.print(fileCounter);
+    display.display();
+}
 void Sensors::updateDisplay()
 {
     display.clearDisplay();
@@ -290,6 +299,8 @@ void Sensors::updateDisplay()
     display.print("Lat: ");
     display.print(Latitud, 6);
     display.println();
+    display.print("Long: ");
+    display.print(Longitud, 6);
     display.print("Long: ");
     display.print(Longitud, 6);
     display.println();

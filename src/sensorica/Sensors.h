@@ -21,6 +21,7 @@ public:
     void updateDisplay();
     void printValues();
     void updateGPS();
+    void fileCounterDisplay(float fileCounter);
 
     float getTemperature() const { return temperature; }
     float getPressure() const { return pressure; }
