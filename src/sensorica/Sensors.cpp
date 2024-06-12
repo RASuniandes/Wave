@@ -39,21 +39,7 @@ void Sensors::begin()
     {
         Serial.println(F("MPU6050 initialization failed"));
     }
-
-    // Inicialización del BNO055 con dirección 0x29
-    if (!bno.begin())
-    {
-        /* There was a problem detecting the BNO055 ... check your connections */
-        Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
-    }
-
-
-      // Calibración del BNO055
-    Serial.println("Calibración del BNO055");
-    while (!isCalibrated()) {
-        printCalibrationStatus();
-    }
-    Serial.println("BNO055 Calibrado!");
+    initializeBno();
 
     
 
@@ -71,7 +57,149 @@ void Sensors::begin()
         Serial.println("Error communicating with pitot");
     }
 }
+void Sensors:: initializeBno(){
+        // Inicialización del BNO055 con dirección 0x29
+    if (!bno.begin())
+    {
+        /* There was a problem detecting the BNO055 ... check your connections */
+        Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+    }
 
+
+      // Calibración del BNO055
+    Serial.println("Calibración del BNO055");
+    while (!isCalibrated()) {
+        printCalibrationStatus();
+    }
+    Serial.println("BNO055 Calibrado!");
+
+      for (int i = 5; i > 0; i--) {
+        display.clearDisplay();
+        display.setCursor(0, 0);
+        display.print("Coloca el dispositivo en");
+        display.setCursor(0, 10);
+        display.print("la posicion de referencia.");
+        display.setCursor(0, 30);
+        display.print("Tiempo restante: ");
+        display.print(i);
+        display.print(" segundos");
+        display.display();
+        delay(1000);
+  }
+
+  // Calcular offset de roll, pitch y yaw
+  calculateOffsets();
+  displayOffsets();
+
+
+}
+bool Sensors::isCalibrated() {
+  uint8_t system, gyro, accel, mag = 0;
+  bno.getCalibration(&system, &gyro, &accel, &mag);
+  return system == 3 && mag == 3;
+}
+
+void Sensors::printCalibrationStatus() {
+    uint8_t system, gyro, accel, mag = 0;
+    bno.getCalibration(&system, &gyro, &accel, &mag);
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+
+
+    display.println("Calibración: ");
+    display.print("Sistema: "); display.println(system, DEC);
+    display.print(" Gyro: "); display.println(gyro, DEC);
+    display.print(" Acelerómetro: "); display.println(accel, DEC);
+    display.print(" Magnetómetro: "); display.println(mag, DEC);
+
+    display.display();
+}
+
+void Sensors::calculateOffsets() {
+  sensors_event_t event;
+  bno.getEvent(&event, Adafruit_BNO055::VECTOR_EULER);
+  yaw_offset = event.orientation.x;
+  pitch_offset = event.orientation.y;
+  roll_offset = event.orientation.z;
+}
+
+void Sensors::displayOffsets(){
+  display.clearDisplay();
+  display.setCursor(0, 0);
+
+  display.print("Offsets:");
+  display.setCursor(0, 10);
+  display.print("Roll Offset: "); display.print(roll_offset);
+  display.setCursor(0, 20);
+  display.print("Pitch Offset: "); display.print(pitch_offset);
+  display.setCursor(0, 30);
+  display.print("Yaw Offset: "); display.print(yaw_offset);
+
+  display.display();
+  
+  delay(5000);  // Display the offsets for 5 seconds
+}
+
+
+float Sensors::calculateHeading(float mx, float my)
+{
+    float heading_rad = atan2(my, mx);
+    float heading_deg = heading_rad * 180.0 / M_PI;
+    if (heading_deg < 0)
+    {
+        heading_deg += 360;
+    }
+    return heading_deg;
+}
+
+void Sensors::readBnoData()
+{
+    sensors_event_t event;
+    bno.getEvent(&event, Adafruit_BNO055::VECTOR_EULER);
+    yaw = event.orientation.x-yaw_offset;
+    pitch = event.orientation.y-pitch_offset;
+    roll = event.orientation.z-roll_offset;
+
+    bno.getEvent(&event, Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    accel_x = event.acceleration.x;
+    accel_y = event.acceleration.y;
+    accel_z = event.acceleration.z;
+
+    bno.getEvent(&event, Adafruit_BNO055::VECTOR_MAGNETOMETER);
+    mag_x = event.magnetic.x;
+    mag_y = event.magnetic.y;
+    mag_z = event.magnetic.z;
+
+
+
+    float compass = calculateHeading(mag_x, mag_y);
+
+    compass_value =  smoothHeading(compass, compass_value, alpha1);
+  
+
+}
+
+float  Sensors::smoothHeading(float newHeading, float oldHeading, float alpha) {
+  float diff = newHeading - oldHeading;
+
+  if (diff > 180) {
+    oldHeading += 360;
+  } else if (diff < -180) {
+    oldHeading -= 360;
+  }
+
+  float smoothedHeading = alpha * newHeading + (1 - alpha) * oldHeading;
+
+  if (smoothedHeading >= 360.0) {
+    smoothedHeading -= 360.0;
+  } else if (smoothedHeading < 0.0) {
+    smoothedHeading += 360.0;
+  }
+
+  return smoothedHeading;
+}
 
 
 void Sensors::readPitotData()
@@ -197,57 +325,6 @@ void Sensors::readMPU6050Data()
 }
 
 
-bool Sensors::isCalibrated() {
-  uint8_t system, gyro, accel, mag = 0;
-  bno.getCalibration(&system, &gyro, &accel, &mag);
-  return system == 3 && mag == 3;
-}
-
-void Sensors::printCalibrationStatus() {
-  uint8_t system, gyro, accel, mag = 0;
-  bno.getCalibration(&system, &gyro, &accel, &mag);
-  Serial.print("Calibración: ");
-  Serial.print("Sistema: "); Serial.print(system, DEC);
-  Serial.print(" Gyro: "); Serial.print(gyro, DEC);
-  Serial.print(" Acelerómetro: "); Serial.print(accel, DEC);
-  Serial.print(" Magnetómetro: "); Serial.println(mag, DEC);
-}
-
-
-float Sensors::calculateHeading(float mx, float my)
-{
-    float heading_rad = atan2(my, mx);
-    float heading_deg = heading_rad * 180.0 / M_PI;
-    if (heading_deg < 0)
-    {
-        heading_deg += 360;
-    }
-    return heading_deg;
-}
-
-void Sensors::readBnoData()
-{
-    sensors_event_t event;
-    bno.getEvent(&event, Adafruit_BNO055::VECTOR_EULER);
-    yaw = event.orientation.x;
-    pitch = event.orientation.y;
-    roll = event.orientation.z;
-
-    bno.getEvent(&event, Adafruit_BNO055::VECTOR_ACCELEROMETER);
-    accel_x = event.acceleration.x;
-    accel_y = event.acceleration.y;
-    accel_z = event.acceleration.z;
-
-    bno.getEvent(&event, Adafruit_BNO055::VECTOR_MAGNETOMETER);
-    mag_x = event.magnetic.x;
-    mag_y = event.magnetic.y;
-    mag_z = event.magnetic.z;
-
-
-
-    float compass = calculateHeading(mag_x, mag_y);
-    compass_value = alpha * compass_value + (1 - alpha) * compass_value;
-}
 
 void Sensors::KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2])
 {

@@ -334,7 +334,7 @@ void senData()
   }
   else
   {
-    Serial.println("Error al enviar los datos de sensores");
+    //Serial.println("Error al enviar los datos de sensores");
   }
 }
 

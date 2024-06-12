@@ -49,9 +49,10 @@ private:
     TinyGPSPlus gps;
     bfs::Ms4525do pitot;
     Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x29);
+  
 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+    #define SCREEN_WIDTH 128 // OLED display width, in pixels
+    #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
     //---------BNO055-------------------------
 
@@ -66,6 +67,11 @@ private:
     unsigned char sysCalibStatus = 0;
     unsigned long lastTime = 0;
 
+    const float alpha1=0.3;
+    float roll_offset = 0.0;
+    float pitch_offset = 0.0;
+    float yaw_offset = 0.0;
+
 
     //----------MPU6050----------------------
     float yawMpu, pitchMpu, rollMpu;
@@ -78,9 +84,8 @@ private:
     float angle_y, bias_y, P_y[2][2];
     float angle_x, bias_x, P_x[2][2];
     float angle_roll, bias_roll, P_roll[2][2];
-    const float alpha = 0.1; // Factor de suavizado
-    const int TX2 = 11;
-    const int RX2 = 10;
+    
+    
     const float Q_angle = 0.001;
     const float Q_bias = 0.003;
     const float R_measure = 0.03;
@@ -89,9 +94,12 @@ private:
     //----------GPS----------------------
     float Latitud;
     float Longitud;
+    const int TX2 = 11;
+    const int RX2 = 10;
 
     //----------BMP280----------------------
     float hpaZone = 1028; // hPa Bogotá
+    const float alpha = 0.1; // Factor de suavizado
     float initialAltitude;
     float alture;
     float rawTemperature;
@@ -109,6 +117,16 @@ private:
     float airSpeed;
     float RHO_AIR;
 
+    void initializeBno();
+    void displayOffsets();
+    float calculateHeading(float mx, float my);
+    float smoothHeading(float newHeading, float oldHeading, float alpha);
+    void readBnoData();
+    bool isCalibrated();
+    void printCalibrationStatus();
+    void calculateOffsets();
+
+
     void initializeCompass();
     void readBMP280Data();
     void readMPU6050Data();
@@ -117,15 +135,12 @@ private:
     void updateAirSpeed();
     void PressurePSI();
 
+
     void KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2]);
     float calculateEMA(float currentReading, float previousEMA, float alpha);
-    float calculateHeading(float mx, float my);
-
-
+   
     //------------Datalog-------------
-    void readBnoData();
-    bool isCalibrated();
-    void printCalibrationStatus();
+
 };
 
 #endif // SENSORS_H
