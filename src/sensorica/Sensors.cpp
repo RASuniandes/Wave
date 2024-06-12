@@ -76,12 +76,11 @@ void Sensors:: initializeBno(){
       for (int i = 5; i > 0; i--) {
         display.clearDisplay();
         display.setCursor(0, 0);
-        display.print("Coloca el dispositivo en");
-        display.setCursor(0, 10);
-        display.print("la posicion de referencia.");
+        display.print("Colocar UAV");
+        
         display.setCursor(0, 30);
         display.print("Tiempo restante: ");
-        display.print(i);
+        display.println(i);
         display.print(" segundos");
         display.display();
         delay(1000);
@@ -111,8 +110,8 @@ void Sensors::printCalibrationStatus() {
     display.println("Calibración: ");
     display.print("Sistema: "); display.println(system, DEC);
     display.print(" Gyro: "); display.println(gyro, DEC);
-    display.print(" Acelerómetro: "); display.println(accel, DEC);
-    display.print(" Magnetómetro: "); display.println(mag, DEC);
+    display.print(" Acel: "); display.println(accel, DEC);
+    display.print(" Mag: "); display.println(mag, DEC);
 
     display.display();
 }
@@ -131,11 +130,11 @@ void Sensors::displayOffsets(){
 
   display.print("Offsets:");
   display.setCursor(0, 10);
-  display.print("Roll Offset: "); display.print(roll_offset);
+  display.print("Roll Off: "); display.print(roll_offset);
   display.setCursor(0, 20);
-  display.print("Pitch Offset: "); display.print(pitch_offset);
+  display.print("Pitch Off: "); display.print(pitch_offset);
   display.setCursor(0, 30);
-  display.print("Yaw Offset: "); display.print(yaw_offset);
+  display.print("Yaw Off: "); display.print(yaw_offset);
 
   display.display();
   
@@ -158,7 +157,7 @@ void Sensors::readBnoData()
 {
     sensors_event_t event;
     bno.getEvent(&event, Adafruit_BNO055::VECTOR_EULER);
-    yaw = event.orientation.x-yaw_offset;
+    yaw = event.orientation.x;
     pitch = event.orientation.y-pitch_offset;
     roll = event.orientation.z-roll_offset;
 

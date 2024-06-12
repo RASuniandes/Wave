@@ -14,15 +14,17 @@ public:
   void manualControl();
   void asistidoControl();
   void wayPointControl();
-  
-  void managePlaneMode(float rollValue, float pitchValue, float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass,float alture);
+
+  void managePlaneMode(float rollValue, float pitchValue, float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass, float alture);
   void print_channels();
   int getservo0Value() const { return servo0Value; }
   int getservo1Value() const { return servo1Value; }
   int getservo2Value() const { return servo2Value; }
   int getservo3Value() const { return servo3Value; }
   int getservo4Value() const { return servo4Value; }
-
+  float getPosicionDeseadaYaw() const { return PosicionDeseadaYaw; }
+  float getPosicionDeseadaPitch() const { return PosicionDeseadaPitch; }
+  float getPosicionDeseadaRoll() const { return PosicionDeseadaRoll; }
 
 private:
   float PosicionDeseadaYaw = 0;

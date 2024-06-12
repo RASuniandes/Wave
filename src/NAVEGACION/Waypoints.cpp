@@ -67,11 +67,12 @@ void Waypoints::updateTarget()
 
     if (distanceToWaypoint <= radiusDistance)
     {
-        currentWaypoint++;
         if (currentWaypoint == size - 1)
         {
             currentWaypoint = 0;
         }
+        else
+            currentWaypoint++;
     }
 }
 void Waypoints::updateValues(float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass, float alture)

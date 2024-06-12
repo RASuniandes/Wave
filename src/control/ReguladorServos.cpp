@@ -187,8 +187,7 @@ void ReguladorServos::wayPointControl()
   double pidRoll = CalcularPid(-RollValue, mapedRoll, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
   servo0Value = pulseWidth(pidRoll);
 
-  float mapedPitch = map(waypoints.calculateAlture(), -60, 60
-  , -minMaxPitch, minMaxPitch);
+  float mapedPitch = map(waypoints.calculateAlture(), -60, 60, -minMaxPitch, minMaxPitch);
   double pidPitch = CalcularPid(-PitchValue, mapedPitch, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
   servo1Value = pulseWidth(pidPitch);
 }

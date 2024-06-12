@@ -48,7 +48,7 @@ float tiempo = 0;
 #define CE_PIN 21
 #define CSN_PIN 16
 
-byte direccion[5] = {'c','a','n','a','l'};
+byte direccion[5] = {'c', 'a', 'n', 'a', 'l'};
 RF24 radio(CE_PIN, CSN_PIN);
 float datos[9];
 // const byte address[6] = "00001";
@@ -78,11 +78,9 @@ Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 #define SER2_MOTOR 2
 #define SER3_TIMON 3
 
-
 #define FREQUENCY 60
 
 //======================================== Sonido Mario =======
-
 
 bool beepCount = true;
 #define BUZZER 46
@@ -225,7 +223,6 @@ void scanI2C()
   }
 }
 
-
 void createNewFile()
 {
   int fileCounter = 0;
@@ -242,14 +239,14 @@ void createNewFile()
   // Si ya hay 10 archivos, borrar todos
   if (fileCounter >= 10)
   {
-    root.rewindDirectory();  // Volver al principio del directorio
+    root.rewindDirectory(); // Volver al principio del directorio
     file = root.openNextFile();
     while (file)
     {
-      SD.remove(file.name());  // Borrar el archivo
+      SD.remove(file.name()); // Borrar el archivo
       file = root.openNextFile();
     }
-    fileCounter = 0;  // Reiniciar el contador
+    fileCounter = 0; // Reiniciar el contador
     Serial.println("All files deleted.");
   }
 
@@ -270,36 +267,52 @@ void createNewFile()
   }
 }
 
-
 void saveData()
 {
   myFile = SD.open(fileName, FILE_APPEND);
- if (myFile)
+  if (myFile)
   {
-   myFile.print(sensors.getTemperature());
-   myFile.print(",");
-   myFile.print(sensors.getAltitude());
-   myFile.print(",");
-   myFile.print(sensors.getPressure());
-   myFile.print(",");
-   myFile.print(sensors.getYaw());
-   myFile.print(",");
-   myFile.print(sensors.getPitch());
-   myFile.print(",");
-   myFile.print(sensors.getRoll());
-   myFile.print(",");
-   myFile.print(sensors.getCompass());
-   myFile.print(",");
-   myFile.print(sensors.getAirSpeed());
-   myFile.print(",");
-   myFile.print(sensors.getAirTemperature());
-   myFile.print(",");
-   myFile.print(sensors.getAirPressurePsi());
-   myFile.print(",");
-   myFile.print(sensors.getLatitude());
-   myFile.print(",");
-   myFile.println(sensors.getLongitude());
-   myFile.close();
+    myFile.print(sensors.getTemperature());
+    myFile.print(",");
+    myFile.print(sensors.getAltitude());
+    myFile.print(",");
+    myFile.print(sensors.getPressure());
+    myFile.print(",");
+    myFile.print(sensors.getYaw());
+    myFile.print(",");
+    myFile.print(sensors.getPitch());
+    myFile.print(",");
+    myFile.print(sensors.getRoll());
+    myFile.print(",");
+    myFile.print(sensors.getCompass());
+    myFile.print(",");
+    myFile.print(sensors.getAirSpeed());
+    myFile.print(",");
+    myFile.print(sensors.getAirTemperature());
+    myFile.print(",");
+    myFile.print(sensors.getAirPressurePsi());
+    myFile.print(",");
+    myFile.print(sensors.getLatitude());
+    myFile.print(",");
+    myFile.println(sensors.getLongitude());
+    myFile.print(",");
+    myFile.println(reguladorServos.getservo0Value());
+    myFile.print(",");
+    myFile.println(reguladorServos.getservo1Value());
+    myFile.print(",");
+    myFile.println(reguladorServos.getservo2Value());
+    myFile.print(",");
+    myFile.println(reguladorServos.getservo3Value());
+    myFile.print(",");
+    myFile.println(reguladorServos.getservo4Value());
+    myFile.print(",");
+    myFile.println(reguladorServos.getPosicionDeseadaYaw());
+    myFile.print(",");
+    myFile.println(reguladorServos.getPosicionDeseadaPitch());
+    myFile.print(",");
+    myFile.println(reguladorServos.getPosicionDeseadaRoll());
+
+    myFile.close();
   }
 }
 
@@ -316,25 +329,35 @@ void saveData()
 void senData()
 {
   datos[0] = sensors.getTemperature();
-  datos[1] = 1;
-  datos[2] = 0;
+  datos[1] = sensors.getAltitude();
+  datos[2] = sensors.getPressure();
   datos[3] = sensors.getYaw();
   datos[4] = sensors.getPitch();
   datos[5] = sensors.getRoll();
   datos[6] = sensors.getAirSpeed();
-  datos[7] = sensors.getLatitude(); 
+  datos[7] = sensors.getLatitude();
   datos[8] = sensors.getLongitude();
+
+  datos[9] = reguladorServos.getservo0Value();
+  datos[10] = reguladorServos.getservo1Value();
+  datos[11] = reguladorServos.getservo2Value();
+  datos[12] = reguladorServos.getservo3Value();
+  datos[13] = reguladorServos.getservo4Value();
+
+  datos[14] = reguladorServos.getPosicionDeseadaYaw();
+  datos[15] = reguladorServos.getPosicionDeseadaPitch();
+  datos[16] = reguladorServos.getPosicionDeseadaRoll();
 
   // Enviar los datos usando RF24
   bool ok = radio.write(&datos, sizeof(datos));
-  
+
   if (ok)
   {
     Serial.println("Datos de sensores enviados correctamente");
   }
   else
   {
-    //Serial.println("Error al enviar los datos de sensores");
+    // Serial.println("Error al enviar los datos de sensores");
   }
 }
 
@@ -378,10 +401,7 @@ void setup()
   playBuzzer();
   xTaskCreatePinnedToCore(loop0, "Tarea_0", 2048, NULL, 1, &Tarea0, 0);
 
- 
   // Matrices de prueba
-
-
 }
 
 void loop()
@@ -395,10 +415,10 @@ void loop()
   if (currentMillis - previousMillis1 >= interval1)
   {
     previousMillis1 = currentMillis;
-    //saveData();
+    saveData();
     sensors.updateDisplay();
-    //sensors.showPressure();
-    // updateDisplay();
+    // sensors.showPressure();
+    //  updateDisplay();
   }
 }
 
@@ -407,7 +427,7 @@ void loop0(void *parameter)
   while (1 == 1)
   {
     reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch(), sensors.getLatitude(), sensors.getLongitude(), sensors.getAirSpeed(), sensors.getAltitude(), sensors.getYaw(), sensors.getAlture());
-    //reguladorServos.print_channels();
+    // reguladorServos.print_channels();
     setServos();
   }
-  }
+}
