@@ -79,7 +79,7 @@ void Sensors::readPitotData()
     if (pitot.Read())
     {
         airPressure = pitot.pres_pa();
-        airPressurePsi =pitot.pres_psi();
+        airPressurePsi =airPressure* 0.000145037737797;
         if (airPressure < 0)
         {
             airPressurePsi =0;

@@ -52,5 +52,5 @@
         "main": "c",
         "thread": "cpp"
     },
-    "idf.portWin": "COM10"
+    "idf.portWin": "COM3"
 }
