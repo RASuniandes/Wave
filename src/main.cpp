@@ -318,6 +318,7 @@ void loop0(void *parameter);
 void setup()
 {
   Serial.begin(115200);
+  Serial.println("Inciando");
   Wire.begin(8, 9);
   Wire.setClock(400000);
   scanI2C();
@@ -353,7 +354,7 @@ void loop()
   sensors.readData();
 
   
-  //  sensors.showSensors();
+  sensors.showSensors();
   // reguladorServos.print_channels();
   if (currentMillis - previousMillis1 >= interval1)
   {

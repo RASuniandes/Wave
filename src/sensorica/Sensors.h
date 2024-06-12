@@ -8,6 +8,7 @@
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_BNO055.h>
 #include <Adafruit_SSD1306.h>
+#include <utility/imumaths.h>
 #include <TinyGPSPlus.h>
 #include "HMC5883L.h"
 #include "ms4525do.h"
@@ -65,6 +66,7 @@ private:
     unsigned char sysCalibStatus = 0;
     unsigned long lastTime = 0;
 
+
     //----------MPU6050----------------------
     float yawMpu, pitchMpu, rollMpu;
     float yaw_raw_mpu;
@@ -119,8 +121,11 @@ private:
     float calculateEMA(float currentReading, float previousEMA, float alpha);
     float calculateHeading(float mx, float my);
 
+
     //------------Datalog-------------
     void readBnoData();
+    bool isCalibrated();
+    void printCalibrationStatus();
 };
 
 #endif // SENSORS_H

@@ -9,6 +9,21 @@ Sensors::Sensors()
 
 void Sensors::begin()
 {
+    if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+    {
+        Serial.println(F("SSD1306 allocation failed"));
+        for (;;)
+        {
+        }
+    }
+
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println("UAV Variables");
+    display.display();
+
     // Inicialización del BMP280
     if (!bmp.begin(0x76))
     {
@@ -32,21 +47,20 @@ void Sensors::begin()
         Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
     }
 
-    // Inicialización del Display
-    if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
-    {
-        Serial.println(F("SSD1306 allocation failed"));
-        for (;;)
-        {
-        }
-    }
 
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(SSD1306_WHITE);
-    display.setCursor(0, 0);
-    display.println("UAV Variables");
-    display.display();
+      // Calibración del BNO055
+    Serial.println("Calibración del BNO055");
+    while (!isCalibrated()) {
+        printCalibrationStatus();
+    }
+    Serial.println("BNO055 Calibrado!");
+
+    
+
+    // Inicialización del Display
+
+
+
 
     Serial2.begin(9600, SERIAL_8N1, RX2, TX2);
 
@@ -182,6 +196,35 @@ void Sensors::readMPU6050Data()
     tiempo_prev = millis();
 }
 
+
+bool Sensors::isCalibrated() {
+  uint8_t system, gyro, accel, mag = 0;
+  bno.getCalibration(&system, &gyro, &accel, &mag);
+  return system == 3 && mag == 3;
+}
+
+void Sensors::printCalibrationStatus() {
+  uint8_t system, gyro, accel, mag = 0;
+  bno.getCalibration(&system, &gyro, &accel, &mag);
+  Serial.print("Calibración: ");
+  Serial.print("Sistema: "); Serial.print(system, DEC);
+  Serial.print(" Gyro: "); Serial.print(gyro, DEC);
+  Serial.print(" Acelerómetro: "); Serial.print(accel, DEC);
+  Serial.print(" Magnetómetro: "); Serial.println(mag, DEC);
+}
+
+
+float Sensors::calculateHeading(float mx, float my)
+{
+    float heading_rad = atan2(my, mx);
+    float heading_deg = heading_rad * 180.0 / M_PI;
+    if (heading_deg < 0)
+    {
+        heading_deg += 360;
+    }
+    return heading_deg;
+}
+
 void Sensors::readBnoData()
 {
     sensors_event_t event;
@@ -200,7 +243,10 @@ void Sensors::readBnoData()
     mag_y = event.magnetic.y;
     mag_z = event.magnetic.z;
 
-    compass_value = calculateHeading(mag_x, mag_y);
+
+
+    float compass = calculateHeading(mag_x, mag_y);
+    compass_value = alpha * compass_value + (1 - alpha) * compass_value;
 }
 
 void Sensors::KalmanFilter(float newAngle, float newRate, float *angle, float *bias, float P[2][2])
@@ -257,16 +303,6 @@ float Sensors::calculateEMA(float currentReading, float previousEMA, float alpha
     return (alpha * currentReading) + ((1 - alpha) * previousEMA);
 }
 
-float Sensors::calculateHeading(float mx, float my)
-{
-    float heading_rad = atan2(my, mx);
-    float heading_deg = heading_rad * 180.0 / M_PI;
-    if (heading_deg < 0)
-    {
-        heading_deg += 360;
-    }
-    return heading_deg;
-}
 
 void Sensors::updateDisplay()
 {
