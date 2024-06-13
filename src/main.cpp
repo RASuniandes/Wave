@@ -28,6 +28,7 @@ Sensors sensors;
 // volatile char inputBuffer[BUFFER_SIZE];
 // volatile int bufferHead = 0;
 // volatile int bufferTail = 0;
+int fileCounter=0;
 
 File myFile;
 bool fileCreated = false;
@@ -50,7 +51,7 @@ float tiempo = 0;
 
 byte direccion[5] = {'c', 'a', 'n', 'a', 'l'};
 RF24 radio(CE_PIN, CSN_PIN);
-float datos[9];
+float datos[16];
 // const byte address[6] = "00001";
 
 // GPS declaracion
@@ -223,55 +224,62 @@ void scanI2C()
   }
 }
 
-void createNewFile()
-{
-  int fileCounter = 0;
+void createNewFile() {
   File root = SD.open("/");
   File file = root.openNextFile();
 
   // Contar el número de archivos en el directorio raíz
-  while (file)
-  {
+  while (file) {
     fileCounter++;
     file = root.openNextFile();
   }
 
-  // Si ya hay 10 archivos, borrar todos
-  if (fileCounter >= 10)
-  {
-    root.rewindDirectory(); // Volver al principio del directorio
-    file = root.openNextFile();
-    while (file)
-    {
-      SD.remove(file.name()); // Borrar el archivo
-      file = root.openNextFile();
+  // Si ya hay 3 archivos, borrar todos
+  if (fileCounter >= 3) {
+    for (int i = 1; i <= fileCounter; i++) {
+      String fileName = "/dataSaved_" + String(i) + ".csv";  // Añadir el slash inicial
+
+      // Verificar la existencia del archivo
+      if (SD.exists(fileName)) {
+        Serial.print("Intentando borrar el archivo: ");
+        Serial.println(fileName);
+
+        // Convertir el nombre del archivo a char array
+        char fileNameArray[fileName.length() + 1];
+        fileName.toCharArray(fileNameArray, fileName.length() + 1);
+
+        // Intentar borrar el archivo
+        if (SD.remove(fileNameArray)) {
+          Serial.println("Archivo borrado exitosamente.");
+        } else {
+          Serial.println("Error al borrar el archivo. Verifica el formato del nombre del archivo.");
+        }
+      } else {
+        Serial.print("El archivo ");
+        Serial.print(fileName);
+        Serial.println(" no existe.");
+      }
     }
-    fileCounter = 0; // Reiniciar el contador
-    Serial.println("All files deleted.");
+    fileCounter = 0;  // Reiniciar el contador después de borrar archivos
   }
 
   // Crear un nuevo archivo
-  String fileName = "/dataSaved_" + String(fileCounter + 1) + ".csv";
-  File myFile = SD.open(fileName, FILE_WRITE);
+  fileName = "/dataSaved_" + String(fileCounter + 1) + ".csv";
+  myFile = SD.open(fileName, FILE_WRITE);
 
-  if (myFile)
-  {
-    myFile.println("temperatura,altitud,presion,yaw,pitch,roll,compass,airSpeed,airTemperature,AirPressurePsi.,latitud,longitud");
+  if (myFile) {
+    myFile.println("temperatura,altitud,presion,yaw,pitch,roll,compass,airSpeed,airTemperature,AirPressurePsi,latitud,longitud");
     myFile.close();
-    bool fileCreated = true;
     Serial.println("File created: " + fileName);
-  }
-  else
-  {
+  } else {
     Serial.println("Error creating file.");
   }
 }
 
-void saveData()
-{
+void saveData() {
   myFile = SD.open(fileName, FILE_APPEND);
-  if (myFile)
-  {
+  if (myFile) {
+    // Reemplaza estos métodos con las llamadas a tus funciones específicas
     myFile.print(sensors.getTemperature());
     myFile.print(",");
     myFile.print(sensors.getAltitude());
@@ -292,30 +300,33 @@ void saveData()
     myFile.print(",");
     myFile.print(sensors.getAirPressurePsi());
     myFile.print(",");
-    myFile.print(sensors.getLatitude());
+    myFile.print(sensors.getLatitude(),6);
     myFile.print(",");
-    myFile.println(sensors.getLongitude());
+    myFile.println(sensors.getLongitude(),6);
     myFile.print(",");
-    myFile.println(reguladorServos.getservo0Value());
+    myFile.print(reguladorServos.getservo0Value());
     myFile.print(",");
-    myFile.println(reguladorServos.getservo1Value());
+    myFile.print(reguladorServos.getservo1Value());
     myFile.print(",");
-    myFile.println(reguladorServos.getservo2Value());
+    myFile.print(reguladorServos.getservo2Value());
     myFile.print(",");
-    myFile.println(reguladorServos.getservo3Value());
+    myFile.print(reguladorServos.getservo3Value());
     myFile.print(",");
-    myFile.println(reguladorServos.getservo4Value());
+    myFile.print(reguladorServos.getservo4Value());
     myFile.print(",");
-    myFile.println(reguladorServos.getPosicionDeseadaYaw());
+    myFile.print(reguladorServos.getPosicionDeseadaYaw());
     myFile.print(",");
-    myFile.println(reguladorServos.getPosicionDeseadaPitch());
+    myFile.print(reguladorServos.getPosicionDeseadaPitch());
     myFile.print(",");
     myFile.println(reguladorServos.getPosicionDeseadaRoll());
-
     myFile.close();
+  } else {
+    Serial.println("Error opening file for writing.");
   }
 }
+    /*
 
+*/
 // void Control()
 // {
 //   Controlador.Update_Position(Latitud, Longitud, yawValue);
@@ -328,8 +339,8 @@ void saveData()
 
 void senData()
 {
-  datos[0] = sensors.getTemperature();
-  datos[1] = sensors.getAltitude();
+  datos[0] = sensors.getLatitude();
+  datos[1] = sensors.getLongitude();
   datos[2] = sensors.getPressure();
   datos[3] = sensors.getYaw();
   datos[4] = sensors.getPitch();
@@ -337,7 +348,9 @@ void senData()
   datos[6] = sensors.getAirSpeed();
   datos[7] = sensors.getLatitude();
   datos[8] = sensors.getLongitude();
-
+  datos[9] = sensors.getLongitude();
+  datos[10] = sensors.getLongitude();
+  /*
   datos[9] = reguladorServos.getservo0Value();
   datos[10] = reguladorServos.getservo1Value();
   datos[11] = reguladorServos.getservo2Value();
@@ -347,13 +360,15 @@ void senData()
   datos[14] = reguladorServos.getPosicionDeseadaYaw();
   datos[15] = reguladorServos.getPosicionDeseadaPitch();
   datos[16] = reguladorServos.getPosicionDeseadaRoll();
+  /*
 
+  */
   // Enviar los datos usando RF24
   bool ok = radio.write(&datos, sizeof(datos));
 
   if (ok)
   {
-    Serial.println("Datos de sensores enviados correctamente");
+    //Serial.println("Datos de sensores enviados correctamente");
   }
   else
   {
@@ -384,12 +399,14 @@ void setup()
   scanI2C();
   SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, CS_PIN);
 
-  SDBegin();
+  
 
   pca9685.begin();
   pca9685.setPWMFreq(FREQUENCY);
 
   sensors.begin();
+
+  SDBegin();
   radio.begin();
   radio.openWritingPipe(direccion);
   radio.setPALevel(RF24_PA_LOW);
@@ -399,7 +416,7 @@ void setup()
   // }
   init_buzzer();
   playBuzzer();
-  xTaskCreatePinnedToCore(loop0, "Tarea_0", 2048, NULL, 1, &Tarea0, 0);
+  //xTaskCreatePinnedToCore(loop0, "Tarea_0", 2048, NULL, 1, &Tarea0, 0);
 
   // Matrices de prueba
 }
@@ -409,6 +426,7 @@ void loop()
   unsigned long currentMillis = millis();
   tiempo = currentMillis;
   sensors.readData();
+  Longitud=sensors.getLongitude();
   sensors.showSensors();
   senData();
   // reguladorServos.print_channels();
@@ -421,7 +439,7 @@ void loop()
     //  updateDisplay();
   }
 }
-
+/*
 void loop0(void *parameter)
 {
   while (1 == 1)
@@ -431,3 +449,4 @@ void loop0(void *parameter)
     setServos();
   }
 }
+*/

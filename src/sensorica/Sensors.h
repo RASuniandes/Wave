@@ -23,6 +23,8 @@ public:
     void printValues();
     void updateGPS();
 
+    void fileCounterDisplay(float fileCounter);
+
     float getTemperature() const { return temperature; }
     float getPressure() const { return pressure; }
     float getAltitude() const { return altitude; }

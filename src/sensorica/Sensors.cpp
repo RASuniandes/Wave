@@ -80,7 +80,7 @@ void Sensors:: initializeBno(){
         
         display.setCursor(0, 30);
         display.print("Tiempo restante: ");
-        display.println(i);
+        display.print(i);
         display.print(" segundos");
         display.display();
         delay(1000);
