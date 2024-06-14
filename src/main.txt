@@ -240,17 +240,31 @@ void createNewFile()
   }
 
   // Si ya hay 10 archivos, borrar todos
-  if (fileCounter >= 3)
-  {
-    root.rewindDirectory();  // Volver al principio del directorio
-    file = root.openNextFile();
-    while (file)
-    {
-      SD.remove();  // Borrar el archivo
-      file = root.openNextFile();
+    if (fileCounter >= 3) {
+    for (int i = 1; i <= fileCounter; i++) {
+      String fileName = "dataSaved_" + String(i);  // Sin el slash inicial
+      
+      // Verificar la existencia del archivo
+      if (SD.exists(fileName)) {
+        Serial.print("Intentando borrar el archivo: ");
+        Serial.println(fileName);
+        
+        // Convertir el nombre del archivo a char array
+        char fileNameArray[fileName.length() + 1];
+        fileName.toCharArray(fileNameArray, fileName.length() + 1);
+        
+        // Intentar borrar el archivo
+        if (SD.remove(fileNameArray)) {
+          Serial.println("Archivo borrado exitosamente.");
+        } else {
+          Serial.println("Error al borrar el archivo. Verifica el formato del nombre del archivo.");
+        }
+      } else {
+        Serial.print("El archivo ");
+        Serial.print(fileName);
+        Serial.println(" no existe.");
+      }
     }
-    //fileCounter = 0;  // Reiniciar el contador
-    Serial.println("All files deleted.");
   }
 
   // Crear un nuevo archivo
@@ -268,6 +282,7 @@ void createNewFile()
   {
     Serial.println("Error creating file.");
   }
+   fileCounter = 0;  // Reiniciar el contador
 }
 
 
@@ -316,8 +331,8 @@ void saveData()
 void senData()
 {
   datos[0] = sensors.getTemperature();
-  datos[1] = 1;
-  datos[2] = 0;
+  datos[1] = sensors.getPressure();
+  datos[2] = sensors.getAltitude();
   datos[3] = sensors.getYaw();
   datos[4] = sensors.getPitch();
   datos[5] = sensors.getRoll();
@@ -385,7 +400,7 @@ void loop()
   tiempo = currentMillis;
   sensors.readData();
   //sensors.showSensors();
-  //senData();
+  senData();
   // reguladorServos.print_channels();
   if (currentMillis - previousMillis1 >= interval1)
   {
