@@ -67,6 +67,8 @@ void Sensors:: initializeBno(){
 
 
       // Calibración del BNO055
+
+    /*
     Serial.println("Calibración del BNO055");
     while (!isCalibrated()) {
         printCalibrationStatus();
@@ -85,10 +87,11 @@ void Sensors:: initializeBno(){
         display.display();
         delay(1000);
   }
+  */
 
   // Calcular offset de roll, pitch y yaw
   calculateOffsets();
-  displayOffsets();
+  //displayOffsets();
 
 
 }
@@ -363,6 +366,8 @@ void Sensors::updateGPS()
             {
                 Latitud = gps.location.lat();
                 Longitud = gps.location.lng();
+                speed_gps=gps.speed;
+                time_gps=gps.time;
 
             }
             else

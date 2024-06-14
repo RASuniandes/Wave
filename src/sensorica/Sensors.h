@@ -39,6 +39,8 @@ public:
     float getAirTemperature() const { return airTemperature; }
     float getAirPressure() const { return airPressure; }
     float getAirPressurePsi() const { return airPressurePsi; }
+    TinyGPSTime getTimeGps() const { return time_gps; }
+    TinyGPSSpeed getSpeedGps() const { return speed_gps; }
     void showSensors();
     void showPressure();
     void displayInfo();
@@ -98,6 +100,9 @@ private:
     float Longitud;
     const int TX2 = 11;
     const int RX2 = 10;
+
+    TinyGPSTime time_gps;
+    TinyGPSSpeed speed_gps;
 
     //----------BMP280----------------------
     float hpaZone = 1028; // hPa Bogotá
