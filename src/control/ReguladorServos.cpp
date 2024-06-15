@@ -9,11 +9,12 @@
 
 #define CH1 7
 #define CH2 6
+
 #define CH3 5
 #define CH4 4
 #define CH5 3
-#define CH6 2
 
+#define CH6 2
 Waypoints waypoints;
 
 FlySky flySky(CH1, CH2, CH3, CH4, CH5, CH6);
@@ -49,8 +50,8 @@ int min_limit_c1 = 20;
 int max_limit_c1 = 140;
 int default_value_c1 = 80;
 
-int min_limit_c2 = 10;
-int max_limit_c2 = 160;
+int min_limit_c2 = 30;
+int max_limit_c2 = 140;
 int default_value_c2 = 85;
 
 int min_limit_c3 = 30;
@@ -145,7 +146,6 @@ void ReguladorServos::updateChannels(float rollValue, float pitchValue)
 }
 void ReguladorServos::manualControl()
 {
-
   if (ch1Value > default_value_c1 - 2 and ch1Value < default_value_c1 + 2)
   {
     double pidRoll = CalcularPid(RollValue, 0, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 0);
@@ -155,18 +155,19 @@ void ReguladorServos::manualControl()
   {
     servo0Value = pulseWidth(ch1Value);
   }
+
   if (ch2Value > default_value_c2 - 2 and ch2Value < default_value_c2 + 2)
   {
-    double pidPitch = CalcularPid(PitchValue, 0, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 0);
+    double pidPitch = CalcularPid(PitchValue, 0, priErrorPitch, toErrorPitch, min_limit_c2, max_limit_c2, kpPitch, kiPitch, kdPitch, 60, 0);
     servo1Value = pulseWidth(pidPitch);
   }
   else
   {
     servo1Value = pulseWidth(ch2Value);
   }
-
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
+
 }
 
 void ReguladorServos::asistidoControl()
@@ -196,6 +197,8 @@ void ReguladorServos::managePlaneMode(float rollValue, float pitchValue, float l
 {
 
   updateChannels(rollValue, pitchValue);
+  //if (ch5Value)
+  Serial.println(ch6Value);
 
   if (ch5Value)
   {

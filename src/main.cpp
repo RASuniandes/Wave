@@ -54,10 +54,6 @@ RF24 radio(CE_PIN, CSN_PIN);
 String datos[16];
 // const byte address[6] = "00001";
 
-// GPS declaracion
-float Latitud = 0;
-float Longitud = 0;
-
 bool gpsDetected = false;
 
 const int DOUT_Pin = 15;
@@ -318,7 +314,7 @@ void saveData()
     myFile.print(",");
     myFile.print(sensors.getLatitude(), 6);
     myFile.print(",");
-    myFile.println(sensors.getLongitude(), 6);
+    myFile.print(sensors.getLongitude(), 6);
     myFile.print(",");
     myFile.print(reguladorServos.getservo0Value());
     myFile.print(",");
@@ -332,7 +328,8 @@ void saveData()
     myFile.print(",");
     myFile.print(tiempo_envia);
     myFile.print(",");
-    //myFile.print(sensors.getTimeGps());
+    // myFile.print(sensors.getTimeGps());
+    myFile.println();
 
     myFile.close();
   }
@@ -462,26 +459,27 @@ void setup()
 
 void loop()
 {
+
   unsigned long currentMillis = millis();
   tiempo = currentMillis;
   sensors.readData();
-  Longitud = sensors.getLongitude();
-  sensors.showSensors();
+  //reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch(), sensors.getLatitude(), sensors.getLongitude(), sensors.getAirSpeed(), sensors.getAltitude(), sensors.getYaw(), sensors.getAlture());
+  setServos();
   sendData();
-  // reguladorServos.print_channels();
+  //sensors.showSensors();
+  
+  reguladorServos.print_channels();
   if (currentMillis - previousMillis1 >= interval1)
-  {
-    previousMillis1 = currentMillis;
-    saveData();
-    sensors.updateDisplay();
-    // sensors.showPressure();
-    //  updateDisplay();
-  }
-  // reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch(), sensors.getLatitude(), sensors.getLongitude(), sensors.getAirSpeed(), sensors.getAltitude(), sensors.getYaw(), sensors.getAlture());
-  // setServos();
+    
+    {
+      previousMillis1 = currentMillis;
+      saveData();
+      sensors.updateDisplay();
+    }
 }
 void loop0(void *parameter)
 {
+
   while (1 == 1)
   {
     reguladorServos.managePlaneMode(sensors.getRoll(), sensors.getPitch(), sensors.getLatitude(), sensors.getLongitude(), sensors.getAirSpeed(), sensors.getAltitude(), sensors.getYaw(), sensors.getAlture());
