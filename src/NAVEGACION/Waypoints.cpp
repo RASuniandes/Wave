@@ -44,7 +44,7 @@ void Waypoints::updateWaypoints(float latitudes[], float longitudes[], String na
 double latitudes[] = {4.613791607210351};
 double longitudes[] = {-74.07930108839342};
 String names[] = {"Sisas"};
-int size = 1;
+int size = 4;
 int alturaDeseada = 60;
 void Waypoints::printWaypoints()
 {
@@ -86,8 +86,8 @@ void Waypoints::updateValues(float latitudeUAV, float longitudeUAV, float airSpe
 }
 float Waypoints::calculateBankAngle()
 {
-    //float angle_to_target = gps.courseTo(latitudeUAV, longitudeUAV, latitudes[currentWaypoint], longitudes[currentWaypoint]);
-    float angle_to_target = gps.courseTo(4.603086020432502, -74.06496610416175, latitudes[currentWaypoint], longitudes[currentWaypoint]);
+    float angle_to_target = gps.courseTo(latitudeUAV, longitudeUAV, latitudes[currentWaypoint], longitudes[currentWaypoint]);
+    //float angle_to_target = gps.courseTo(4.603086020432502, -74.06496610416175, latitudes[currentWaypoint], longitudes[currentWaypoint]);
     float alfa = compass;
     float beta = angle_to_target;
     float turnAngle = 0;

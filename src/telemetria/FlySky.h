@@ -2,6 +2,7 @@
 #define FlySky_h
 
 #include <Arduino.h>
+#include <PPMReader.h>
 
 class FlySky {
 public:
@@ -18,6 +19,14 @@ public:
   int readChannel(int channelInput, int minLimit, int maxLimit, int defaultValue);
   bool readSwitch(byte channelInput, bool defaultValue);
 
+  void readPPM(); // Método para decodificar el protocolo PPM
+  int getChannelValue(int channel); // Método para obtener el valor de un canal específico
+  static const byte interruptPin = 7; // Define tu pin de interrupción
+  static const byte channelAmount = 10; // Define el número de canales
+
+  void printChannelValues();
+
+
 private:
   int ch1_pin;
   int ch2_pin;
@@ -27,6 +36,21 @@ private:
   int ch6_pin;
   bool automatic;
   bool channel6;
+
+  unsigned long duration;
+  unsigned long total;
+  int count=0;
+  unsigned long chValues[10] = {0};
+  unsigned long durations[10] = {0};
+  int minLimitCh=1000;
+  int defaultValueCh=1500;
+  int maxLimitCh=2000;
+
+
+
+
+
+   // Suponiendo que quieres decodificar hasta 10 canales
 };
 
 #endif

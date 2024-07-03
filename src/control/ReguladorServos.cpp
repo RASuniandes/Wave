@@ -26,6 +26,10 @@ int ch3Value = 0;
 int ch4Value = 0;
 int ch5Value = 0;
 int ch6Value = 0;
+int ch7Value = 0;
+int ch8Value = 0;
+int ch9Value = 0;
+int ch10Value = 0;
 
 float toErrorYaw = 0;
 float priErrorYaw = 0;
@@ -127,6 +131,27 @@ int ReguladorServos::pulseWidth(int angle)
   analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
   return analog_value;
 }
+
+void ReguladorServos::updateChannelsPPM(){
+  /*flySky.readPPM();
+
+  
+  ch1Value = flySky.getChannelValue(1);
+  ch2Value = flySky.getChannelValue(2);
+  ch3Value = flySky.getChannelValue(3);
+  ch4Value = flySky.getChannelValue(4);
+  ch5Value = flySky.getChannelValue(5);
+  ch6Value = flySky.getChannelValue(6);
+  ch7Value = flySky.getChannelValue(7);
+  ch8Value = flySky.getChannelValue(8);
+  ch9Value = flySky.getChannelValue(9);
+  ch10Value = flySky.getChannelValue(10);
+*/
+
+
+}
+
+
 void ReguladorServos::updateChannels(float rollValue, float pitchValue)
 {
   ch1Value = flySky.getChannel1Value(min_limit_c1, max_limit_c1, default_value_c1);
@@ -167,7 +192,6 @@ void ReguladorServos::manualControl()
   }
   servo2Value = pulseWidth(ch3Value);
   servo3Value = pulseWidth(ch4Value);
-
 }
 
 void ReguladorServos::asistidoControl()
@@ -180,6 +204,8 @@ void ReguladorServos::asistidoControl()
   float mapedPitch = map(ch2Value, min_limit_c2, max_limit_c2, -minMaxPitch, minMaxPitch);
   double pidPitch = CalcularPid(PitchValue, mapedPitch, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
   servo1Value = pulseWidth(pidPitch);
+  servo2Value = pulseWidth(ch3Value);
+  servo3Value = pulseWidth(ch4Value);
 }
 
 void ReguladorServos::wayPointControl()
@@ -191,14 +217,16 @@ void ReguladorServos::wayPointControl()
   float mapedPitch = map(waypoints.calculateAlture(), -60, 60, -minMaxPitch, minMaxPitch);
   double pidPitch = CalcularPid(-PitchValue, mapedPitch, priErrorRoll, toErrorRoll, min_limit_c1, max_limit_c1, kpRoll, kiRoll, kdRoll, 60, 1);
   servo1Value = pulseWidth(pidPitch);
+
+  servo2Value = pulseWidth(ch3Value);
 }
 
 void ReguladorServos::managePlaneMode(float rollValue, float pitchValue, float latitudeUAV, float longitudeUAV, float airSpeed, float altitude, float compass, float alture)
 {
 
   updateChannels(rollValue, pitchValue);
-  //if (ch5Value)
-  Serial.println(ch6Value);
+  // if (ch5Value)
+  // Serial.println(ch6Value);
 
   if (ch5Value)
   {
@@ -233,7 +261,15 @@ void ReguladorServos::print_channels()
   Serial.print(" | Ch5: ");
   Serial.print(ch5Value);
   Serial.print(" | Ch6: ");
-  Serial.println(ch6Value);
+  Serial.print(ch6Value);
+  Serial.print(" | Ch7: ");
+  Serial.print(ch7Value);
+  Serial.print(" | Ch8: ");
+  Serial.print(ch8Value);
+  Serial.print(" | Ch9: ");
+  Serial.print(ch9Value);
+  Serial.print(" | Ch10: ");
+  Serial.println(ch10Value);
 
   Serial.println("Valores PWM enviados");
   Serial.print("s1: ");

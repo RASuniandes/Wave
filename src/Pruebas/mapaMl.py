@@ -7,7 +7,7 @@ current_directory = os.getcwd()
 print(f"Current Directory: {current_directory}")
 
 # Define the file name
-file_name = 'avion.csv'
+file_name = 'transmision.csv'
 
 # Iterate through directories to find the correct path
 for root, dirs, files in os.walk(current_directory):
@@ -28,8 +28,9 @@ data_cleaned = data.loc[~(data == 0).all(axis=1)]
 # Drop rows with NaN values in 'latitud' or 'longitud'
 data_cleaned = data_cleaned.dropna(subset=['latitud', 'longitud'])
 
+
 # Create a folium map centered around the mean latitude and longitude
-map_center = [data_cleaned['latitud'].mean(), data_cleaned['longitud'].mean()]
+map_center = map_center = [4.846306, -74.159660]
 mymap = folium.Map(location=map_center, zoom_start=10)
 
 # Add points to the map
@@ -38,7 +39,7 @@ for _, row in data_cleaned.iterrows():
         folium.Marker(location=[row['latitud'], row['longitud']]).add_to(mymap)
 
 # Save the map to an HTML file
-output_path = os.path.join(current_directory, 'map.html')
+output_path = os.path.join(current_directory, 'mapa_prueba.html')
 mymap.save(output_path)
 
 print(f"Map saved to {output_path}")

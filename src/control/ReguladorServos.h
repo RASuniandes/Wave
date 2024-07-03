@@ -11,6 +11,7 @@ public:
   int pulseWidth(int angle);
   void updateChannelsAuto(float rollValue, float pitchValue);
   void updateChannels(float rollValue, float pitchValue);
+  void updateChannelsPPM();
   void manualControl();
   void asistidoControl();
   void wayPointControl();
@@ -41,6 +42,8 @@ private:
   float RollValue;
   float PitchValue;
   float YawValue;
+
+  int chValues[10];
 };
 
 #endif

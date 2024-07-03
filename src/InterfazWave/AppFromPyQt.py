@@ -15,6 +15,9 @@ import serial_comm as my_serial
 import sys
 import time
 
+global ad 
+
+ad = [3,3]
 
 global gra
 gra = {
@@ -32,7 +35,8 @@ global currentPlot
 currentPlot = ['yaw']
 
 yaw, roll, pitch = 0, 0, 0
-lat, lon = 0, 0
+
+
 
 def animate_mesh():
     global yaw, roll, pitch
@@ -100,6 +104,11 @@ class WorkerThread(QThread):
                     global lat, lon
                     lat = (dictionary['latitud'])
                     lon = (dictionary['longitud'])
+                    
+                    ad.append(dictionary['latitud'])
+                    ad.append(dictionary['longitud'])
+                    print(dictionary)
+
                     # temp = data_array[0]
                     # presu = float(data_array[1])
                     # alt = float(data_array[2])
@@ -156,13 +165,22 @@ class WorkerThread(QThread):
                     metri8.setText(f"Anometro ({dictionary['velocidad']})")
 
                     gra['tiempo'].append(time.time() - tiempInicial)
-                    gra['yaw'].append(yaw)
-                    gra['pitch'].append(pitch)
-                    gra['roll'].append(roll)
-                    gra['altitud'].append(dictionary['altitud'])
-                    gra["presion"].append(dictionary['presion'])
-                    gra['temperatura'].append(dictionary['temperatura'])
-                    gra['velocidad'].append(dictionary['velocidad']) 
+                    if (yaw == 0 and abs(yaw-gra['yaw'][-1]) > 50):
+                        gra['yaw'].append((gra['yaw'][-1] + yaw)/2)
+                        gra['pitch'].append((gra['pitch'][-1] + pitch)/2)
+                        gra['roll'].append((gra['roll'][-1] + roll)/2)
+                        gra['altitud'].append((gra['altitud'][-1] + dictionary['altitud'])/2)
+                        gra["presion"].append((gra['presion'][-1] + dictionary['presion'])/2)
+                        gra['temperatura'].append((gra['temperatura'][-1] + dictionary['temperatura'])/2)
+                        gra['velocidad'].append((gra['velocidad'][-1] + dictionary['velocidad'])/2) 
+                    else:
+                        gra['yaw'].append(yaw)
+                        gra['pitch'].append(pitch)
+                        gra['roll'].append(roll)
+                        gra['altitud'].append(dictionary['altitud'])
+                        gra["presion"].append(dictionary['presion'])
+                        gra['temperatura'].append(dictionary['temperatura'])
+                        gra['velocidad'].append(dictionary['velocidad']) 
                     
                     # ========================================================================================================Auto Graph
                     # pen = pg.mkPen(color=(255, 0, 0), width=1)
@@ -873,12 +891,13 @@ class Ui_MainWindow(object):
         self.pushButton_5.setText(_translate("MainWindow", "Velocidad"))
         self.pushButton_21.setText(_translate("MainWindow", "Guardar Historial"))
     def ActualizarPosicion(self):
-        print(lat, lon)
+        lat = ad[-2]
+        lon = ad[-1]
         item1 = self.LatitudList.item(len(self.LatitudList)-1)
         item2 = self.LongitudList.item(len(self.LongitudList)-1)
         item3 = self.IndexList.item(len(self.IndexList)-1)
-        item1.setText(lat)
-        item2.setText(lon)
+        item1.setText(str(lat))
+        item2.setText(str(lon))
         item3.setText(item3.text())  
     def update_plot(self):
 

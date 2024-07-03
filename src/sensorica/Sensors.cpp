@@ -8,7 +8,10 @@ Sensors::Sensors()
 }
 
 void Sensors::begin()
+
+
 {
+    /**/
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
     {
         Serial.println(F("SSD1306 allocation failed"));
@@ -24,6 +27,8 @@ void Sensors::begin()
     display.println("UAV Variables");
     display.display();
 
+    
+
     // Inicialización del BMP280
     if (!bmp.begin(0x76))
     {
@@ -35,11 +40,16 @@ void Sensors::begin()
     }
 
     // Inicialización del MPU6050
+
+    /*
     if (!mpu.begin(0x68))
     {
         Serial.println(F("MPU6050 initialization failed"));
     }
+    */
     initializeBno();
+
+    
 
     
 
@@ -51,11 +61,14 @@ void Sensors::begin()
     Serial2.begin(9600, SERIAL_8N1, RX2, TX2);
 
     // Configuración del Pitot
+
+    /*
     pitot.Config(&Wire, 0x28, 1.0f, -1.0f);
     if (!pitot.Begin())
     {
         Serial.println("Error communicating with pitot");
     }
+    */
 }
 void Sensors:: initializeBno(){
         // Inicialización del BNO055 con dirección 0x29
@@ -205,7 +218,9 @@ float  Sensors::smoothHeading(float newHeading, float oldHeading, float alpha) {
 
 
 void Sensors::readPitotData()
+
 {
+    /*
     if (pitot.Read())
     {
         airPressure = pitot.pres_pa();
@@ -221,6 +236,7 @@ void Sensors::readPitotData()
         updateAirSpeed();
         //PressurePSI();
     }
+    */
 }
 void Sensors::updateRho()
 {
@@ -279,7 +295,8 @@ void Sensors::readBMP280Data()
 }
 
 void Sensors::readMPU6050Data()
-{
+{   
+    /*
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
 
@@ -324,6 +341,7 @@ void Sensors::readMPU6050Data()
     rollMpu = angle_roll;
 
     tiempo_prev = millis();
+    */
 }
 
 
@@ -366,8 +384,6 @@ void Sensors::updateGPS()
             {
                 Latitud = gps.location.lat();
                 Longitud = gps.location.lng();
-                speed_gps=gps.speed;
-                time_gps=gps.time;
 
             }
             else

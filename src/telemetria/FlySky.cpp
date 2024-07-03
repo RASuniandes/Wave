@@ -1,5 +1,7 @@
 #include "FlySky.h"
 
+PPMReader ppm(FlySky::interruptPin, FlySky::channelAmount);
+
 FlySky::FlySky(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6) {
   ch1_pin = pin1;
   ch2_pin = pin2;
@@ -15,6 +17,7 @@ FlySky::FlySky(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6) {
   pinMode(ch4_pin, INPUT);
   pinMode(ch5_pin, INPUT);
   pinMode(ch6_pin, INPUT);
+
 }
 
 int FlySky::readChannel(int channelInput, int minLimit, int maxLimit, int defaultValue) {
@@ -56,4 +59,80 @@ bool FlySky::getChannel6Value() {
 
 void FlySky::updateAutomaticFly() {
   automatic = readSwitch(ch5_pin,automatic);
+}
+
+
+void FlySky::readPPM() {
+
+  duration = pulseIn(ch1_pin , HIGH)+400;
+  total = total + duration;
+  if(duration > 2000){
+
+    /*
+    Serial.print(duration);
+    Serial.print("\t");
+    Serial.println(total);
+    */
+    total = 0;
+    count=0;
+  }
+  else{
+    
+    //Serial.print(count);
+    
+    int chvalue=duration;
+    if (chvalue<200){
+      chvalue=defaultValueCh;
+
+
+    }
+
+    else{
+
+      /*
+      if  ((count==4)|| (count==5)){
+        int specialChannelValue = chvalue ? 1000 : 2000;
+        chValues[count]=specialChannelValue;
+
+      }
+
+      else{
+        chValues[count]=map(chvalue, 1000, 2000, minLimitCh, maxLimitCh);
+      }
+
+
+
+    }
+
+    */
+    
+    durations[count] = duration;
+    
+    Serial.print(" ch");
+    Serial.print(count);
+    Serial.print(": ");
+    Serial.print(durations[count]);
+    Serial.print("\t");
+    
+    count++;
+  }
+
+}
+
+}
+int FlySky::getChannelValue(int channel) {
+  if (channel >= 1 && channel <= 10) {
+    return chValues[channel - 1]; // Devuelve el valor del canal (1-10)
+  }
+  return 0; // Devuelve 0 si el canal no es válido
+}
+
+void FlySky::printChannelValues() {
+  for (int i = 0; i < 10; i++) {
+    Serial.print(" ch");
+    Serial.print(i + 1);
+    Serial.print(": ");
+    Serial.print(chValues[i]);
+  }
+  Serial.println();
 }
