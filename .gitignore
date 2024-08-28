@@ -4,3 +4,9 @@
 .vscode/launch.json
 .vscode/ipch
 .vscode/extensions.json
+
+
+__pycache__
+.__pycache__
+/__pycache__
+/.__pycache__
